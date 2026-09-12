@@ -7,6 +7,7 @@
     "dev": "vite",
     "build": "vite build",
     "preview": "vite preview",
+    "catalog": "node scripts/generate-catalog.mjs",
     "format": "oxfmt"
   },
   "dependencies": {

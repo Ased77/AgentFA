@@ -5,6 +5,20 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>ایجنت‌فا | ایجنت‌های هوش مصنوعی فارسی</title>
+    <script>
+      (function () {
+        try {
+          var saved = localStorage.getItem("agentfa-lang");
+          var lang = saved === "fa" || saved === "en" ? saved : "fa";
+          var root = document.documentElement;
+          root.setAttribute("lang", lang);
+          root.setAttribute("dir", lang === "fa" ? "rtl" : "ltr");
+          if (lang === "en") {
+            root.title = "AgentFa | Persian AI agents";
+          }
+        } catch (e) {}
+      })();
+    </script>
     <!-- figma:head-end -->
   </head>
   <body>

@@ -159,6 +159,13 @@ const fa: Dict = {
   "detail.preview": "پیش‌نمایش رایگان",
   "auth.goDashboard": "رفتن به داشبورد",
   "titles.home": "ایجنت‌های هوش مصنوعی فارسی",
+  "titles.marketplace": "فروشگاه",
+  "titles.pricing": "قیمت‌ها",
+  "titles.admin": "مدیریت",
+  "titles.signup": "ثبت‌نام",
+  "titles.login": "ورود",
+  "titles.verify": "تأیید",
+  "titles.reset": "بازیابی",
   "titles.chat": "گفت‌وگو با ایجنت",
   "titles.account": "حساب کاربری",
 
@@ -362,6 +369,13 @@ const en: Dict = {
   "detail.preview": "Free preview",
   "auth.goDashboard": "Go to dashboard",
   "titles.home": "Persian AI agents",
+  "titles.marketplace": "Marketplace",
+  "titles.pricing": "Pricing",
+  "titles.admin": "Admin",
+  "titles.signup": "Sign up",
+  "titles.login": "Log in",
+  "titles.verify": "Verify",
+  "titles.reset": "Reset password",
   "titles.chat": "Chat with agent",
   "titles.account": "Account",
 
@@ -449,11 +463,7 @@ function interpolate(template: string, vars?: Record<string, string | number>): 
 }
 
 export function I18nProvider({ children }: { children: ReactNode }) {
-  const [lang, setLangState] = useState<Lang>("fa");
-
-  useEffect(() => {
-    setLangState(detectLang());
-  }, []);
+  const [lang, setLangState] = useState<Lang>(() => detectLang());
 
   useEffect(() => {
     if (typeof document === "undefined") return;
@@ -481,6 +491,7 @@ export function I18nProvider({ children }: { children: ReactNode }) {
       n: (v: number) => v.toLocaleString(locale),
       toman: (v: number) => (lang === "fa" ? `${v.toLocaleString("fa-IR")} تومان` : `${v.toLocaleString("en-US")} Toman`),
       division: (d) => (lang === "fa" ? d.labelFa : d.label),
+      agentDivision: (a) => (lang === "fa" ? a.category : a.divisionLabel),
     };
   }, [lang, setLang]);
 

@@ -1,0 +1,92 @@
+### 4.4 Agent Detail Page (`/agent/[slug]`)
+- **Top section:**
+  - Large icon, name, rating, sales count, price.
+  - Buttons:
+    - If not purchased: "خرید ایجنت" (primary), "پیشنمایش رایگان" (secondary, starts limited chat with 3 messages).
+    - If purchased: "شروع چت" (primary).
+  - "ضمانت ۷ روزه بازگشت وجه" badge.
+- **Description:** 2-3 paragraphs (from `long_description`).
+- **Features:** bullet list (from `features` array).
+- **Sample Prompts:** chips (from `suggested_prompts`), clicking starts a new chat with that prompt.
+- **User Reviews:** 2-3 sample reviews (static) with Persian names, ratings, comments.
+- **Related Agents:** up to 4 from same category, shown as small cards.
+
+### 4.5 Chat Interface (`/chat/[agentId]` or `/chat?agent=...`)
+- **Three-column layout on desktop:**
+  - **Right sidebar (width 280px):** Conversation list for this agent. If no conversations, show "گفتگویی ندارید". Top: "گفتگوی جدید" button. Each item: agent icon, title (or "گفتگوی جدید"), last message preview, timestamp, token count. Clicking loads that conversation.
+  - **Center:**
+    - Header: agent icon, name, "آنلاین" indicator, buttons: "دانلود گفتگو" (download transcript), "پاککردن گفتگو" (clear).
+    - Messages area:
+      - User messages: right-aligned, background `#7C3AED`, white text, rounded.
+      - Agent messages: left-aligned, background `#1E293B`, border, rounded.
+      - Under each agent message: small text "مصرف: ۱۸۰ توکن".
+      - Typing indicator: three animated dots when agent is generating.
+      - If conversation is new, show welcome message (from agent) and suggested prompt chips.
+    - Input area: textarea (auto-resize), attach icon (disabled), send button (arrow). Enter sends, Shift+Enter newline.
+  - **Left sidebar (width 250px, collapsible):**
+    - Agent info: icon, name, category.
+    - "مصرف این گفتگو": total tokens used.
+    - "موجودی توکن شما": live token balance.
+    - Button "خرید توکن بیشتر" → modal with token packages.
+    - Button "ارتقا پلن" → link to pricing.
+    - Button "پاککردن گفتگو" → confirmation.
+- **Mobile:** Sidebars collapsed into hamburger menu; chat takes full width.
+- **Streaming:** Use fetch with `ReadableStream` to display tokens as they arrive. Update token balance after response completes.
+- **If token balance insufficient:** show modal: "اعتبار توکن شما کافی نیست" with buttons "خرید توکن" and "ارتقا پلن".
+
+### 4.6 User Dashboard (`/dashboard`)
+- **Layout:** Sidebar (right) with links: نمای کلی، گفتگوها، ایجنتهای من، صورتحساب، تنظیمات، دعوت دوستان. Main content area.
+- **Overview Tab:**
+  - Welcome: "سلام، [name]!"
+  - Three stat cards: موجودی توکن (current balance), ایجنتهای من (count), مکالمات این ماه (count).
+  - Token usage chart (last 30 days) using Recharts line chart, RTL labels.
+  - "ایجنتهای من" grid: only purchased agents, each with "چت" button.
+  - Recent conversations (last 5) with continue link.
+  - Buttons: "خرید توکن" and "ارتقا پلن".
+- **Conversations Tab:**
+  - List all conversations across all agents.
+  - Filter by agent (dropdown), search by title.
+  - Each row: agent icon, title, last message, date, token count, actions (ادامه، حذف).
+  - Pagination or infinite scroll.
+- **My Agents Tab:**
+  - Grid of purchased agents with icon, name, description, "چت" button, "مشاهده" link.
+- **Billing Tab:**
+  - Current plan and token balance.
+  - Transaction history table: date, description, amount (Toman), tokens added, status.
+  - Buttons to buy token packages or change plan.
+- **Settings Tab:**
+  - Profile: name, avatar upload (file upload to Supabase Storage), email (read-only).
+  - Password change.
+  - Notification preferences (checkboxes for email alerts).
+  - Delete account (with confirmation).
+- **Referral Tab:**
+  - Unique referral link (`https://yourdomain.com/signup?ref=[userId]`).
+  - Stats: number of referrals, tokens earned.
+  - Explanation: "با دعوت هر دوست، هر دوی شما ۲۰,۰۰۰ توکن هدیه میگیرید."
+  - Copy link button.
+
+### 4.7 Pricing Page (`/pricing`)
+- Display three plans (monthly):
+  - **رایگان:** ۵۰,۰۰۰ توکن/ماه, ۰ تومان, دسترسی به ۳ ایجنت پایه, بدون پشتیبانی ویژه.
+  - **پایه:** ۵۰۰,۰۰۰ توکن/ماه, ۲۹۰,۰۰۰ تومان/ماه, دسترسی به همه ایجنتها, پشتیبانی استاندارد.
+  - **حرفهای:** ۲,۰۰۰,۰۰۰ توکن/ماه, ۹۹۰,۰۰۰ تومان/ماه, همه + ایجنتهای ویژه, پشتیبانی اولویتدار.
+- Optional yearly toggle with 20% discount.
+- Token top-up packages (one-time):
+  - ۱۰۰ هزار توکن = ۵۰,۰۰۰ تومان
+  - ۳۰۰ هزار توکن = ۱۳۰,۰۰۰ تومان
+  - ۱ میلیون توکن = ۴۰۰,۰۰۰ تومان
+- Each plan card has "انتخاب پلن" button; token packages have "خرید" button.
+- Payment: For MVP, clicking "خرید" will simulate a successful payment (add tokens, create transaction record). A comment should note that real Zarinpal integration will replace this later. Provide a mock payment confirmation modal.
+
+### 4.8 Admin Panel (`/admin`)
+- Protected: only users with `is_admin = true`.
+- **Dashboard:** Total sales (Toman), active users, total tokens consumed, revenue by month (simple bar chart).
+- **Agents Management:**
+  - List all agents in table with actions: edit, disable, delete.
+  - Create new agent button.
+  - Edit form includes: name, slug (auto), icon, category, price, system prompt, model, temperature, max_tokens, suggested prompts (textarea one per line), welcome message, features (textarea one per line), long description, is_featured, is_active.
+- **Users Management:**
+  - List users with search, filter by plan.
+  - Actions: view details, change plan, reset token balance, ban/unban.
+- **Transactions:** List all transactions with user email, type, amount, tokens, status, date. Ability to mark pending as success/fail.
+- **Promo Codes:** Create, list, delete. Fields: code, discount percent, max uses, expiry.

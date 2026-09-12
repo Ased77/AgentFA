@@ -1,0 +1,10 @@
+{
+  "description": "Creates detailed project plans by analyzing comprehensive prompts, helping users organize and execute complex projects efficiently.",
+  "robots": {
+    "index": false
+  },
+  "accessibility": {
+    "addBypassLinks": false,
+    "ignoreReducedMotion": false
+  }
+}

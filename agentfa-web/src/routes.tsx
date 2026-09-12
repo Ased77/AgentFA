@@ -46,7 +46,7 @@ function LanguageSwitcher() {
       aria-label={t("nav.lang")}
     >
       <Languages size={14} />
-      {lang === "fa" ? "EN" : "فا"}
+      <span className="text-xs font-medium">{lang === "fa" ? "FA" : "EN"}</span>
     </button>
   )
 }
@@ -348,7 +348,7 @@ function Detail() {
   const a = agents.find((x) => x.slug === slug)
   const nav = useNavigate()
   const [notice, setNotice] = useState("")
-  const { t, n, toman, division } = useI18n()
+  const { t, n, toman, agentDivision } = useI18n()
   if (!a) return <Navigate to="/marketplace" />
   const agentId = a.id
   const own = bought().includes(agentId)
@@ -369,7 +369,7 @@ function Detail() {
               {a.icon}
             </span>
             <div>
-              <p className="eyebrow">{division(a)}</p>
+              <p className="eyebrow">{agentDivision(a)}</p>
               <h1 className="mt-2 text-4xl font-black">{a.name}</h1>
               <p className="mt-2 text-amber-300">
                 ★ {n(a.rating)}{" "}

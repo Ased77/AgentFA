@@ -442,6 +442,10 @@ type I18nValue = {
   division: (d: { label: string; labelFa: string }) => string;
   /** Division label for an agent: its localized category in fa, English divisionLabel in en. */
   agentDivision: (a: { category: string; divisionLabel: string }) => string;
+  /** Localized agent-card title. */
+  agentName: (a: { name: string; category: string; divisionLabel: string }) => string;
+  /** Localized agent-card summary. */
+  agentDescription: (a: { name: string; description: string; category: string; divisionLabel: string }) => string;
 };
 
 const I18nContext = createContext<I18nValue | null>(null);
@@ -492,6 +496,12 @@ export function I18nProvider({ children }: { children: ReactNode }) {
       toman: (v: number) => (lang === "fa" ? `${v.toLocaleString("fa-IR")} تومان` : `${v.toLocaleString("en-US")} Toman`),
       division: (d) => (lang === "fa" ? d.labelFa : d.label),
       agentDivision: (a) => (lang === "fa" ? a.category : a.divisionLabel),
+      agentName: (a) =>
+        lang === "fa" ? `ایجنت تخصصی ${a.category}` : a.name,
+      agentDescription: (a) =>
+        lang === "fa"
+          ? `دستیار تخصصی ${a.category} برای تحلیل، برنامه‌ریزی و اجرای حرفه‌ای کارهای این حوزه.`
+          : a.description,
     };
   }, [lang, setLang]);
 

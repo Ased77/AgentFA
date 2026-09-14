@@ -119,7 +119,7 @@ function Shell() {
 
 function AgentCard({ agent }: { agent: Agent }) {
   const own = bought().includes(agent.id)
-  const { t, n, toman } = useI18n()
+  const { t, n, toman, agentName, agentDescription } = useI18n()
   return (
     <article className="agent-card group relative">
       <div className="mb-7 flex items-start justify-between">
@@ -131,11 +131,11 @@ function AgentCard({ agent }: { agent: Agent }) {
         )}
       </div>
       <div className="mb-3 flex items-center justify-between">
-        <h3 className="text-lg font-bold">{agent.name}</h3>
+        <h3 className="text-lg font-bold">{agentName(agent)}</h3>
         <span className="text-sm text-amber-300">★ {n(agent.rating)}</span>
       </div>
-      <p className="h-12 text-sm leading-6 text-slate-400">
-        {agent.description}
+      <p className="h-12 overflow-hidden text-sm leading-6 text-slate-400 [display:-webkit-box] [-webkit-box-orient:vertical] [-webkit-line-clamp:2]">
+        {agentDescription(agent)}
       </p>
       <div className="mt-6 flex items-center justify-between border-t border-white/8 pt-5">
         <div>
@@ -262,7 +262,7 @@ function Marketplace() {
   const [q, setQ] = useState("")
   const [cat, setCat] = useState<string | null>(null)
   const [sort, setSort] = useState<"popular" | "cheap" | "expensive">("popular")
-  const { t, division } = useI18n()
+  const { t, division, agentName, agentDescription, agentDivision } = useI18n()
   const cats = useMemo(
     () => [
       { slug: "all", label: t("common.all") },
@@ -277,9 +277,9 @@ function Marketplace() {
         .filter(
           (a) =>
             (!cat || cat === allLabel || a.category === cat) &&
-            (a.name.toLowerCase().includes(q.toLowerCase()) ||
-              a.description.toLowerCase().includes(q.toLowerCase()) ||
-              a.divisionLabel.toLowerCase().includes(q.toLowerCase())),
+            (agentName(a).toLowerCase().includes(q.toLowerCase()) ||
+              agentDescription(a).toLowerCase().includes(q.toLowerCase()) ||
+              agentDivision(a).toLowerCase().includes(q.toLowerCase())),
         )
         .sort((a, b) =>
           sort === "cheap"
@@ -288,7 +288,7 @@ function Marketplace() {
               ? b.price - a.price
               : b.sales - a.sales,
         ),
-    [q, cat, sort, allLabel],
+    [q, cat, sort, allLabel, agentName, agentDescription, agentDivision],
   )
   return (
     <main className="section min-h-screen">

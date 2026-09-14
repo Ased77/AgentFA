@@ -34,6 +34,17 @@ export default defineConfig(({ mode }) => {
       port: parseInt(process.env.PORT || '8443'),
       strictPort: true,
       watch: { ignored: ['**/.figma/**'] },
+      // Dev-only escape hatch for OpenAI-compatible providers that send no CORS
+      // headers (they then fail as opaque network errors from the browser).
+      // Set PROVIDER_PROXY_TARGET to the provider root and tick "Route through
+      // the dev proxy" in Admin → AI provider. Never relied on in production.
+      proxy: {
+        '/provider-proxy': {
+          target: process.env.PROVIDER_PROXY_TARGET || 'https://api.openai.com',
+          changeOrigin: true,
+          rewrite: (path: string) => path.replace(/^\/provider-proxy/, ''),
+        },
+      },
     },
     preview: {
       host: process.env.FIGMA_DEV_SERVER_HOST || '0.0.0.0',

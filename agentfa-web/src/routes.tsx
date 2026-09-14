@@ -22,18 +22,12 @@ import {
 } from "lucide-react"
 import { agents, divisions, Agent } from "./data/agents"
 import { useI18n } from "./lib/i18n"
+import { ownAgent, ownsAgent } from "./lib/mock-store"
 import Chat from "./pages/Chat"
 import Pricing from "./pages/Pricing"
 import Admin from "./pages/Admin"
 
-const bought = () =>
-  JSON.parse(localStorage.getItem("agentfa-bought") || "[]") as string[]
 const logged = () => localStorage.getItem("agentfa-user") || ""
-const buy = (id: string) =>
-  localStorage.setItem(
-    "agentfa-bought",
-    JSON.stringify([...new Set([...bought(), id])]),
-  )
 
 function LanguageSwitcher() {
   const { lang, setLang, t } = useI18n()
@@ -118,7 +112,7 @@ function Shell() {
 }
 
 function AgentCard({ agent }: { agent: Agent }) {
-  const own = bought().includes(agent.id)
+  const own = ownsAgent(agent.id)
   const { t, n, toman, agentName, agentDescription } = useI18n()
   return (
     <article className="agent-card group relative">
@@ -351,10 +345,10 @@ function Detail() {
   const { t, n, toman, agentDivision } = useI18n()
   if (!a) return <Navigate to="/marketplace" />
   const agentId = a.id
-  const own = bought().includes(agentId)
+  const own = ownsAgent(agentId)
   function purchase() {
     if (!logged()) return nav("/login")
-    buy(agentId)
+    ownAgent(agentId)
     setNotice(t("common.owned"))
   }
   return (
@@ -578,7 +572,7 @@ function Reset() {
 }
 
 function Dashboard() {
-  const own = agents.filter((a) => bought().includes(a.id))
+  const own = agents.filter((a) => ownsAgent(a.id))
   const { t, n } = useI18n()
   const stats: [string, string, typeof Wallet][] = [
     ["۵۰٬۰۰۰", t("dash.balance"), Wallet],

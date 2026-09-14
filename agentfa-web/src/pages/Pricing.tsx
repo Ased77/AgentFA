@@ -1,14 +1,17 @@
 import { useState } from "react"
 import { Check, X } from "lucide-react"
-import { choosePlan, topUp } from "../lib/mock-store"
+import { PLAN_ALLOWANCE, choosePlan, topUp } from "../lib/mock-store"
 import { useI18n } from "../lib/i18n"
 
 type PlanKey = "free" | "basic" | "pro"
 
+/** Allowances come from the wallet's single source of truth so the plan card
+    and the meter can never drift apart. */
 const plans: {
   nameKey: string
   key: PlanKey
   tokens: number
+  minutes: number
   price: number
   featured?: boolean
   featureKeys: [string, string]
@@ -16,14 +19,14 @@ const plans: {
   {
     nameKey: "plan.free",
     key: "free",
-    tokens: 50000,
+    ...PLAN_ALLOWANCE.free,
     price: 0,
     featureKeys: ["plan.free.f1", "plan.free.f2"],
   },
   {
     nameKey: "plan.basic",
     key: "basic",
-    tokens: 500000,
+    ...PLAN_ALLOWANCE.basic,
     price: 290000,
     featured: true,
     featureKeys: ["plan.basic.f1", "plan.basic.f2"],
@@ -31,7 +34,7 @@ const plans: {
   {
     nameKey: "plan.pro",
     key: "pro",
-    tokens: 2000000,
+    ...PLAN_ALLOWANCE.pro,
     price: 990000,
     featureKeys: ["plan.pro.f1", "plan.pro.f2"],
   },
@@ -101,7 +104,10 @@ export default function Pricing() {
               )}
             </p>
             <p className="mt-3 text-sm text-violet-200">
-              {t("pricing.tokensPerMonth", { tokens: n(p.tokens) })}
+              {t("pricing.allowance", {
+                tokens: n(p.tokens),
+                minutes: n(p.minutes),
+              })}
             </p>
             <ul className="my-8 space-y-3 text-sm text-slate-300">
               {p.featureKeys.map((f) => (
@@ -113,7 +119,7 @@ export default function Pricing() {
             </ul>
             <button
               onClick={() => {
-                choosePlan(p.key, p.tokens)
+                choosePlan(p.key, p.tokens, p.minutes)
                 setConfirm(t("pricing.active", { name: t(p.nameKey) }))
               }}
               className="btn w-full justify-center"

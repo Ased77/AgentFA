@@ -8,6 +8,7 @@
     "build": "vite build",
     "preview": "vite preview",
     "catalog": "node scripts/generate-catalog.mjs",
+    "export:server-content": "npm run catalog && node scripts/export-personas.mjs",
     "format": "oxfmt"
   },
   "dependencies": {

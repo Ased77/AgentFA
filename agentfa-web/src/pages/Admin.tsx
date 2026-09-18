@@ -1,97 +1,155 @@
-import { useState } from "react"
-import { Navigate } from "react-router-dom"
-import { Plug, Save } from "lucide-react"
+import { useEffect, useState } from "react"
+import { Plug, Save, Trash2 } from "lucide-react"
 import { agents } from "../data/agents"
 import { useI18n } from "../lib/i18n"
-import {
-  clearProvider,
-  getProvider,
-  maskKey,
-  normalizeBaseUrl,
-  profileProblems,
-  saveProvider,
-  type MeterMode,
-  type ProviderProfile,
-} from "../lib/provider"
-import { ProviderError, providerErrorKey, testConnection } from "../lib/provider-client"
+import { ApiError, api, type PublicProvider } from "../lib/account"
 
-/**
- * Provider configuration — the admin-owned settings for the custom
- * (non-Claude) OpenAI-compatible endpoint every agent chat streams from.
- *
- * The connection test runs through the same guarded client with a throwaway
- * probe persona and never debits a wallet, so "agents only" holds even here.
- */
+type MeterMode = "tokens" | "time"
+
+type Draft = {
+  label: string
+  baseUrl: string
+  model: string
+  apiKey: string
+  meter: MeterMode
+  tomanPer1kTokens: number
+  tomanPerMinute: number
+  agentScopeText: string
+  enabled: boolean
+}
+
+const EMPTY_DRAFT: Draft = {
+  label: "",
+  baseUrl: "",
+  model: "",
+  apiKey: "",
+  meter: "tokens",
+  tomanPer1kTokens: 2000,
+  tomanPerMinute: 30000,
+  agentScopeText: "",
+  enabled: true,
+}
+
 function ProviderSection() {
   const { t, n } = useI18n()
-  const [profile, setProfile] = useState<ProviderProfile>(() => getProvider())
-  const [scopeText, setScopeText] = useState(() =>
-    getProvider().agentScope.includes("*") ? "" : getProvider().agentScope.join(", "),
-  )
-  const [saved, setSaved] = useState(false)
+  const [draft, setDraft] = useState<Draft>(EMPTY_DRAFT)
+  const [saved, setSaved] = useState<PublicProvider | null>(null)
+  const [savedFlag, setSavedFlag] = useState(false)
   const [testing, setTesting] = useState(false)
   const [result, setResult] = useState("")
+  const [loading, setLoading] = useState(true)
 
-  const problems = profileProblems(profile)
-  const unknown = profile.agentScope
-    .filter((id) => id !== "*" && !agents.some((a) => a.id === id))
+  useEffect(() => {
+    let alive = true
+    api
+      .adminProvider()
+      .then(({ provider }) => {
+        if (!alive) return
+        setSaved(provider)
+        if (provider) {
+          setDraft({
+            label: provider.label,
+            baseUrl: provider.baseUrl,
+            model: provider.model,
+            apiKey: "",
+            meter: provider.meter,
+            tomanPer1kTokens: provider.tomanPer1kTokens,
+            tomanPerMinute: provider.tomanPerMinute,
+            agentScopeText: provider.agentScope.includes("*") ? "" : provider.agentScope.join(", "),
+            enabled: provider.enabled,
+          })
+        }
+      })
+      .catch(() => {})
+      .finally(() => alive && setLoading(false))
+    return () => {
+      alive = false
+    }
+  }, [])
 
-  function update(patch: Partial<ProviderProfile>) {
-    setSaved(false)
-    setProfile((p) => ({ ...p, ...patch }))
+  function update(patch: Partial<Draft>) {
+    setSavedFlag(false)
+    setDraft((d) => ({ ...d, ...patch }))
   }
 
-  function commitScope(text: string) {
-    setScopeText(text)
-    const ids = text
-      .split(",")
-      .map((s) => s.trim())
-      .filter(Boolean)
-    update({ agentScope: ids.length ? ids : ["*"] })
-  }
+  const scopeIds = draft.agentScopeText
+    .split(",")
+    .map((s) => s.trim())
+    .filter(Boolean)
+  const unknown = scopeIds.filter((id) => !agents.some((a) => a.id === id))
 
-  function save() {
-    const next = saveProvider({
-      ...profile,
-      baseUrl: normalizeBaseUrl(profile.baseUrl),
-    })
-    setProfile(next)
-    setSaved(true)
+  const problems: string[] = []
+  if (!draft.baseUrl.trim()) problems.push("admin.provider.problem.baseUrl")
+  else if (!/^https?:\/\//i.test(draft.baseUrl.trim()))
+    problems.push("admin.provider.problem.scheme")
+  if (!draft.model.trim()) problems.push("admin.provider.problem.model")
+  if (!draft.apiKey.trim() && !saved) problems.push("admin.provider.problem.key")
+
+  async function save() {
+    setResult("")
+    try {
+      const { provider } = await api.saveProvider({
+        label: draft.label,
+        baseUrl: draft.baseUrl,
+        model: draft.model,
+        apiKey: draft.apiKey || undefined,
+        meter: draft.meter,
+        tomanPer1kTokens: draft.tomanPer1kTokens,
+        tomanPerMinute: draft.tomanPerMinute,
+        agentScope: scopeIds.length ? scopeIds : ["*"],
+        enabled: draft.enabled,
+      })
+      setSaved(provider)
+      setDraft((d) => ({ ...d, apiKey: "" }))
+      setSavedFlag(true)
+    } catch (err) {
+      setResult(`✕ ${err instanceof ApiError ? err.code : "network"}`)
+    }
   }
 
   async function test() {
     setTesting(true)
     setResult("")
     try {
-      const outcome = await testConnection({ ...profile, enabled: true })
-      setResult(
-        t("admin.provider.testOk", {
-          model: profile.model,
-          tokens: n(outcome.tokens),
-          seconds: String(outcome.seconds),
-        }),
-      )
+      const outcome = await api.testProvider()
+      if (outcome.ok)
+        setResult(
+          t("admin.provider.testOk", {
+            model: saved?.model ?? draft.model,
+            tokens: n(outcome.tokens ?? 0),
+            seconds: String(outcome.seconds ?? 0),
+          }),
+        )
+      else setResult(`✕ ${outcome.error ?? "network"}`)
     } catch (err) {
-      const code = err instanceof ProviderError ? err.code : "network"
-      setResult(`✕ ${t(providerErrorKey(code))}`)
+      setResult(`✕ ${err instanceof ApiError ? err.code : "network"}`)
     } finally {
       setTesting(false)
     }
   }
+
+  async function clear() {
+    try {
+      await api.deleteProvider()
+    } catch {
+      /* ignore */
+    }
+    setSaved(null)
+    setDraft(EMPTY_DRAFT)
+    setSavedFlag(true)
+  }
+
+  if (loading) return null
 
   return (
     <section className="mt-8 rounded-2xl border border-white/10 p-6">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
           <h2 className="font-bold">{t("admin.provider.title")}</h2>
-          <p className="mt-2 max-w-2xl text-sm text-slate-400">
-            {t("admin.provider.body")}
-          </p>
+          <p className="mt-2 max-w-2xl text-sm text-slate-400">{t("admin.provider.body")}</p>
         </div>
-        <span className={`badge ${profile.enabled ? "" : "opacity-50"}`}>
-          {profile.enabled
-            ? t("admin.provider.active")
-            : t("admin.provider.disabled")}
+        <span className={`badge ${draft.enabled ? "" : "opacity-50"}`}>
+          {draft.enabled ? t("admin.provider.active") : t("admin.provider.disabled")}
         </span>
       </div>
 
@@ -100,7 +158,7 @@ function ProviderSection() {
           <span className="text-slate-400">{t("admin.provider.label")}</span>
           <input
             className="field mt-2"
-            value={profile.label}
+            value={draft.label}
             onChange={(e) => update({ label: e.target.value })}
             placeholder={t("admin.provider.labelPlaceholder")}
           />
@@ -110,7 +168,7 @@ function ProviderSection() {
           <input
             className="field mt-2"
             dir="ltr"
-            value={profile.baseUrl}
+            value={draft.baseUrl}
             onChange={(e) => update({ baseUrl: e.target.value })}
             placeholder="https://api.example.com/v1"
           />
@@ -120,7 +178,7 @@ function ProviderSection() {
           <input
             className="field mt-2"
             dir="ltr"
-            value={profile.model}
+            value={draft.model}
             onChange={(e) => update({ model: e.target.value })}
             placeholder="deepseek-chat"
           />
@@ -132,13 +190,13 @@ function ProviderSection() {
             dir="ltr"
             type="password"
             autoComplete="off"
-            value={profile.apiKey}
+            value={draft.apiKey}
             onChange={(e) => update({ apiKey: e.target.value })}
-            placeholder="sk-…"
+            placeholder={saved ? saved.apiKeyMasked : "sk-…"}
           />
-          {profile.apiKey && (
+          {saved && !draft.apiKey && (
             <span className="mt-1 block text-xs text-slate-500" dir="ltr">
-              {maskKey(profile.apiKey)}
+              {saved.apiKeyMasked}
             </span>
           )}
         </label>
@@ -154,7 +212,7 @@ function ProviderSection() {
                 type="button"
                 onClick={() => update({ meter: mode })}
                 className={`rounded-xl border px-4 py-2 text-sm ${
-                  profile.meter === mode
+                  draft.meter === mode
                     ? "border-violet-400 bg-violet-500/20 text-violet-100"
                     : "border-white/10 text-slate-300"
                 }`}
@@ -171,7 +229,7 @@ function ProviderSection() {
               className="field mt-2"
               dir="ltr"
               inputMode="numeric"
-              value={profile.tomanPer1kTokens}
+              value={draft.tomanPer1kTokens}
               onChange={(e) =>
                 update({ tomanPer1kTokens: Number(e.target.value.replace(/\D/g, "")) })
               }
@@ -183,7 +241,7 @@ function ProviderSection() {
               className="field mt-2"
               dir="ltr"
               inputMode="numeric"
-              value={profile.tomanPerMinute}
+              value={draft.tomanPerMinute}
               onChange={(e) =>
                 update({ tomanPerMinute: Number(e.target.value.replace(/\D/g, "")) })
               }
@@ -197,16 +255,14 @@ function ProviderSection() {
         <input
           className="field mt-2"
           dir="ltr"
-          value={scopeText}
-          onChange={(e) => commitScope(e.target.value)}
+          value={draft.agentScopeText}
+          onChange={(e) => update({ agentScopeText: e.target.value })}
           placeholder={t("admin.provider.scopePlaceholder")}
         />
         <span className="mt-1 block text-xs text-slate-500">
-          {profile.agentScope.includes("*")
+          {scopeIds.length === 0
             ? t("admin.provider.scopeAll", { count: n(agents.length) })
-            : t("admin.provider.scopeCount", {
-                count: n(profile.agentScope.length),
-              })}
+            : t("admin.provider.scopeCount", { count: n(scopeIds.length) })}
         </span>
         {unknown.length > 0 && (
           <span className="mt-1 block text-xs text-amber-300">
@@ -219,18 +275,10 @@ function ProviderSection() {
         <label className="flex items-center gap-2">
           <input
             type="checkbox"
-            checked={profile.enabled}
+            checked={draft.enabled}
             onChange={(e) => update({ enabled: e.target.checked })}
           />
           {t("admin.provider.enabled")}
-        </label>
-        <label className="flex items-center gap-2">
-          <input
-            type="checkbox"
-            checked={profile.useDevProxy}
-            onChange={(e) => update({ useDevProxy: e.target.checked })}
-          />
-          {t("admin.provider.devProxy")}
         </label>
       </div>
 
@@ -249,23 +297,15 @@ function ProviderSection() {
         <button
           className="btn btn-soft text-sm"
           onClick={test}
-          disabled={testing || problems.length > 0}
+          disabled={testing || !saved}
         >
           <Plug size={16} />{" "}
           {testing ? t("admin.provider.testing") : t("admin.provider.test")}
         </button>
-        <button
-          className="text-sm text-red-300"
-          onClick={() => {
-            const cleared = clearProvider()
-            setProfile(cleared)
-            setScopeText("")
-            setSaved(true)
-          }}
-        >
-          {t("admin.provider.clear")}
+        <button className="flex items-center gap-1 text-sm text-red-300" onClick={clear}>
+          <Trash2 size={15} /> {t("admin.provider.clear")}
         </button>
-        {saved && (
+        {savedFlag && (
           <span className="text-sm text-emerald-300">{t("admin.provider.saved")}</span>
         )}
       </div>
@@ -280,8 +320,6 @@ function ProviderSection() {
 
 export default function Admin() {
   const { t, n, toman } = useI18n()
-  if (localStorage.getItem("agentfa-is-admin") !== "true")
-    return <Navigate to="/dashboard" replace />
   const stats: [string, string][] = [
     [toman(39890000), t("admin.totalSales")],
     [n(1280), t("admin.activeUsers")],

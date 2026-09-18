@@ -1,0 +1,139 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  user
+  admin
+}
+
+enum PlanKey {
+  free
+  basic
+  pro
+}
+
+enum MeterMode {
+  tokens
+  time
+}
+
+enum TxType {
+  topup
+  purchase
+}
+
+enum TxStatus {
+  pending
+  success
+  failed
+}
+
+model User {
+  id           String   @id @default(cuid())
+  email        String   @unique
+  passwordHash String
+  role         Role     @default(user)
+  createdAt    DateTime @default(now())
+
+  wallet       Wallet?
+  entitlements Entitlement[]
+  sessions     Session[]
+  transactions Transaction[]
+  usage        UsageEvent[]
+}
+
+model Wallet {
+  userId                  String    @id
+  plan                    PlanKey   @default(free)
+  tokenBalance            Int       @default(50000)
+  timeBalanceSeconds      Int       @default(3600)
+  monthlyTokenLimit       Int       @default(50000)
+  monthlyTimeLimitSeconds Int       @default(3600)
+  monthlyUsage            Int       @default(0)
+  monthlyTimeUsedSeconds  Int       @default(0)
+  periodStart             DateTime  @default(now())
+  updatedAt               DateTime  @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model Entitlement {
+  id         String   @id @default(cuid())
+  userId     String
+  agentId    String
+  pricePaid  Int
+  purchasedAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, agentId])
+  @@index([userId])
+}
+
+model Transaction {
+  id          String   @id @default(cuid())
+  userId      String
+  type        TxType
+  status      TxStatus @default(pending)
+  tokens      Int      @default(0)
+  minutes     Int      @default(0)
+  amount      Int      @default(0)
+  currency    String   @default("IRT")
+  provider    String?
+  providerRef String?  @unique
+  agentId     String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, status])
+}
+
+model UsageEvent {
+  id            String   @id @default(cuid())
+  userId        String
+  agentId       String
+  tokens        Int
+  seconds       Int
+  estimated     Boolean  @default(false)
+  providerModel String?
+  createdAt     DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, createdAt])
+}
+
+model ProviderConfig {
+  id              String    @id @default(cuid())
+  label           String    @default("")
+  baseUrl         String
+  apiKeyCipher    String
+  model           String
+  meter           MeterMode @default(tokens)
+  tomanPer1kTokens Int      @default(2000)
+  tomanPerMinute  Int       @default(30000)
+  agentScope      String[]  @default(["*"])
+  enabled         Boolean   @default(true)
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+}
+
+model Session {
+  id        String   @id @default(cuid())
+  userId    String
+  tokenHash String   @unique
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+}

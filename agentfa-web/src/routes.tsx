@@ -1,4 +1,4 @@
-import { FormEvent, useEffect, useMemo, useState } from "react"
+import { useEffect, useMemo, useState, type ReactNode } from "react"
 import {
   createBrowserRouter,
   Link,
@@ -21,13 +21,6 @@ import {
   Wallet,
 } from "lucide-react"
 import { agents, divisions, Agent } from "./data/agents"
-import { useI18n } from "./lib/i18n"
-import { ownAgent, ownsAgent } from "./lib/mock-store"
-import Chat from "./pages/Chat"
-import Pricing from "./pages/Pricing"
-import Admin from "./pages/Admin"
-
-const logged = () => localStorage.getItem("agentfa-user") || ""
 
 function LanguageSwitcher() {
   const { lang, setLang, t } = useI18n()
@@ -48,6 +41,7 @@ function LanguageSwitcher() {
 function Shell() {
   const { pathname } = useLocation()
   const { t } = useI18n()
+  const { user, logout } = useSession()
   useEffect(() => {
     const page =
       pathname === "/"
@@ -80,16 +74,23 @@ function Shell() {
             <Link to="/marketplace">{t("nav.marketplace")}</Link>
             <Link to="/pricing">{t("nav.pricing")}</Link>
             <a href="#how">{t("nav.how")}</a>
-            <Link to="/admin" className="text-violet-300">
-              {t("nav.admin")}
-            </Link>
+            {user?.role === "admin" && (
+              <Link to="/admin" className="text-violet-300">
+                {t("nav.admin")}
+              </Link>
+            )}
           </nav>
           <div className="flex items-center gap-3">
             <LanguageSwitcher />
-            {logged() ? (
-              <Link className="btn btn-soft" to="/dashboard">
-                <LayoutDashboard size={17} /> {t("nav.dashboard")}
-              </Link>
+            {user ? (
+              <>
+                <Link className="btn btn-soft" to="/dashboard">
+                  <LayoutDashboard size={17} /> {t("nav.dashboard")}
+                </Link>
+                <button className="text-sm text-slate-400" onClick={() => void logout()}>
+                  {t("nav.logout")}
+                </button>
+              </>
             ) : (
               <>
                 <Link className="text-sm text-slate-300" to="/login">
@@ -112,7 +113,8 @@ function Shell() {
 }
 
 function AgentCard({ agent }: { agent: Agent }) {
-  const own = ownsAgent(agent.id)
+  const { owns } = useEntitlements()
+  const own = owns(agent.id)
   const { t, n, toman, agentName, agentDescription } = useI18n()
   return (
     <article className="agent-card group relative">
@@ -342,14 +344,28 @@ function Detail() {
   const a = agents.find((x) => x.slug === slug)
   const nav = useNavigate()
   const [notice, setNotice] = useState("")
+  const [buying, setBuying] = useState(false)
   const { t, n, toman, agentDivision } = useI18n()
+  const { user } = useSession()
+  const { owns, refresh } = useEntitlements()
   if (!a) return <Navigate to="/marketplace" />
   const agentId = a.id
-  const own = ownsAgent(agentId)
-  function purchase() {
-    if (!logged()) return nav("/login")
-    ownAgent(agentId)
-    setNotice(t("common.owned"))
+  const own = owns(agentId)
+  async function purchase() {
+    if (!user) return nav("/login")
+    setBuying(true)
+    setNotice("")
+    try {
+      const { redirectUrl } = await api.buyAgent(agentId)
+      // Gateway integrations replace this with a redirect to their hosted checkout.
+      if (redirectUrl.startsWith("http")) window.location.assign(redirectUrl)
+      else setNotice(t("payment.pending"))
+      await refresh()
+    } catch (err) {
+      setNotice(err instanceof ApiError ? err.code : "network")
+    } finally {
+      setBuying(false)
+    }
   }
   return (
     <main className="section">
@@ -404,7 +420,8 @@ function Detail() {
           <p className="mt-2 text-sm text-slate-400">{t("detail.lifetime")}</p>
           <button
             className="btn mt-7 w-full justify-center"
-            onClick={own ? () => nav(`/chat/${a.id}`) : purchase}
+            onClick={own ? () => nav(`/chat/${a.id}`) : () => void purchase()}
+            disabled={buying}
           >
             {own ? t("common.startChat") : t("common.buy")}
             <ArrowLeft size={17} />
@@ -572,7 +589,9 @@ function Reset() {
 }
 
 function Dashboard() {
-  const own = agents.filter((a) => ownsAgent(a.id))
+  const { user } = useSession()
+  const { owned } = useEntitlements()
+  const own = agents.filter((a) => owned.includes(a.id))
   const { t, n } = useI18n()
   const stats: [string, string, typeof Wallet][] = [
     ["۵۰٬۰۰۰", t("dash.balance"), Wallet],
@@ -583,7 +602,7 @@ function Dashboard() {
     <main className="section">
       <p className="eyebrow">{t("dash.eyebrow")}</p>
       <h1 className="page-title">
-        {t("dash.hello", { name: logged() || t("dash.friend") })}
+        {t("dash.hello", { name: user?.email || t("dash.friend") })}
       </h1>
       <div className="mt-9 grid gap-4 md:grid-cols-3">
         {stats.map(([value, label, Icon]) => (
@@ -643,6 +662,18 @@ function Dashboard() {
   )
 }
 
+function RequireUser({ children }: { children: ReactNode }) {
+  const { user, loading } = useSession()
+  if (loading) return null
+  return user ? <>{children}</> : <Navigate to="/login" replace />
+}
+
+function RequireAdmin({ children }: { children: ReactNode }) {
+  const { user, loading } = useSession()
+  if (loading) return null
+  return user?.role === "admin" ? <>{children}</> : <Navigate to="/dashboard" replace />
+}
+
 export const router = createBrowserRouter([
   {
     path: "/",
@@ -651,12 +682,12 @@ export const router = createBrowserRouter([
       { index: true, Component: Landing },
       { path: "marketplace", Component: Marketplace },
       { path: "agent/:slug", Component: Detail },
-      { path: "chat/:agentId", Component: Chat },
-      { path: "dashboard", Component: Dashboard },
+      { path: "chat/:agentId", Component: () => <RequireUser><Chat /></RequireUser> },
+      { path: "dashboard", Component: () => <RequireUser><Dashboard /></RequireUser> },
       { path: "pricing", Component: Pricing },
-      { path: "admin", Component: Admin },
-      { path: "login", Component: () => <Auth /> },
-      { path: "signup", Component: () => <Auth signup /> },
+      { path: "admin", Component: () => <RequireAdmin><Admin /></RequireAdmin> },
+      { path: "login", Component: Login },
+      { path: "signup", Component: () => <Login signup /> },
       { path: "verify", Component: Verify },
       { path: "reset-password", Component: Reset },
       { path: "*", Component: () => <Navigate to="/" /> },

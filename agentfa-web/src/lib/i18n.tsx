@@ -15,6 +15,7 @@ const fa: Dict = {
   "nav.login": "ورود",
   "nav.signup": "شروع رایگان",
   "nav.dashboard": "داشبورد",
+  "nav.logout": "خروج",
   "nav.lang": "زبان",
   "footer.tagline": "دستیارهای هوشمند، برای کارهای واقعی",
 
@@ -32,6 +33,7 @@ const fa: Dict = {
   "common.loading": "در حال بارگذاری…",
   "common.copy": "کپی کد",
   "common.delete": "پاک کردن",
+  "payment.pending": "درخواست پرداخت ثبت شد؛ پس از تأیید درگاه، ایجنت فعال می‌شود.",
 
   "landing.eyebrow": "بازار ایجنت‌های تخصصی فارسی",
   "landing.title1": "دستیارهای هوش مصنوعی",
@@ -88,6 +90,7 @@ const fa: Dict = {
   "auth.giftTitle": "هدیه‌ات آماده است!",
   "auth.giftBody": "۵۰٬۰۰۰ توکن هدیه به حساب شما اضافه شد!",
   "auth.giftClose": "شروع کن",
+  "auth.secure": "نشست شما توسط سرور AgentFA محافظت می‌شود.",
 
   "verify.title": "ایمیل تأیید را بررسی کنید",
   "verify.body": "ایمیلی برای تأیید حساب شما ارسال شد. لطفاً لینک موجود در ایمیل را کلیک کنید.",
@@ -281,6 +284,7 @@ const en: Dict = {
   "nav.login": "Log in",
   "nav.signup": "Start free",
   "nav.dashboard": "Dashboard",
+  "nav.logout": "Log out",
   "nav.lang": "Language",
   "footer.tagline": "Smart assistants, for real work",
 
@@ -354,6 +358,8 @@ const en: Dict = {
   "auth.giftTitle": "Your gift is ready!",
   "auth.giftBody": "50,000 gift tokens were added to your account!",
   "auth.giftClose": "Get started",
+  "auth.secure": "Your session is protected by the AgentFA server.",
+  "auth.secure": "Your session is protected by the AgentFA server.",
 
   "verify.title": "Check your email",
   "verify.body": "A verification email was sent. Please click the link in the email.",

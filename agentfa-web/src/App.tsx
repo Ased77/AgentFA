@@ -1,6 +1,11 @@
 import { RouterProvider } from "react-router-dom";
 import { router } from "./routes";
+import { SessionProvider } from "./lib/session";
 
 export default function App() {
-  return <RouterProvider router={router} />;
+  return (
+    <SessionProvider>
+      <RouterProvider router={router} />
+    </SessionProvider>
+  );
 }

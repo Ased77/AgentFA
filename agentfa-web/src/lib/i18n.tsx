@@ -359,7 +359,6 @@ const en: Dict = {
   "auth.giftBody": "50,000 gift tokens were added to your account!",
   "auth.giftClose": "Get started",
   "auth.secure": "Your session is protected by the AgentFA server.",
-  "auth.secure": "Your session is protected by the AgentFA server.",
 
   "verify.title": "Check your email",
   "verify.body": "A verification email was sent. Please click the link in the email.",

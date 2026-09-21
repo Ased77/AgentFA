@@ -2,18 +2,18 @@
 setlocal
 cd /d "%~dp0"
 
-where npm >nul 2>nul
+where bun >nul 2>nul
 if errorlevel 1 (
-  echo [ERROR] npm not found on PATH. Install Node.js first.
+  echo [ERROR] bun not found on PATH. Install Bun first: https://bun.sh
   pause
   exit /b 1
 )
 
 if not exist "node_modules" (
   echo Installing dependencies ^(first run^)...
-  call npm install --no-audit --no-fund
+  call bun install
   if errorlevel 1 (
-    echo [ERROR] npm install failed.
+    echo [ERROR] bun install failed.
     pause
     exit /b 1
   )
@@ -24,7 +24,7 @@ echo URL: http://localhost:8443/
 echo Press Ctrl+C in this window to stop.
 echo.
 
-call npm run dev
+call bun run dev
 set EXIT_CODE=%ERRORLEVEL%
 
 echo.

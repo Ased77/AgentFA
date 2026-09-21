@@ -1,0 +1,7 @@
+{
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "installCommand": "cd agentfa-web && bun install",
+  "buildCommand": "cd agentfa-web && bun run build",
+  "outputDirectory": "agentfa-web/dist",
+  "rewrites": [{ "source": "/(.*)", "destination": "/index.html" }]
+}

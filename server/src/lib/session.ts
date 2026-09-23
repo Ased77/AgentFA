@@ -5,7 +5,8 @@ import { env, isProd } from "../env.js";
 
 export type SessionUser = {
   id: string;
-  email: string;
+  /** Normalized mobile (`+989xxxxxxxxx`) — the only login identity there is. */
+  phone: string;
   role: "user" | "admin";
 };
 
@@ -48,7 +49,14 @@ export async function readSession(req: FastifyRequest): Promise<SessionUser | nu
     await prisma.session.delete({ where: { id: row.id } }).catch(() => {});
     return null;
   }
-  return { id: row.user.id, email: row.user.email, role: row.user.role };
+  // Sessions created before phone login existed identified a user by email.
+  // Those accounts have no number, so nobody can re-authenticate as them: end
+  // the session instead of handing out an identity that no longer exists.
+  if (!row.user.phone) {
+    await prisma.session.delete({ where: { id: row.id } }).catch(() => {});
+    return null;
+  }
+  return { id: row.user.id, phone: row.user.phone, role: row.user.role };
 }
 
 /** Delete the current session and clear the cookie. */

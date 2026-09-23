@@ -40,11 +40,12 @@ enum TxStatus {
 }
 
 model User {
-  id           String   @id @default(cuid())
-  email        String   @unique
-  passwordHash String
-  role         Role     @default(user)
-  createdAt    DateTime @default(now())
+  id String @id @default(cuid())
+  /// Login identity: a normalized Iranian mobile (`+989xxxxxxxxx`). Null only on
+  /// rows that predate phone login; they claim their number on first SMS login.
+  phone     String?  @unique
+  role      Role     @default(user)
+  createdAt DateTime @default(now())
 
   wallet       Wallet?
   entitlements Entitlement[]
@@ -79,6 +80,24 @@ model Entitlement {
 
   @@unique([userId, agentId])
   @@index([userId])
+}
+
+/// One SMS login challenge.
+///
+/// The code is stored hashed (never in the clear) and is single-use: `consumedAt`
+/// is set the moment it is accepted, so a replayed code resolves to no row and
+/// the attempt cap lives on `attempts` instead of an in-memory counter.
+model LoginCode {
+  id         String    @id @default(cuid())
+  phone      String
+  codeHash   String
+  attempts   Int       @default(0)
+  expiresAt  DateTime
+  consumedAt DateTime?
+  createdAt  DateTime  @default(now())
+  ip         String?
+
+  @@index([phone, createdAt])
 }
 
 /// Payment record. `orderId` is ours, `providerToken` is the gateway's handle

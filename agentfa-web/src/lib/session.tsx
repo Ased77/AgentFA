@@ -7,14 +7,16 @@ import {
   useState,
   type ReactNode,
 } from "react";
-import { api, type SessionUser } from "./account";
+import { api, type OtpStart, type SessionUser } from "./account";
 
 type SessionState = {
   user: SessionUser | null;
   loading: boolean;
   refresh: () => Promise<void>;
-  login: (email: string, password: string) => Promise<void>;
-  register: (email: string, password: string) => Promise<void>;
+  /** Ask for a login code. Creates no account on its own. */
+  startOtp: (phone: string) => Promise<OtpStart>;
+  /** Verify the code: signs in, creating the account on a first login. */
+  verifyOtp: (phone: string, code: string) => Promise<{ isNewUser: boolean }>;
   logout: () => Promise<void>;
 };
 
@@ -39,14 +41,12 @@ export function SessionProvider({ children }: { children: ReactNode }) {
     void refresh();
   }, [refresh]);
 
-  const login = useCallback(async (email: string, password: string) => {
-    const { user: me } = await api.login(email, password);
-    setUser(me);
-  }, []);
+  const startOtp = useCallback((phone: string) => api.startOtp(phone), []);
 
-  const register = useCallback(async (email: string, password: string) => {
-    const { user: me } = await api.register(email, password);
+  const verifyOtp = useCallback(async (phone: string, code: string) => {
+    const { user: me, isNewUser } = await api.verifyOtp(phone, code);
     setUser(me);
+    return { isNewUser };
   }, []);
 
   const logout = useCallback(async () => {
@@ -55,8 +55,8 @@ export function SessionProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const value = useMemo<SessionState>(
-    () => ({ user, loading, refresh, login, register, logout }),
-    [user, loading, refresh, login, register, logout],
+    () => ({ user, loading, refresh, startOtp, verifyOtp, logout }),
+    [user, loading, refresh, startOtp, verifyOtp, logout],
   );
 
   return <SessionContext.Provider value={value}>{children}</SessionContext.Provider>;

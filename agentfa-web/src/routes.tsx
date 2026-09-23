@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState, type FormEvent, type ReactNode } from "react"
+import { useEffect, useMemo, useState, type ReactNode } from "react"
 import {
   createBrowserRouter,
   Link,
@@ -7,6 +7,7 @@ import {
   useLocation,
   useNavigate,
   useParams,
+  useSearchParams,
 } from "react-router-dom"
 import {
   ArrowLeft,
@@ -123,11 +124,9 @@ function Shell() {
               </>
             ) : (
               <>
-                <Link className="hidden text-sm text-slate-300 sm:block" to="/login">
-                  {t("nav.login")}
-                </Link>
-                <Link className="btn" to="/signup">
-                  {t("nav.signup")} <ArrowLeft size={16} />
+                {/* One entry point: /login creates the account on first use. */}
+                <Link className="btn" to="/login">
+                  {t("nav.login")} <ArrowLeft size={16} />
                 </Link>
               </>
             )}
@@ -276,7 +275,7 @@ function Landing() {
               {t("landing.subtitle")}
             </p>
             <div className="mt-10 flex flex-wrap justify-center gap-3">
-              <Link className="btn btn-large" to="/signup">
+              <Link className="btn btn-large" to="/login">
                 {t("landing.cta")} <ArrowLeft size={18} />
               </Link>
               <Link className="btn btn-soft btn-large" to="/marketplace">
@@ -532,160 +531,18 @@ function Detail() {
   )
 }
 
-function Auth({ signup = false }: { signup?: boolean }) {
-  const nav = useNavigate()
-  const [gift, setGift] = useState(false)
-  const { t } = useI18n()
-  function submit(e: FormEvent) {
-    e.preventDefault()
-    localStorage.setItem("agentfa-user", t("dash.friend"))
-    if (signup) setGift(true)
-    else nav("/dashboard")
-  }
-  return (
-    <main className="auth-shell grid place-items-center p-4 sm:p-5">
-      <form
-        onSubmit={submit}
-        className="w-full max-w-md rounded-3xl border border-white/10 bg-white/[.03] p-6 shadow-2xl sm:p-7"
-      >
-        <p className="eyebrow">{t("auth.welcome")}</p>
-        <h1 className="mt-3 text-3xl font-black">
-          {signup ? t("auth.signupTitle") : t("auth.loginTitle")}
-        </h1>
-        {signup && (
-          <input className="field mt-8" placeholder={t("auth.fullName")} required />
-        )}
-        <input
-          className="field mt-4"
-          type="email"
-          placeholder={t("auth.email")}
-          required
-        />
-        <input
-          className="field mt-4"
-          type="password"
-          placeholder={t("auth.password")}
-          required
-        />
-        {signup && (
-          <input
-            className="field mt-4"
-            type="password"
-            placeholder={t("auth.confirmPassword")}
-            required
-          />
-        )}
-        <button className="btn mt-6 w-full justify-center">
-          {signup ? t("auth.signupBtn") : t("auth.loginBtn")}
-          <ArrowLeft size={17} />
-        </button>
-        <div className="my-6 h-px bg-white/10" />
-        <button
-          type="button"
-          onClick={() => {
-            localStorage.setItem("agentfa-user", t("dash.friend"))
-            nav("/dashboard")
-          }}
-          className="btn btn-soft w-full justify-center"
-        >
-          {t("auth.google")}
-        </button>
-        {!signup && (
-          <Link
-            className="mt-5 block text-center text-sm text-violet-300"
-            to="/reset-password"
-          >
-            {t("auth.forgot")}
-          </Link>
-        )}
-        <p className="mt-6 text-center text-sm text-slate-400">
-          {signup ? (
-            <>
-              {t("auth.haveAccount")}{" "}
-              <Link className="text-violet-300" to="/login">
-                {t("auth.enter")}
-              </Link>
-            </>
-          ) : (
-            <>
-              {t("auth.noAccount")}{" "}
-              <Link className="text-violet-300" to="/signup">
-                {t("auth.join")}
-              </Link>
-            </>
-          )}
-        </p>
-      </form>
-      {gift && (
-        <div className="fixed inset-0 z-50 grid place-items-center bg-slate-950/75 p-4">
-          <div className="modal-panel w-full max-w-sm rounded-3xl border border-violet-400/30 bg-[#101936] p-6 text-center sm:p-7">
-            <Sparkles className="mx-auto text-violet-300" />
-            <h2 className="mt-5 text-2xl font-black">{t("auth.giftTitle")}</h2>
-            <p className="mt-3 text-slate-300">{t("auth.giftBody")}</p>
-            <button className="btn mt-7" onClick={() => nav("/dashboard")}>
-              {t("auth.goDashboard")} <ArrowLeft size={16} />
-            </button>
-          </div>
-        </div>
-      )}
-    </main>
-  )
-}
-
-function Verify() {
-  const { t } = useI18n()
-  return (
-    <main className="auth-shell grid place-items-center p-4 sm:p-5">
-      <section className="max-w-md rounded-3xl border border-white/10 bg-white/[.03] p-8 text-center">
-        <Sparkles className="mx-auto text-violet-300" />
-        <h1 className="mt-5 text-2xl font-black">{t("verify.title")}</h1>
-        <p className="mt-4 leading-8 text-slate-400">{t("verify.body")}</p>
-        <button className="btn btn-soft mt-7">{t("verify.resend")}</button>
-      </section>
-    </main>
-  )
-}
-
-function Reset() {
-  const [done, setDone] = useState(false)
-  const { t } = useI18n()
-  return (
-    <main className="auth-shell grid place-items-center p-4 sm:p-5">
-      <form
-        onSubmit={(e) => {
-          e.preventDefault()
-          setDone(true)
-        }}
-        className="w-full max-w-md rounded-3xl border border-white/10 bg-white/[.03] p-6 sm:p-7"
-      >
-        <h1 className="text-2xl font-black">{t("reset.title")}</h1>
-        <p className="mt-3 text-sm leading-7 text-slate-400">
-          {t("reset.body")}
-        </p>
-        <input
-          className="field mt-6"
-          type="email"
-          placeholder={t("auth.email")}
-          required
-        />
-        <button className="btn mt-5 w-full justify-center">
-          {t("reset.btn")}
-        </button>
-        {done && (
-          <p className="mt-4 text-center text-sm text-emerald-300">
-            {t("reset.sent")}
-          </p>
-        )}
-      </form>
-    </main>
-  )
-}
+// Authentication lives in ./pages/Login: a mobile number plus an SMS code. The
+// email/password, email-verification and password-reset screens that used to sit
+// here are gone with the password — there is nothing left for them to do.
 
 function Dashboard() {
   const { user } = useSession()
   const { owned } = useEntitlements()
   const own = agents.filter((a) => owned.includes(a.id))
-  const { t, n } = useI18n()
+  const { t, n, phone } = useI18n()
+  // Set right after a first login, when the gift balance was just created.
+  const [params] = useSearchParams()
+  const welcome = params.get("welcome") === "1"
   const stats: [string, string, typeof Wallet][] = [
     ["۵۰٬۰۰۰", t("dash.balance"), Wallet],
     [n(own.length), t("dash.myAgents"), Bot],
@@ -695,8 +552,13 @@ function Dashboard() {
     <main className="section">
       <p className="eyebrow">{t("dash.eyebrow")}</p>
       <h1 className="page-title wrap-anywhere">
-        {t("dash.hello", { name: user?.email || t("dash.friend") })}
+        {t("dash.hello", { name: user?.phone ? phone(user.phone) : t("dash.friend") })}
       </h1>
+      {welcome && (
+        <p className="mt-6 rounded-2xl border border-emerald-400/25 bg-emerald-500/10 p-4 text-sm text-emerald-100">
+          {t("auth.welcomeGift")}
+        </p>
+      )}
       <div className="mt-9 grid gap-4 md:grid-cols-3">
         {stats.map(([value, label, Icon]) => (
           <div className="stat" key={label}>
@@ -780,9 +642,12 @@ export const router = createBrowserRouter([
       { path: "pricing", Component: Pricing },
       { path: "admin", Component: () => <RequireAdmin><Admin /></RequireAdmin> },
       { path: "login", Component: Login },
-      { path: "signup", Component: () => <Login signup /> },
-      { path: "verify", Component: Verify },
-      { path: "reset-password", Component: Reset },
+      // Sign up and log in are the same flow: an unknown number gets an account
+      // the moment its first code is verified.
+      { path: "signup", Component: Login },
+      // Kept as redirects so old links and bookmarks keep working.
+      { path: "verify", Component: () => <Navigate to="/login" replace /> },
+      { path: "reset-password", Component: () => <Navigate to="/login" replace /> },
       { path: "*", Component: () => <Navigate to="/" /> },
     ],
   },

@@ -1,26 +1,35 @@
 import { prisma } from "./db.js";
-import { hashPassword } from "./lib/password.js";
+import { formatPhone, normalizePhone } from "./lib/phone.js";
 
+/**
+ * Create (or promote) the admin account.
+ *
+ * There is no password to set: the admin signs in with an SMS code like every
+ * other user, so the only thing this seed needs is the number. Run it after
+ * `npm run deploy` and set `SEED_ADMIN_PHONE` to a real handset — the code is
+ * delivered through whatever SMS provider the deployment has configured.
+ */
 async function main() {
-  const email = process.env.SEED_ADMIN_EMAIL ?? "admin@agentfa.local";
-  const password = process.env.SEED_ADMIN_PASSWORD ?? "change-me-now";
+  const input = process.env.SEED_ADMIN_PHONE ?? "09120000000";
+  const normalized = normalizePhone(input);
+  if (!normalized.ok) {
+    throw new Error(`SEED_ADMIN_PHONE is not an Iranian mobile number: ${input}`);
+  }
+  const { phone } = normalized;
 
-  const existing = await prisma.user.findUnique({ where: { email } });
+  const existing = await prisma.user.findUnique({ where: { phone } });
   if (existing) {
-    console.log(`admin already exists: ${email}`);
+    if (existing.role !== "admin") {
+      await prisma.user.update({ where: { id: existing.id }, data: { role: "admin" } });
+      console.log(`promoted ${formatPhone(phone)} to admin`);
+      return;
+    }
+    console.log(`admin already exists: ${formatPhone(phone)}`);
     return;
   }
 
-  await prisma.user.create({
-    data: {
-      email,
-      passwordHash: await hashPassword(password),
-      role: "admin",
-      wallet: { create: {} },
-    },
-  });
-
-  console.log(`created admin ${email} — change the password after first login`);
+  await prisma.user.create({ data: { phone, role: "admin", wallet: { create: {} } } });
+  console.log(`created admin ${formatPhone(phone)} — sign in with an SMS code`);
 }
 
 main()

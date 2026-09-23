@@ -33,7 +33,7 @@ npm install                     # runs `prisma generate` via postinstall
 npm run migrate                 # prisma migrate dev (creates/applies migrations)
 cd ../agentfa-web && bun run export:server-content && cd ../server
 npm run seed:content            # upserts agents, divisions and personas
-npm run seed                    # optional: creates an admin user
+npm run seed                    # optional: promotes SEED_ADMIN_PHONE to admin
 
 # 5. Run
 npm run dev                     # tsx watch --env-file=.env src/index.ts
@@ -42,6 +42,11 @@ curl http://localhost:8787/api/health
 
 `GET /api/health` reports `{ db: "ok", redis: "ok" | "skipped" }`. Redis is
 optional: when `REDIS_URL` is unset the rate limiter uses Postgres counters.
+
+Logging in locally needs no SMS account: with `SMS_PROVIDER=none` the code is
+printed in the server log and shown on the login page, so any Iranian mobile
+number signs you in. Promote it with `SEED_ADMIN_PHONE=<number> npm run seed` if
+you need `/admin`.
 
 ## Environment
 
@@ -60,10 +65,70 @@ optional: when `REDIS_URL` is unset the rate limiter uses Postgres counters.
 | `ZARINPAL_MERCHANT_ID`, `ZARINPAL_SANDBOX`, `ZARINPAL_BASE_URL` | for zarinpal | Merchant id; sandbox host; override host (point at a stub in tests). |
 | `STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET`, `STRIPE_CURRENCY`, `STRIPE_BASE_URL` | for stripe | API key, webhook signing secret, currency, API host. |
 | `PAYMENT_TERMINAL_ID` | no | Second merchant credential for PSPs that need one; unused by Zarinpal v4. |
-| `SEED_ADMIN_EMAIL`, `SEED_ADMIN_PASSWORD` | no | Credentials used by `npm run seed`. |
+| `SMS_PROVIDER` | production | `none` (development) \| `kavenegar`. With `none` in production, login answers 503 rather than pretending to send. |
+| `KAVENEGAR_API_KEY`, `KAVENEGAR_SENDER`, `KAVENEGAR_TEMPLATE`, `KAVENEGAR_BASE_URL` | for kavenegar | API key, sender number, registered verification template, host override (tests). |
+| `OTP_TTL_SECONDS`, `OTP_MAX_ATTEMPTS`, `OTP_RESEND_SECONDS` | no | Code lifetime (120s), wrong guesses per code (5), minimum gap between codes (30s). |
+| `OTP_SECRET` | no | Pepper for hashed codes; falls back to `PROVIDER_KEY_SECRET`. |
+| `SEED_ADMIN_PHONE` | no | Mobile number `npm run seed` promotes to admin (default `09120000000`). |
 
 Variables that are defined but empty are treated as unset (`""` → default), so
 Vercel placeholders never break validation.
+
+## Authentication
+
+Login is a **mobile number and an SMS code**. There is no password to forget,
+reset or leak, and no separate signup: `POST /api/auth/otp/verify` creates the
+account when the number is new, so a first-time visitor and a returning user walk
+the identical path (`/login` and `/signup` render the same page).
+
+```
+POST /api/auth/otp/start   { phone }        → { phone, expiresInSeconds, resendInSeconds }
+POST /api/auth/otp/verify  { phone, code }  → { user, isNewUser } + session cookie
+POST /api/auth/logout, GET /api/auth/me
+```
+
+Numbers are normalized to E.164 (`+989121234567`) by `src/lib/phone.ts`, which
+also reads Persian and Arabic-Indic digits, so `۰۹۱۲ ۱۲۳ ۴۵۶۷`, `0912-123-4567`
+and `+98 912 123 4567` are one account rather than three. Landlines and short
+numbers are rejected before any SMS is sent.
+
+What is stored and checked:
+
+- **Hashed codes.** `LoginCode.codeHash` is HMAC-SHA256 over `phone:code`, keyed
+  by `OTP_SECRET` (falling back to `PROVIDER_KEY_SECRET`) and bound to the
+  number, so a leaked row cannot be replayed elsewhere and six digits are never
+  stored recoverably.
+- **One live code per number.** Requesting a new one retires the previous, and a
+  verified code is marked consumed before the session exists — replaying it is a
+  `code_expired` rejection, not a second login.
+- **Bounded guessing.** Five wrong attempts burn the code, comparison is
+  constant-time, and both endpoints are rate limited per number *and* per IP
+  (Postgres fixed-window counters, so it works on serverless). Asking again
+  inside `OTP_RESEND_SECONDS`, or more than six times an hour, is a 429.
+- **No account enumeration.** `otp/start` reveals nothing: a number that has
+  never been seen gets a code like any other, and nothing is created until that
+  code is verified.
+- **A failed send is not a pending login.** If the provider rejects the message,
+  the code row is deleted and the request fails with 502 `sms_failed`.
+
+Sessions are unchanged: an opaque token in an httpOnly cookie, stored hashed in
+`Session`, resolved per request by `src/lib/session.ts`. Sessions issued before
+phone login existed (they identified a user by email) are dropped on first use,
+since those rows have no number left to authenticate with.
+
+### SMS providers
+
+`src/sms/types.ts` is the contract (`send`), `kavenegar.ts` implements it and
+`index.ts` selects one from `SMS_PROVIDER` — the same shape as the payment
+gateways, so another provider is one file plus a registry entry. Kavenegar is
+called in whichever of its two modes is configured: `verify/lookup.json` with a
+registered template (preferred: the provider owns the wording, only the code is
+substituted) or `sms/send.json` with plain text.
+
+In development with `SMS_PROVIDER=none` the code is written to the server log
+**and** returned as `devCode`, so the flow is usable without SMS credit. Neither
+happens in production: that path requires a real provider, and login answers 503
+`sms_not_configured` without one.
 
 ## Payments
 
@@ -211,18 +276,27 @@ connections are released before the function is suspended.
 | `npm test` | Vitest (unit tests, no database required). |
 | `npm run migrate` / `npm run deploy` | `prisma migrate dev` / `prisma migrate deploy`. |
 | `npm run seed:content` | Upserts the catalog from `content/seed.json`. |
-| `npm run seed` | Creates the admin user. |
+| `npm run seed` | Promotes `SEED_ADMIN_PHONE` to admin (creates the row if needed). |
 | `npm run build` / `npm run build:vercel` | Plain `tsc` build / full Vercel build step. |
 | `npm run smoke` | End-to-end smoke test (needs the containers and a seeded database). |
 
 ### Smoke test
 
 `npm run smoke` boots the API through the real Vercel entry point
-(`api/index.ts` → `server/dist`, so run `npm run build` first), points the
-provider config at a fake OpenAI-compatible SSE endpoint and then drives:
-health → catalog → register → wallet → purchase → settlement → persona gate →
-streamed chat with a wallet debit.
+(`api/index.ts` → `server/dist`, so run `npm run build` first), points the LLM,
+payment and SMS integrations at fake local servers, and then drives:
+health → catalog → SMS login → wallet → purchase → settlement → persona gate →
+streamed chat with a wallet debit → top-up through the gateway → verified
+callback and replay protection → code replay, resend cooldown, attempt cap and
+provider failure.
 
-It writes a throwaway user and provider config to the configured database and
-removes them again when it finishes, so run it against a local database rather
-than production.
+The SMS stub is a Kavenegar-shaped server, so the login checks exercise the real
+adapter: the code is read out of the request the provider would have received.
+
+It writes throwaway users, login codes and provider config to the configured
+database and removes them again when it finishes, so run it against a local
+database rather than production.
+
+Without SMS credit the login flow is still testable by hand — leave
+`SMS_PROVIDER=none`: the API logs the code and returns it as `devCode`, and the
+login page shows it in a development notice.

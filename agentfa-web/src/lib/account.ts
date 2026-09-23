@@ -35,7 +35,16 @@ async function request<T>(path: string, init?: RequestInit): Promise<T> {
   return (await res.json()) as T;
 }
 
-export type SessionUser = { id: string; email: string; role: "user" | "admin" };
+/** The signed-in user. A mobile number is the only identity there is. */
+export type SessionUser = { id: string; phone: string; role: "user" | "admin" };
+
+/** What `otp/start` answers with. `devCode` only ever appears in development. */
+export type OtpStart = {
+  phone: string;
+  expiresInSeconds: number;
+  resendInSeconds: number;
+  devCode?: string;
+};
 
 /**
  * Send the browser to the payment gateway the API handed back.
@@ -75,16 +84,18 @@ export type PublicProvider = {
 };
 
 export const api = {
-  register: (email: string, password: string) =>
-    request<{ user: SessionUser }>("/api/auth/register", {
+  /** Ask for a login code. Creates nothing: the account appears on verify. */
+  startOtp: (phone: string) =>
+    request<OtpStart>("/api/auth/otp/start", {
       method: "POST",
-      body: JSON.stringify({ email, password }),
+      body: JSON.stringify({ phone }),
     }),
 
-  login: (email: string, password: string) =>
-    request<{ user: SessionUser }>("/api/auth/login", {
+  /** Verify the code: signs in, and creates the account on a first login. */
+  verifyOtp: (phone: string, code: string) =>
+    request<{ user: SessionUser; isNewUser: boolean }>("/api/auth/otp/verify", {
       method: "POST",
-      body: JSON.stringify({ email, password }),
+      body: JSON.stringify({ phone, code }),
     }),
 
   logout: () => request<{ ok: true }>("/api/auth/logout", { method: "POST" }),

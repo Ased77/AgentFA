@@ -1,62 +1,77 @@
 import type { FastifyInstance } from "fastify";
 import { z } from "zod";
+import { consumeChallenge, requirePhone, startChallenge, verificationError } from "../auth/otp.js";
 import { prisma } from "../db.js";
-import { badRequest, conflict, unauthorized } from "../lib/errors.js";
-import { enforceLimit } from "../lib/limiter.js";
-import { hashPassword, verifyPassword } from "../lib/password.js";
+import { badRequest } from "../lib/errors.js";
 import { endSession, readSession, startSession } from "../lib/session.js";
 
-const credentials = z.object({
-  email: z.string().email().max(200),
-  password: z.string().min(8).max(200),
+/**
+ * Authentication is a phone number and an SMS code — there is no password to
+ * forget, reset or leak, and `otp/verify` is the single place a session is born.
+ *
+ * `/otp/start` and `/otp/verify` replace the old `/register` and `/login`. A new
+ * number and a known number take the same path, so the API never reveals whether
+ * an account exists and a code request for a stranger's number changes nothing.
+ */
+
+const phoneInput = z.object({ phone: z.string().min(1).max(32) });
+const codeInput = z.object({
+  phone: z.string().min(1).max(32),
+  code: z.string().min(1).max(12),
 });
 
 export async function authRoutes(app: FastifyInstance): Promise<void> {
-  app.post(
-    "/register",
-    async (req, reply) => {
-      const parsed = credentials.safeParse(req.body);
-      if (!parsed.success) throw badRequest("invalid_credentials", parsed.error.issues);
-      const { email, password } = parsed.data;
-      await enforceLimit(`auth:register:${req.ip}`, [{ windowSeconds: 900, max: 10 }]);
+  /**
+   * Ask for a login code. Creates no user: the account appears when a code is
+   * verified, which keeps this endpoint safe to expose to anyone.
+   */
+  app.post("/otp/start", async (req, reply) => {
+    const parsed = phoneInput.safeParse(req.body);
+    if (!parsed.success) throw badRequest("phone_required", parsed.error.issues);
+    const phone = requirePhone(parsed.data.phone);
 
-      const exists = await prisma.user.findUnique({ where: { email } });
-      if (exists) throw conflict("email_taken");
+    const challenge = await startChallenge({
+      phone,
+      ip: req.ip,
+      log: (line) => req.log.warn({ phone, msg: line }),
+    });
 
-      const user = await prisma.user.create({
-        data: {
-          email,
-          passwordHash: await hashPassword(password),
-          wallet: { create: {} },
-        },
-      });
+    if (challenge.devCode) {
+      // Development only, never production: with no provider configured the code
+      // is echoed so the flow is usable without SMS credit.
+      req.log.warn({ phone, msg: "returning devCode because SMS_PROVIDER=none" });
+    }
 
-      await startSession(reply, user.id);
-      return reply.status(201).send({
-        user: { id: user.id, email: user.email, role: user.role },
-      });
-    },
-  );
+    return reply.send({
+      phone: challenge.phone,
+      expiresInSeconds: challenge.expiresInSeconds,
+      resendInSeconds: challenge.resendInSeconds,
+      ...(challenge.devCode ? { devCode: challenge.devCode } : {}),
+    });
+  });
 
-  app.post(
-    "/login",
-    async (req, reply) => {
-      const parsed = credentials.safeParse(req.body);
-      if (!parsed.success) throw badRequest("invalid_credentials", parsed.error.issues);
-      const { email, password } = parsed.data;
-      await enforceLimit(`auth:login:ip:${req.ip}`, [{ windowSeconds: 900, max: 20 }]);
-      await enforceLimit(`auth:login:email:${email.toLowerCase()}`, [
-        { windowSeconds: 900, max: 10 },
-      ]);
+  /** Verify the code: creates the account on first login and starts the session. */
+  app.post("/otp/verify", async (req, reply) => {
+    const parsed = codeInput.safeParse(req.body);
+    if (!parsed.success) throw badRequest("code_required", parsed.error.issues);
+    const phone = requirePhone(parsed.data.phone);
 
-      const user = await prisma.user.findUnique({ where: { email } });
-      if (!user) throw unauthorized("bad_login");
-      if (!(await verifyPassword(user.passwordHash, password))) throw unauthorized("bad_login");
+    const outcome = await consumeChallenge({
+      phone,
+      code: parsed.data.code,
+      ip: req.ip,
+      log: (line) => req.log.warn({ phone, msg: line }),
+    });
+    if (!outcome.ok) throw verificationError(outcome.reason);
 
-      await startSession(reply, user.id);
-      return reply.send({ user: { id: user.id, email: user.email, role: user.role } });
-    },
-  );
+    const user = await prisma.user.findUnique({ where: { id: outcome.userId } });
+    await startSession(reply, outcome.userId);
+
+    return reply.send({
+      user: { id: outcome.userId, phone: user?.phone ?? phone, role: user?.role ?? "user" },
+      isNewUser: outcome.isNewUser,
+    });
+  });
 
   app.post("/logout", async (req, reply) => {
     await endSession(req, reply);

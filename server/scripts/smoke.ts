@@ -6,14 +6,16 @@
 //
 // It boots the API through the actual Vercel entry point (api/index.ts, which
 // imports the compiled server/dist) when that build exists, points the LLM
-// provider and the payment gateway at fake local endpoints, and then drives:
+// provider, the payment gateway and the SMS gateway at fake local endpoints,
+// and then drives:
 //
-//   health → catalog (from Postgres) → register → wallet → purchase → settlement
-//   → persona gate → streamed chat with a wallet debit
+//   health → catalog (from Postgres) → SMS login → wallet → purchase
+//   → settlement → persona gate → streamed chat with a wallet debit
 //   → top-up through the gateway → verified callback → idempotent replay
+//   → code replay, resend cooldown, attempt cap and provider failure
 //
-// Everything this run creates (users, transactions, provider config) is removed
-// again at the end, so it is safe to run repeatedly.
+// Everything this run creates (users, login codes, transactions, provider
+// config) is removed again at the end, so it is safe to run repeatedly.
 import { once } from "node:events";
 import { existsSync } from "node:fs";
 import { createServer, type IncomingMessage, type Server, type ServerResponse } from "node:http";
@@ -30,6 +32,18 @@ const TOP_UP_TOKENS = 100_000;
 const TOP_UP_TOMAN = 50000;
 const TOP_UP_RIAL = TOP_UP_TOMAN * 10;
 const GATEWAY_REF = "REF123456789";
+
+/**
+ * A fresh client IP per run. The app trusts `X-Forwarded-For`, and the OTP
+ * endpoints are rate limited per IP, so without this a few runs inside an hour
+ * would start failing on the limiter rather than on the code under test.
+ */
+const SMOKE_IP = `10.${Math.floor(Math.random() * 250)}.${Math.floor(Math.random() * 250)}.${Math.floor(Math.random() * 250)}`;
+
+/** A valid, unique Iranian mobile per run: `9` + nine digits. */
+function phoneFor(seed: number): string {
+  return `+98912${String(seed).slice(-7).padStart(7, "0")}`;
+}
 
 type Handler = (req: IncomingMessage, res: ServerResponse) => void | Promise<void>;
 
@@ -112,6 +126,36 @@ function fakeGateway(state: GatewayState): Server {
   });
 }
 
+type SmsState = {
+  receptor: string | null;
+  template: string | null;
+  text: string | null;
+  code: string | null;
+  /** Set to make the next send fail, exercising the error path. */
+  failNext: boolean;
+};
+
+/**
+ * Minimal Kavenegar stand-in: `verify/lookup.json` is a GET whose `token` is the
+ * login code, and the reply is the same envelope the real API sends.
+ */
+function fakeSms(state: SmsState): Server {
+  return createServer((req, res) => {
+    const params = new URL(req.url ?? "/", "http://127.0.0.1").searchParams;
+    state.receptor = params.get("receptor");
+    state.template = params.get("template");
+    state.text = params.get("message");
+    state.code = params.get("token") ?? (params.get("message")?.match(/\d{6}/)?.[0] ?? null);
+
+    res.writeHead(200, { "Content-Type": "application/json" });
+    if (state.failNext) {
+      state.failNext = false;
+      return res.end(JSON.stringify({ return: { status: 424, message: "insufficient credit" } }));
+    }
+    res.end(JSON.stringify({ return: { status: 200, message: "ok" }, entries: [{ messageid: 987654 }] }));
+  });
+}
+
 /** Boot through the real Vercel entry when it is built, otherwise from source. */
 async function loadHandler(): Promise<Handler> {
   const entry = resolve(serverRoot, "..", "api", "index.ts");
@@ -143,6 +187,10 @@ async function main(): Promise<void> {
   const gateway = fakeGateway(gatewayState);
   const gatewayPort = await listen(gateway);
 
+  const smsState: SmsState = { receptor: null, template: null, text: null, code: null, failNext: false };
+  const sms = fakeSms(smsState);
+  const smsPort = await listen(sms);
+
   // The handler is loaded after the environment below, so it is deliberately
   // kept in a mutable reference the server reads per request.
   let handler: Handler | null = null;
@@ -161,16 +209,20 @@ async function main(): Promise<void> {
   const apiPort = await listen(api);
   const base = `http://127.0.0.1:${apiPort}`;
 
-  // Payment configuration has to exist before anything reads the environment.
+  // Gateway configuration has to exist before anything reads the environment.
   process.env.PAYMENT_PROVIDER = "zarinpal";
   process.env.ZARINPAL_MERCHANT_ID = "smoke-merchant-id";
   process.env.ZARINPAL_BASE_URL = `http://127.0.0.1:${gatewayPort}`;
+  process.env.SMS_PROVIDER = "kavenegar";
+  process.env.KAVENEGAR_API_KEY = "smoke-api-key";
+  process.env.KAVENEGAR_TEMPLATE = "agentfa-login";
+  process.env.KAVENEGAR_BASE_URL = `http://127.0.0.1:${smsPort}`;
+  process.env.OTP_RESEND_SECONDS = "1";
   process.env.PUBLIC_API_URL = base;
   process.env.PUBLIC_WEB_URL = base;
 
   const { prisma: client } = await import("../src/db.js");
   prisma = client;
-  const { hashPassword } = await import("../src/lib/password.js");
   const { settleTransaction } = await import("../src/routes/payments.js");
   handler = await loadHandler();
 
@@ -184,6 +236,8 @@ async function main(): Promise<void> {
       headers: {
         ...(init.body ? { "Content-Type": "application/json" } : {}),
         ...(cookie ? { cookie } : {}),
+        // A fresh IP per run keeps the per-IP OTP limits from leaking between runs.
+        "x-forwarded-for": SMOKE_IP,
         ...(init.headers ?? {}),
       },
     });
@@ -219,22 +273,146 @@ async function main(): Promise<void> {
   check("divisions include counts", catalog.divisions.every((d) => typeof d.count === "number"));
   const agent = catalog.agents[0]!;
 
-  console.log("\nauth + wallet");
-  const email = `smoke-${Date.now()}@agentfa.test`;
-  const registered = await call("/api/auth/register", {
+  console.log("\nauth: phone + SMS code");
+  const phone = phoneFor(Date.now());
+  const typedPhone = `0${phone.slice(3)}`;
+
+  const passwordLogin = await call("/api/auth/login", {
     method: "POST",
-    body: JSON.stringify({ email, password: "supersecret1" }),
+    body: JSON.stringify({ email: "someone@example.com", password: "supersecret1" }),
   });
-  check("register returns 201", registered.status === 201, registered.body);
-  check("register sets a session cookie", cookie.includes("agentfa_session"), cookie);
+  check("password login no longer exists", passwordLogin.status === 404, passwordLogin.status);
+
+  const landline = await call("/api/auth/otp/start", {
+    method: "POST",
+    body: JSON.stringify({ phone: "02188776655" }),
+  });
+  check(
+    "a landline is refused before any SMS is sent",
+    landline.status === 400 && JSON.stringify(landline.body).includes("invalid_phone"),
+    landline.body,
+  );
+
+  const started = await call("/api/auth/otp/start", {
+    method: "POST",
+    body: JSON.stringify({ phone: typedPhone }),
+  });
+  check("otp/start accepts the number as typed (۰۹…)", started.status === 200, started.body);
+  check(
+    "the response never carries a code when a provider is configured",
+    !JSON.stringify(started.body).includes("devCode"),
+    started.body,
+  );
+  check(
+    "the provider received the number without a plus sign",
+    smsState.receptor === phone.replace("+", ""),
+    smsState.receptor,
+  );
+  check("the registered template was used", smsState.template === "agentfa-login", smsState.template);
+  check("a six-digit code was delivered", /^\d{6}$/.test(smsState.code ?? ""), smsState.code);
+
+  const resend = await call("/api/auth/otp/start", {
+    method: "POST",
+    body: JSON.stringify({ phone }),
+  });
+  check("a second code inside the cooldown is refused (429)", resend.status === 429, resend.body);
+
+  const wrong = await call("/api/auth/otp/verify", {
+    method: "POST",
+    body: JSON.stringify({ phone, code: smsState.code === "000000" ? "111111" : "000000" }),
+  });
+  check("a wrong code is rejected (401)", wrong.status === 401, wrong.body);
+  check(
+    "the rejection names the code, not the account",
+    JSON.stringify(wrong.body).includes("invalid_code"),
+    wrong.body,
+  );
+
+  const verified = await call("/api/auth/otp/verify", {
+    method: "POST",
+    body: JSON.stringify({ phone, code: smsState.code }),
+  });
+  check("the delivered code signs the user in", verified.status === 200, verified.body);
+  check(
+    "a first login is reported as a new account",
+    JSON.stringify(verified.body).includes('"isNewUser":true'),
+    verified.body,
+  );
+  check("otp/verify sets a session cookie", cookie.includes("agentfa_session"), cookie);
   const userCookie = cookie;
+
   const me = await call("/api/auth/me");
-  check("session resolves the new user", me.status === 200, me.body);
+  check(
+    "the session resolves the normalized phone",
+    me.status === 200 && JSON.stringify(me.body).includes(phone),
+    me.body,
+  );
   const walletBefore = (await call("/api/wallet")).body as unknown as { tokenBalance: number };
-  check("new wallet holds the gift balance", walletBefore.tokenBalance === 50000, walletBefore);
+  check("a new account gets the gift balance", walletBefore.tokenBalance === 50000, walletBefore);
   check(
     "unauthenticated wallet access is rejected",
     (await call("/api/wallet", { headers: { cookie: "" } })).status === 401,
+  );
+
+  const replay = await call("/api/auth/otp/verify", {
+    method: "POST",
+    body: JSON.stringify({ phone, code: smsState.code }),
+  });
+  check("a used code cannot be replayed", replay.status === 401, replay.body);
+
+  // The cooldown is a second long in this run, so waiting is enough.
+  await new Promise((resolve) => setTimeout(resolve, 1200));
+  const resendAfterCooldown = await call("/api/auth/otp/start", {
+    method: "POST",
+    body: JSON.stringify({ phone }),
+  });
+  check("asking again after the cooldown works", resendAfterCooldown.status === 200, resendAfterCooldown.body);
+
+  const returning = await call("/api/auth/otp/verify", {
+    method: "POST",
+    body: JSON.stringify({ phone, code: smsState.code }),
+  });
+  check(
+    "the same number is the same account, not a new one",
+    returning.status === 200 && JSON.stringify(returning.body).includes('"isNewUser":false'),
+    returning.body,
+  );
+  cookie = userCookie;
+
+  console.log("\nSMS: attempt cap and provider failure");
+  const burnPhone = phoneFor(Date.now() + 5_000_000);
+  await call("/api/auth/otp/start", { method: "POST", body: JSON.stringify({ phone: burnPhone }) });
+  const wrongGuess = smsState.code === "000000" ? "111111" : "000000";
+  const statuses: number[] = [];
+  for (let attempt = 0; attempt < 5; attempt += 1) {
+    const response = await call("/api/auth/otp/verify", {
+      method: "POST",
+      body: JSON.stringify({ phone: burnPhone, code: wrongGuess }),
+    });
+    statuses.push(response.status);
+  }
+  check(
+    "the first four wrong guesses are plain rejections",
+    statuses.slice(0, 4).every((status) => status === 401),
+    statuses,
+  );
+  check("the fifth wrong guess reports the cap (429)", statuses[4] === 429, statuses);
+  const burned = await call("/api/auth/otp/verify", {
+    method: "POST",
+    body: JSON.stringify({ phone: burnPhone, code: smsState.code }),
+  });
+  check("a burned code stops working even when correct", burned.status === 401, burned.body);
+
+  const failPhone = phoneFor(Date.now() + 9_000_000);
+  smsState.failNext = true;
+  const failedSend = await call("/api/auth/otp/start", {
+    method: "POST",
+    body: JSON.stringify({ phone: failPhone }),
+  });
+  check("a provider rejection surfaces as 502", failedSend.status === 502, failedSend.body);
+  check(
+    "no code is left pending after a failed send",
+    (await prisma.loginCode.count({ where: { phone: failPhone, consumedAt: null } })) === 0,
   );
 
   console.log("\nentitlement gate + purchase through the gateway");
@@ -269,20 +447,20 @@ async function main(): Promise<void> {
   check("purchases are listed as owned", JSON.stringify((await call("/api/agents/owned")).body).includes(agent.id));
 
   console.log("\nadmin provider config");
-  const adminEmail = `smoke-admin-${Date.now()}@agentfa.test`;
-  await prisma.user.create({
-    data: {
-      email: adminEmail,
-      passwordHash: await hashPassword("supersecret1"),
-      role: "admin",
-      wallet: { create: {} },
-    },
-  });
-  const adminLogin = await call("/api/auth/login", {
+  // Promotion is an operator action (npm run seed / SQL), so the row is created
+  // directly; the admin then logs in through the same SMS path as everyone else.
+  const adminPhone = phoneFor(Date.now() + 2_000_000);
+  await prisma.user.create({ data: { phone: adminPhone, role: "admin", wallet: { create: {} } } });
+  const adminStart = await call("/api/auth/otp/start", {
     method: "POST",
-    body: JSON.stringify({ email: adminEmail, password: "supersecret1" }),
+    body: JSON.stringify({ phone: adminPhone }),
   });
-  check("admin login succeeds", adminLogin.status === 200, adminLogin.body);
+  check("an admin can request a code too", adminStart.status === 200, adminStart.body);
+  const adminLogin = await call("/api/auth/otp/verify", {
+    method: "POST",
+    body: JSON.stringify({ phone: adminPhone, code: smsState.code }),
+  });
+  check("admin login succeeds with an SMS code", adminLogin.status === 200, adminLogin.body);
   const saved = await call("/api/admin/provider", {
     method: "PUT",
     body: JSON.stringify({
@@ -426,7 +604,9 @@ async function main(): Promise<void> {
 
   // Leave the database as we found it (only the rows this run created).
   await prisma.providerConfig.deleteMany({ where: { id: providerId } }).catch(() => {});
-  await prisma.user.deleteMany({ where: { email: { in: [email, adminEmail] } } }).catch(() => {});
+  const createdPhones = [phone, burnPhone, failPhone, adminPhone];
+  await prisma.loginCode.deleteMany({ where: { phone: { in: createdPhones } } }).catch(() => {});
+  await prisma.user.deleteMany({ where: { phone: { in: createdPhones } } }).catch(() => {});
 
   console.log("");
   if (failures.length > 0) {
@@ -438,9 +618,11 @@ async function main(): Promise<void> {
   api.closeAllConnections?.();
   provider.closeAllConnections?.();
   gateway.closeAllConnections?.();
+  sms.closeAllConnections?.();
   api.close();
   provider.close();
   gateway.close();
+  sms.close();
   await prisma.$disconnect().catch(() => {});
   // Sockets and the Prisma pool can keep the loop alive; every check is done.
   process.exit(failures.length > 0 ? 1 : 0);

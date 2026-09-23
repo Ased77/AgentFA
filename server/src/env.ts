@@ -57,6 +57,22 @@ const schema = z.object({
   STRIPE_WEBHOOK_SECRET: blank(z.string().optional()),
   STRIPE_CURRENCY: blank(z.string().default("usd")),
   STRIPE_BASE_URL: blank(z.string().default("https://api.stripe.com")),
+  /** SMS gateway for login codes. `none` logs the code instead of sending it. */
+  SMS_PROVIDER: blank(z.enum(["none", "kavenegar"]).default("none")),
+  KAVENEGAR_API_KEY: blank(z.string().optional()),
+  KAVENEGAR_SENDER: blank(z.string().optional()),
+  /** Verification template name; without it a plain SMS is sent instead. */
+  KAVENEGAR_TEMPLATE: blank(z.string().optional()),
+  /** Host override (tests, staging). Defaults to the Kavenegar API host. */
+  KAVENEGAR_BASE_URL: blank(z.string().optional()),
+  /** How long an SMS login code stays valid. */
+  OTP_TTL_SECONDS: blank(z.coerce.number().int().positive().default(120)),
+  /** Wrong guesses allowed for one code before it is burned. */
+  OTP_MAX_ATTEMPTS: blank(z.coerce.number().int().positive().default(5)),
+  /** Minimum seconds between two codes for the same number. */
+  OTP_RESEND_SECONDS: blank(z.coerce.number().int().positive().default(30)),
+  /** Pepper for hashed codes. Falls back to PROVIDER_KEY_SECRET when unset. */
+  OTP_SECRET: blank(z.string().min(16).optional()),
   COOKIE_SECURE: bool(false),
 });
 
@@ -92,6 +108,19 @@ export function providerKeySecret(): string {
   const value = currentEnv().PROVIDER_KEY_SECRET;
   if (!value) {
     throw new Error("PROVIDER_KEY_SECRET is required (64 hex chars, 32 bytes)");
+  }
+  return value;
+}
+
+/**
+ * Pepper for hashed login codes. Login is the one flow an attacker can reach
+ * without an account, so the code hashes are keyed with a server secret rather
+ * than stored as a plain digest of six digits (which is trivially reversible).
+ */
+export function otpSecret(): string {
+  const value = currentEnv().OTP_SECRET ?? currentEnv().PROVIDER_KEY_SECRET;
+  if (!value) {
+    throw new Error("OTP_SECRET (or PROVIDER_KEY_SECRET) is required to hash login codes");
   }
   return value;
 }

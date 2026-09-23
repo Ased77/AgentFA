@@ -11,13 +11,18 @@ export async function healthRoutes(app: FastifyInstance): Promise<void> {
     } catch {
       checks.db = "down";
     }
-    try {
-      await redis.ping();
-      checks.redis = "ok";
-    } catch {
-      checks.redis = "down";
+    if (redis) {
+      try {
+        await redis.ping();
+        checks.redis = "ok";
+      } catch {
+        checks.redis = "down";
+      }
+    } else {
+      // No Redis configured: the rate limiter runs on Postgres instead.
+      checks.redis = "skipped";
     }
-    const healthy = Object.values(checks).every((v) => v === "ok");
+    const healthy = Object.values(checks).every((v) => v === "ok" || v === "skipped");
     return reply.status(healthy ? 200 : 503).send({ status: healthy ? "ok" : "degraded", checks });
   });
 }

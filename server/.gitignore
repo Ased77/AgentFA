@@ -1,0 +1,6 @@
+# Local environment overrides
+/.env
+
+# Generated catalog seed (rebuild with:
+#   cd agentfa-web && bun run export:server-content)
+/content/

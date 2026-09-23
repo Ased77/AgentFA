@@ -2,8 +2,8 @@ import type { FastifyInstance } from "fastify";
 import { z } from "zod";
 import { prisma } from "../db.js";
 import { ownsAgent } from "../entitlements.js";
-import { forbidden, notFound, tooMany } from "../lib/errors.js";
-import { rateLimit } from "../redis.js";
+import { forbidden, notFound } from "../lib/errors.js";
+import { enforceLimit } from "../lib/limiter.js";
 import { findAgent } from "../provider/catalog.js";
 import { activeProvider, providerCoversAgent } from "../provider/config.js";
 import { loadPersona } from "../provider/persona.js";
@@ -35,7 +35,7 @@ export async function chatRoutes(app: FastifyInstance): Promise<void> {
     if (!(await ownsAgent(userId, agentId))) throw forbidden("not_owned");
 
     const [agent, config, wallet] = await Promise.all([
-      Promise.resolve(findAgent(agentId)),
+      findAgent(agentId),
       activeProvider(),
       prisma.wallet.findUnique({ where: { userId } }),
     ]);
@@ -44,14 +44,13 @@ export async function chatRoutes(app: FastifyInstance): Promise<void> {
     if (!wallet) throw notFound("wallet_missing");
     if (!providerCoversAgent(config, agentId)) throw forbidden("not_covered");
 
-    const rate = await rateLimit(`chat:${userId}`, [
+    await enforceLimit(`chat:${userId}`, [
       { windowSeconds: 60, max: 20 },
       { windowSeconds: 3600, max: 100 },
       { windowSeconds: 86400, max: 500 },
     ]);
-    if (!rate.ok) throw tooMany("rate_limited");
 
-    const persona = loadPersona(agentId);
+    const persona = await loadPersona(agentId);
     if (!persona) throw notFound("persona_not_found");
     const budget = config.meter === "tokens"
       ? { tokens: remaining(wallet, "tokens"), seconds: Number.MAX_SAFE_INTEGER }

@@ -1,5 +1,10 @@
 generator client {
   provider = "prisma-client-js"
+  // Rust-free client: the connection pool is owned by the `pg` driver adapter
+  // instead of a query-engine binary. Required for Vercel functions, where the
+  // platform-specific engine binary (rhel-openssl-3.0.x) is the usual cause of
+  // "Query Engine not found" at runtime.
+  engineType = "client"
 }
 
 datasource db {
@@ -136,4 +141,60 @@ model Session {
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([userId])
+}
+
+/// Public catalog metadata. Prices are server-owned: a purchase re-reads the
+/// price from this table and never trusts a client-supplied one.
+model Agent {
+  id              String   @id
+  slug            String   @unique
+  icon            String   @default("🤖")
+  name            String
+  category        String
+  division        String
+  divisionLabel   String
+  price           Int
+  description     String
+  longDescription String
+  features        String[]
+  prompts         String[]
+  welcome         String
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  persona     Persona?
+  divisionRef Division?  @relation(fields: [division], references: [slug], onDelete: Cascade, onUpdate: Cascade)
+
+  @@index([division])
+}
+
+/// Full, untruncated persona body. Never shipped to the browser for an agent
+/// the user does not own.
+model Persona {
+  agentId   String   @id
+  body      String
+  updatedAt DateTime @updatedAt
+
+  agent Agent @relation(fields: [agentId], references: [id], onDelete: Cascade)
+}
+
+model Division {
+  slug      String @id
+  label     String
+  labelFa   String @default("")
+  icon      String @default("")
+  color     String @default("")
+  sortOrder Int    @default(0)
+
+  agents Agent[]
+}
+
+/// Fixed-window counters for API rate limiting. Replaces the Redis sliding
+/// window, which cannot survive a serverless deployment.
+model RateLimit {
+  key         String
+  windowStart DateTime
+  count       Int      @default(0)
+
+  @@id([key, windowStart])
 }

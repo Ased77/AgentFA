@@ -1,0 +1,36 @@
+# Local development services for the AgentFA API.
+#
+# Production uses a managed Postgres (Vercel Postgres / Prisma Postgres) and does
+# not need Redis: when REDIS_URL is unset the rate limiter runs on Postgres, so
+# the API works unchanged inside a serverless function.
+services:
+  postgres:
+    image: postgres:17-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: agentfa
+      POSTGRES_PASSWORD: agentfa
+      POSTGRES_DB: agentfa
+    ports:
+      - "5432:5432"
+    volumes:
+      - agentfa-postgres:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U agentfa -d agentfa"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  redis:
+    image: redis:7-alpine
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+volumes:
+  agentfa-postgres:

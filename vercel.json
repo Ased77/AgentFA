@@ -1,7 +1,14 @@
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
-  "installCommand": "cd agentfa-web && bun install",
-  "buildCommand": "cd agentfa-web && bun run build",
+  "installCommand": "cd server && bun install && cd ../agentfa-web && bun install",
+  "buildCommand": "cd agentfa-web && bun run export:server-content && cd ../server && bun run build:vercel && cd ../agentfa-web && bun run build",
   "outputDirectory": "agentfa-web/dist",
-  "rewrites": [{ "source": "/(.*)", "destination": "/index.html" }]
+  "functions": {
+    "api/index.ts": {
+      "memory": 1024,
+      "maxDuration": 60,
+      "includeFiles": "server/dist/**"
+    }
+  },
+  "rewrites": [{ "source": "/((?!api/).*)", "destination": "/index.html" }]
 }

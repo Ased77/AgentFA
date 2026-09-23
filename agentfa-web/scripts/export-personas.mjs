@@ -1,5 +1,6 @@
-// Exports public catalog data and full private personas for the API server.
-// The web bundle must never contain private persona bodies.
+// Exports the catalog seed (public metadata + full private personas) that
+// `server/src/seed-content.ts` loads into Postgres. The web bundle must never
+// contain private persona bodies.
 import { mkdirSync, readFileSync, readdirSync, rmSync, writeFileSync } from "node:fs";
 import { dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
@@ -8,11 +9,13 @@ const here = dirname(fileURLToPath(import.meta.url));
 const webRoot = resolve(here, "..");
 const repoRoot = resolve(webRoot, "..");
 const serverContent = resolve(repoRoot, "server", "content");
-const personasDir = join(serverContent, "personas");
 
 const generated = readFileSync(join(webRoot, "src", "data", "catalog.generated.ts"), "utf8");
-const catalogMatch = /export const catalog: CatalogAgent\[\] = (\[[\s\S]*?\]);\n\nexport const divisions/.exec(generated);
-const divisionsMatch = /export const divisions: CatalogDivision\[\] = (\[[\s\S]*?\]);\n\nexport const catalogCount/.exec(generated);
+// EOL-agnostic: the generated files are checked out with CRLF on Windows.
+const catalogMatch =
+  /export const catalog: CatalogAgent\[\] = (\[[\s\S]*?\]);\r?\n\r?\nexport const divisions/.exec(generated);
+const divisionsMatch =
+  /export const divisions: CatalogDivision\[\] = (\[[\s\S]*?\]);\r?\n\r?\nexport const catalogCount/.exec(generated);
 if (!catalogMatch || !divisionsMatch) throw new Error("Could not parse generated catalog data");
 const catalog = JSON.parse(catalogMatch[1]);
 const divisions = JSON.parse(divisionsMatch[1]);
@@ -31,17 +34,25 @@ for (const division of Object.keys(JSON.parse(readFileSync(join(repoRoot, "divis
 }
 
 rmSync(serverContent, { recursive: true, force: true });
-mkdirSync(personasDir, { recursive: true });
+mkdirSync(serverContent, { recursive: true });
 
+const personas = {};
 for (const agent of catalog) {
   const persona = sourceBySlug.get(agent.slug);
   if (!persona) throw new Error(`Missing persona source for ${agent.id}`);
-  writeFileSync(join(personasDir, `${agent.id}.md`), persona, "utf8");
+  personas[agent.id] = persona;
 }
 
-const publicCatalog = {
+// One seed artifact for Postgres. The API never reads these files at runtime,
+// so the same build works locally and inside a serverless function.
+const seed = {
+  generatedAt: new Date().toISOString(),
+  divisions: divisions.map(({ count, ...division }, index) => ({ ...division, sortOrder: index })),
   agents: catalog.map(({ rating, sales, featured, color, ...agent }) => agent),
-  divisions,
+  personas,
 };
-writeFileSync(join(serverContent, "catalog.json"), JSON.stringify(publicCatalog, null, 2), "utf8");
-console.log(`Exported ${catalog.length} private personas and public catalog for the API server.`);
+writeFileSync(join(serverContent, "seed.json"), `${JSON.stringify(seed, null, 2)}\n`, "utf8");
+console.log(
+  `Exported ${seed.agents.length} agents, ${seed.divisions.length} divisions and ` +
+    `${Object.keys(personas).length} personas to server/content/seed.json`,
+);

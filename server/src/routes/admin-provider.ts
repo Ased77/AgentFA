@@ -1,6 +1,6 @@
 import type { FastifyInstance } from "fastify";
 import { prisma } from "../db.js";
-import { notFound } from "../lib/errors.js";
+import { badRequest, notFound } from "../lib/errors.js";
 import { encryptSecret } from "../provider/crypto.js";
 import { activeProvider, toPublic } from "../provider/config.js";
 import { providerInput } from "../provider/validate.js";
@@ -21,10 +21,17 @@ export async function adminProviderRoutes(app: FastifyInstance): Promise<void> {
     const input = providerInput.parse(req.body);
     const existing = await activeProvider();
 
+    // The key is only re-encrypted when the admin sends one; editing the model
+    // or the agent scope keeps the stored cipher.
+    const apiKeyCipher = input.apiKey
+      ? encryptSecret(input.apiKey)
+      : existing?.apiKeyCipher;
+    if (!apiKeyCipher) throw badRequest("api_key_required");
+
     const data = {
       label: input.label,
       baseUrl: input.baseUrl,
-      apiKeyCipher: encryptSecret(input.apiKey),
+      apiKeyCipher,
       model: input.model,
       meter: input.meter,
       tomanPer1kTokens: input.tomanPer1kTokens,

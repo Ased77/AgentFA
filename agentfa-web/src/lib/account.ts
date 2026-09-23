@@ -10,12 +10,22 @@ export class ApiError extends Error {
   }
 }
 
-const API_BASE = import.meta.env.VITE_API_BASE ?? "http://localhost:8787";
+/**
+ * Same-origin by default: the SPA and the API are served by one Vercel project,
+ * so requests go to `/api/*` on the current origin (first-party cookies, no
+ * CORS). Set VITE_API_BASE only to point a deployment at a separate API host.
+ */
+const API_BASE = import.meta.env.VITE_API_BASE ?? "";
 
 async function request<T>(path: string, init?: RequestInit): Promise<T> {
   const res = await fetch(`${API_BASE}${path}`, {
     credentials: "include",
-    headers: { "Content-Type": "application/json", ...(init?.headers ?? {}) },
+    // Only claim a JSON body when one is actually sent: endpoints like
+    // /api/agents/:id/buy take no input.
+    headers: {
+      ...(init?.body ? { "Content-Type": "application/json" } : {}),
+      ...(init?.headers ?? {}),
+    },
     ...init,
   });
   if (!res.ok) {

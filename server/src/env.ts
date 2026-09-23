@@ -6,30 +6,46 @@ const bool = (def: boolean) =>
     .optional()
     .transform((v) => (v == null ? def : /^(1|true|yes)$/i.test(v)));
 
+/** Vercel (and shells) can define a variable as an empty string; treat that as
+    "not set" so the default — or the error — applies. */
+const blank = <T extends z.ZodTypeAny>(inner: T) =>
+  z.preprocess((value) => (value === "" ? undefined : value), inner);
+
 const schema = z.object({
-  NODE_ENV: z.enum(["development", "test", "production"]).default("development"),
-  PORT: z.coerce.number().int().positive().default(8787),
-  HOST: z.string().default("0.0.0.0"),
-  DATABASE_URL: z.string().min(1, "DATABASE_URL is required"),
-  REDIS_URL: z.string().default("redis://localhost:6379"),
+  NODE_ENV: blank(z.enum(["development", "test", "production"]).default("development")),
+  // 0 is allowed: Node then picks a free port (used by tooling and tests).
+  PORT: blank(z.coerce.number().int().min(0).max(65_535).default(8787)),
+  HOST: blank(z.string().default("0.0.0.0")),
+  /** Pooled connection string used by the app at runtime. */
+  DATABASE_URL: blank(z.string().min(1, "DATABASE_URL is required")),
+  /** Direct (non-pooled) connection string, used only by `prisma migrate`. */
+  DIRECT_URL: blank(z.string().optional()),
+  /** Connections held per warm instance. Serverless platforms need this small. */
+  DB_POOL_MAX: blank(z.coerce.number().int().positive().default(4)),
+  /** Optional. Rate limiting falls back to Postgres when this is unset. */
+  REDIS_URL: blank(z.string().optional()),
+  /** Comma-separated origins. Empty (the default) means same-origin only. */
   CORS_ORIGINS: z
     .string()
-    .default("http://localhost:8443")
+    .default("")
     .transform((v) =>
       v
         .split(",")
         .map((s) => s.trim())
         .filter(Boolean),
     ),
-  PROVIDER_KEY_SECRET: z
-    .string()
-    .regex(/^[0-9a-fA-F]{64}$/, "PROVIDER_KEY_SECRET must be 64 hex chars (32 bytes)"),
-  SESSION_COOKIE: z.string().default("agentfa_session"),
-  SESSION_TTL_DAYS: z.coerce.number().int().positive().default(30),
-  PAYMENT_PROVIDER: z.enum(["none", "zarinpal", "stripe"]).default("none"),
-  ZARINPAL_MERCHANT_ID: z.string().optional(),
-  STRIPE_SECRET_KEY: z.string().optional(),
-  STRIPE_WEBHOOK_SECRET: z.string().optional(),
+  PROVIDER_KEY_SECRET: blank(
+    z
+      .string()
+      .regex(/^[0-9a-fA-F]{64}$/, "PROVIDER_KEY_SECRET must be 64 hex chars (32 bytes)")
+      .optional(),
+  ),
+  SESSION_COOKIE: blank(z.string().default("agentfa_session")),
+  SESSION_TTL_DAYS: blank(z.coerce.number().int().positive().default(30)),
+  PAYMENT_PROVIDER: blank(z.enum(["none", "zarinpal", "stripe"]).default("none")),
+  ZARINPAL_MERCHANT_ID: blank(z.string().optional()),
+  STRIPE_SECRET_KEY: blank(z.string().optional()),
+  STRIPE_WEBHOOK_SECRET: blank(z.string().optional()),
   COOKIE_SECURE: bool(false),
 });
 
@@ -46,6 +62,40 @@ function load(): Env {
   return parsed.data;
 }
 
-export const env = load();
+let cached: Env | undefined;
 
-export const isProd = env.NODE_ENV === "production";
+/**
+ * Validated lazily: importing a module must not throw just because a variable
+ * is missing (tooling, tests), and when one is missing the error names it.
+ */
+export function currentEnv(): Env {
+  return (cached ??= load());
+}
+
+/**
+ * The provider-key encryption secret. Required wherever provider keys or
+ * session cookies are handled, but not by database-only tooling (migrations,
+ * content seed, Vercel build), which is why the schema keeps it optional.
+ */
+export function providerKeySecret(): string {
+  const value = currentEnv().PROVIDER_KEY_SECRET;
+  if (!value) {
+    throw new Error("PROVIDER_KEY_SECRET is required (64 hex chars, 32 bytes)");
+  }
+  return value;
+}
+
+/** Test helper: forget the cached environment. */
+export function resetEnv(): void {
+  cached = undefined;
+}
+
+export const env: Env = new Proxy({} as Env, {
+  get: (_target, prop) => currentEnv()[prop as keyof Env],
+  has: (_target, prop) => prop in currentEnv(),
+  ownKeys: () => Reflect.ownKeys(currentEnv()),
+  getOwnPropertyDescriptor: (_target, prop) =>
+    Reflect.getOwnPropertyDescriptor(currentEnv(), prop),
+});
+
+export const isProd = (): boolean => currentEnv().NODE_ENV === "production";

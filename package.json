@@ -1,0 +1,9 @@
+{
+  "name": "agentfa",
+  "private": true,
+  "type": "module",
+  "engines": {
+    "node": ">=20"
+  },
+  "description": "Repo root. Declares ESM so the Vercel Function entry (api/index.ts) is built as a module; the real packages live in agentfa-web/ and server/."
+}

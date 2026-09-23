@@ -1,55 +1,51 @@
-import { readFileSync, existsSync } from "node:fs";
-import { join, resolve, dirname } from "node:path";
-import { fileURLToPath } from "node:url";
+import { prisma } from "../db.js";
+import {
+  AGENT_SELECT,
+  divisionCounts,
+  toCatalogDivision,
+  type CatalogAgent,
+  type CatalogFile,
+} from "./catalog-map.js";
 
-const here = dirname(fileURLToPath(import.meta.url));
-const serverRoot = resolve(here, "..", "..");
-const catalogFile = join(serverRoot, "content", "catalog.json");
+/** Warm instances reuse the catalog for a short window instead of querying it
+    on every request. `clearCatalogCache()` is available to tooling and tests. */
+const CACHE_TTL_MS = 30_000;
+let cache: { value: CatalogFile; expiresAt: number } | null = null;
 
-export type CatalogAgent = {
-  id: string;
-  slug: string;
-  icon: string;
-  name: string;
-  division: string;
-  divisionLabel: string;
-  category: string;
-  price: number;
-  description: string;
-  longDescription: string;
-  features: string[];
-  prompts: string[];
-  welcome: string;
-};
+export type { CatalogAgent, CatalogDivision, CatalogFile } from "./catalog-map.js";
 
-export type CatalogDivision = {
-  slug: string;
-  label: string;
-  labelFa: string;
-  icon: string;
-  color: string;
-  count: number;
-};
-
-type CatalogFile = {
-  agents: CatalogAgent[];
-  divisions: CatalogDivision[];
-};
-
-let cache: CatalogFile | null = null;
-
-/** Server-side source of truth for prices and agent identity. Written by
-    `agentfa-web/scripts/export-personas.mjs`. */
-export function loadCatalog(): CatalogFile {
-  if (cache) return cache;
-  if (!existsSync(catalogFile)) {
-    cache = { agents: [], divisions: [] };
-    return cache;
-  }
-  cache = JSON.parse(readFileSync(catalogFile, "utf8")) as CatalogFile;
-  return cache;
+export function clearCatalogCache(): void {
+  cache = null;
 }
 
-export function findAgent(id: string): CatalogAgent | null {
-  return loadCatalog().agents.find((a) => a.id === id) ?? null;
+/** Server-side source of truth for prices and agent identity. The data is
+    seeded into Postgres by `src/seed-content.ts`; nothing is read from disk at
+    runtime, so the same code works on a serverless platform. */
+export async function loadCatalog(): Promise<CatalogFile> {
+  if (cache && cache.expiresAt > Date.now()) return cache.value;
+
+  const [agents, divisions, grouped] = await Promise.all([
+    prisma.agent.findMany({
+      select: AGENT_SELECT,
+      orderBy: [{ division: "asc" }, { name: "asc" }],
+    }),
+    prisma.division.findMany({ orderBy: { sortOrder: "asc" } }),
+    prisma.agent.groupBy({ by: ["division"], _count: { _all: true } }),
+  ]);
+
+  const counts = divisionCounts(grouped);
+  const value: CatalogFile = {
+    agents,
+    divisions: divisions.map((row) => toCatalogDivision(row, counts.get(row.slug) ?? 0)),
+  };
+  cache = { value, expiresAt: Date.now() + CACHE_TTL_MS };
+  return value;
+}
+
+export async function findAgent(id: string): Promise<CatalogAgent | null> {
+  const { agents } = await loadCatalog();
+  const hit = agents.find((agent) => agent.id === id);
+  if (hit) return hit;
+  // Not in the cache yet (e.g. added since it was filled): read through.
+  return prisma.agent.findUnique({ where: { id }, select: AGENT_SELECT });
 }

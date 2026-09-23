@@ -2,6 +2,7 @@ import type { FastifyInstance } from "fastify";
 import { z } from "zod";
 import { prisma } from "../db.js";
 import { badRequest, conflict, unauthorized } from "../lib/errors.js";
+import { enforceLimit } from "../lib/limiter.js";
 import { hashPassword, verifyPassword } from "../lib/password.js";
 import { endSession, readSession, startSession } from "../lib/session.js";
 
@@ -13,11 +14,11 @@ const credentials = z.object({
 export async function authRoutes(app: FastifyInstance): Promise<void> {
   app.post(
     "/register",
-    { config: { rateLimit: { max: 10, timeWindow: "15 minutes" } } },
     async (req, reply) => {
       const parsed = credentials.safeParse(req.body);
       if (!parsed.success) throw badRequest("invalid_credentials", parsed.error.issues);
       const { email, password } = parsed.data;
+      await enforceLimit(`auth:register:${req.ip}`, [{ windowSeconds: 900, max: 10 }]);
 
       const exists = await prisma.user.findUnique({ where: { email } });
       if (exists) throw conflict("email_taken");
@@ -39,11 +40,14 @@ export async function authRoutes(app: FastifyInstance): Promise<void> {
 
   app.post(
     "/login",
-    { config: { rateLimit: { max: 20, timeWindow: "15 minutes" } } },
     async (req, reply) => {
       const parsed = credentials.safeParse(req.body);
       if (!parsed.success) throw badRequest("invalid_credentials", parsed.error.issues);
       const { email, password } = parsed.data;
+      await enforceLimit(`auth:login:ip:${req.ip}`, [{ windowSeconds: 900, max: 20 }]);
+      await enforceLimit(`auth:login:email:${email.toLowerCase()}`, [
+        { windowSeconds: 900, max: 10 },
+      ]);
 
       const user = await prisma.user.findUnique({ where: { email } });
       if (!user) throw unauthorized("bad_login");

@@ -37,6 +37,12 @@ export default defineConfig(({ mode }) => {
       // Set PROVIDER_PROXY_TARGET to the provider root and tick "Route through
       // the dev proxy" in Admin → AI provider. Never relied on in production.
       proxy: {
+        // Production serves the API from the same origin as the SPA; in dev the
+        // API runs separately (server/), so mirror that here.
+        '/api': {
+          target: process.env.API_PROXY_TARGET || 'http://localhost:8787',
+          changeOrigin: true,
+        },
         '/provider-proxy': {
           target: process.env.PROVIDER_PROXY_TARGET || 'https://api.openai.com',
           changeOrigin: true,

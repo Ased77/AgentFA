@@ -1,8 +1,7 @@
 import Fastify, { type FastifyInstance } from "fastify";
 import cookie from "@fastify/cookie";
 import cors from "@fastify/cors";
-import rateLimit from "@fastify/rate-limit";
-import { env, isProd } from "./env.js";
+import { env, isProd, providerKeySecret } from "./env.js";
 import { registerAuthGuard } from "./plugins/auth.js";
 import { healthRoutes } from "./routes/health.js";
 import { authRoutes } from "./routes/auth.js";
@@ -15,25 +14,36 @@ import { paymentRoutes } from "./routes/payments.js";
 
 export async function buildApp(): Promise<FastifyInstance> {
   const app = Fastify({
-    logger: isProd ? { level: "info" } : { level: "debug" },
+    logger: isProd() ? { level: "info" } : { level: "debug" },
     trustProxy: true,
     bodyLimit: 1024 * 1024,
   });
 
-  await app.register(cors, {
-    origin: env.CORS_ORIGINS,
-    credentials: true,
-  });
+  // A same-origin deployment (SPA and API in one Vercel project) needs no CORS
+  // at all. Only register it when explicit origins are configured.
+  if (env.CORS_ORIGINS.length > 0) {
+    await app.register(cors, {
+      origin: env.CORS_ORIGINS,
+      credentials: true,
+    });
+  }
 
   await app.register(cookie, {
-    secret: env.PROVIDER_KEY_SECRET,
+    secret: providerKeySecret(),
     hook: "onRequest",
   });
 
-  await app.register(rateLimit, {
-    global: false,
-    max: 200,
-    timeWindow: "1 minute",
+  // Endpoints that take no input (purchase, logout) are still called with
+  // `Content-Type: application/json` and no body. Fastify's default JSON
+  // parser rejects that combination, so treat an empty body as `{}`.
+  app.addContentTypeParser("application/json", { parseAs: "string" }, (_req, body, done) => {
+    const text = typeof body === "string" ? body.trim() : "";
+    if (!text) return done(null, {});
+    try {
+      done(null, JSON.parse(text));
+    } catch (err) {
+      done(err as Error);
+    }
   });
 
   registerAuthGuard(app);

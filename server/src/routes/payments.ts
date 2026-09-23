@@ -22,7 +22,7 @@ export async function settleTransaction(transactionId: string, providerRef: stri
     });
 
     if (row.type === "purchase") {
-      if (!row.agentId || !findAgent(row.agentId)) throw badRequest("agent_not_found");
+      if (!row.agentId || !(await findAgent(row.agentId))) throw badRequest("agent_not_found");
       await tx.entitlement.upsert({
         where: { userId_agentId: { userId: row.userId, agentId: row.agentId } },
         create: { userId: row.userId, agentId: row.agentId, pricePaid: row.amount },

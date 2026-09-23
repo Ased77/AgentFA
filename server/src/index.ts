@@ -10,7 +10,7 @@ async function main() {
     app.log.info({ signal }, "shutting down");
     await app.close();
     await prisma.$disconnect();
-    redis.disconnect();
+    redis?.disconnect();
     process.exit(0);
   };
 

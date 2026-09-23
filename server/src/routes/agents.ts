@@ -16,7 +16,7 @@ export async function agentsRoutes(app: FastifyInstance): Promise<void> {
     const { agentId } = req.params as { agentId: string };
     const userId = req.sessionUser!.id;
     if (!(await ownsAgent(userId, agentId))) throw forbidden("not_owned");
-    const persona = loadPersona(agentId);
+    const persona = await loadPersona(agentId);
     if (!persona) throw notFound("persona_not_found");
     return { agentId, persona };
   });
@@ -25,7 +25,7 @@ export async function agentsRoutes(app: FastifyInstance): Promise<void> {
       that creates an Entitlement, so editing browser storage cannot unlock it. */
   app.post("/:agentId/buy", async (req) => {
     const { agentId } = req.params as { agentId: string };
-    const agent = findAgent(agentId);
+    const agent = await findAgent(agentId);
     if (!agent) throw notFound("agent_not_found");
     const userId = req.sessionUser!.id;
     if (await ownsAgent(userId, agentId)) throw badRequest("already_owned");

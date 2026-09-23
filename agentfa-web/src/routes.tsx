@@ -24,7 +24,7 @@ import { agents, divisions, Agent } from "./data/agents"
 import { useI18n } from "./lib/i18n"
 import { useSession } from "./lib/session"
 import { useEntitlements } from "./lib/useEntitlements"
-import { api, ApiError } from "./lib/account"
+import { api, ApiError, goToGateway } from "./lib/account"
 import Admin from "./pages/Admin"
 import Chat from "./pages/Chat"
 import Login from "./pages/Login"
@@ -365,9 +365,9 @@ function Detail() {
     setNotice("")
     try {
       const { redirectUrl } = await api.buyAgent(agentId)
-      // Gateway integrations replace this with a redirect to their hosted checkout.
-      if (redirectUrl.startsWith("http")) window.location.assign(redirectUrl)
-      else setNotice(t("payment.pending"))
+      // Hand off to the gateway's hosted checkout; the agent unlocks only after
+      // the gateway's verified callback settles the transaction.
+      if (!goToGateway(redirectUrl)) setNotice(t("payment.pending"))
       await refresh()
     } catch (err) {
       setNotice(err instanceof ApiError ? err.code : "network")

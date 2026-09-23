@@ -1,6 +1,6 @@
 import { useState } from "react"
 import { Check, X } from "lucide-react"
-import { ApiError, api } from "../lib/account"
+import { ApiError, api, goToGateway } from "../lib/account"
 import { useSession } from "../lib/session"
 import { useI18n } from "../lib/i18n"
 
@@ -71,7 +71,10 @@ export default function Pricing() {
     }
     setError("")
     try {
-      await api.topUp(tokens, minutes)
+      const { redirectUrl } = await api.topUp(tokens, minutes)
+      // Leave the SPA for the gateway's hosted checkout; the purchase is only
+      // final once the gateway's callback settles it.
+      if (goToGateway(redirectUrl)) return
       setConfirm(message)
     } catch (err) {
       setError(err instanceof ApiError ? err.code : "network")

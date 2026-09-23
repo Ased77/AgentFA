@@ -1,7 +1,7 @@
 import type { FastifyInstance } from "fastify";
-import { prisma } from "../db.js";
 import { badRequest, forbidden, notFound } from "../lib/errors.js";
 import { ownedAgentIds, ownsAgent } from "../entitlements.js";
+import { startCheckout } from "../payments/checkout.js";
 import { findAgent } from "../provider/catalog.js";
 import { loadPersona } from "../provider/persona.js";
 
@@ -21,8 +21,12 @@ export async function agentsRoutes(app: FastifyInstance): Promise<void> {
     return { agentId, persona };
   });
 
-  /** Creates a pending purchase. Provider webhook verification is the only path
-      that creates an Entitlement, so editing browser storage cannot unlock it. */
+  /**
+   * Start a purchase: the price is re-read from the catalog, a pending
+   * transaction is created and the payer is sent to the gateway. Only a
+   * verified payment callback creates the entitlement, so editing browser
+   * storage cannot unlock anything.
+   */
   app.post("/:agentId/buy", async (req) => {
     const { agentId } = req.params as { agentId: string };
     const agent = await findAgent(agentId);
@@ -30,19 +34,20 @@ export async function agentsRoutes(app: FastifyInstance): Promise<void> {
     const userId = req.sessionUser!.id;
     if (await ownsAgent(userId, agentId)) throw badRequest("already_owned");
 
-    const transaction = await prisma.transaction.create({
-      data: {
-        userId,
-        type: "purchase",
-        agentId,
-        amount: agent.price,
-        provider: process.env.PAYMENT_PROVIDER ?? "none",
-      },
+    const checkout = await startCheckout({
+      userId,
+      type: "purchase",
+      agentId,
+      amount: agent.price,
+      description: `AgentFA agent purchase: ${agent.name}`,
     });
+
     return {
-      transactionId: transaction.id,
+      transactionId: checkout.transactionId,
+      orderId: checkout.orderId,
       price: agent.price,
-      redirectUrl: `/payment-required?transaction=${transaction.id}`,
+      redirectUrl: checkout.redirectUrl,
+      provider: checkout.provider,
     };
   });
 }

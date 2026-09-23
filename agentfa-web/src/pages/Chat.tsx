@@ -5,6 +5,7 @@ import { agents } from "../data/agents"
 import {
   ApiError,
   api,
+  goToGateway,
   streamAgentChat,
   type WalletSnapshot,
 } from "../lib/account"
@@ -221,7 +222,11 @@ export default function Chat() {
 
   async function topUp(tokens: number, minutes: number) {
     try {
-      await api.topUp(tokens, minutes)
+      const { redirectUrl } = await api.topUp(tokens, minutes)
+      // The balance only changes once the gateway confirms the payment; until
+      // then we send the payer to checkout and let /payment-required report the
+      // result when they come back.
+      if (goToGateway(redirectUrl)) return
       const w = await api.wallet()
       setWallet(w)
       setModal(false)

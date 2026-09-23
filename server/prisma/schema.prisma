@@ -81,20 +81,28 @@ model Entitlement {
   @@index([userId])
 }
 
+/// Payment record. `orderId` is ours, `providerToken` is the gateway's handle
+/// (authority / checkout session) and `refId` is the gateway reference shown to
+/// the payer. Both provider columns are unique, so a replayed callback settles
+/// at most once.
 model Transaction {
-  id          String   @id @default(cuid())
-  userId      String
-  type        TxType
-  status      TxStatus @default(pending)
-  tokens      Int      @default(0)
-  minutes     Int      @default(0)
-  amount      Int      @default(0)
-  currency    String   @default("IRT")
-  provider    String?
-  providerRef String?  @unique
-  agentId     String?
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  id            String    @id @default(cuid())
+  orderId       String    @unique
+  userId        String
+  type          TxType
+  status        TxStatus  @default(pending)
+  tokens        Int       @default(0)
+  minutes       Int       @default(0)
+  amount        Int       @default(0)
+  currency      String    @default("IRT")
+  provider      String?
+  providerToken String?   @unique
+  refId         String?   @unique
+  agentId       String?
+  paidAt        DateTime?
+  failureReason String?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 

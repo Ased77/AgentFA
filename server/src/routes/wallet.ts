@@ -3,6 +3,8 @@ import { z } from "zod";
 import { prisma } from "../db.js";
 import { publicWallet } from "../wallet.js";
 import { badRequest } from "../lib/errors.js";
+import { startCheckout } from "../payments/checkout.js";
+import { topUpDescription, topUpPrice } from "../payments/pricing.js";
 
 const topUpInput = z.object({
   tokens: z.coerce.number().int().min(0).max(10_000_000),
@@ -21,26 +23,29 @@ export async function walletRoutes(app: FastifyInstance): Promise<void> {
     return publicWallet(wallet);
   });
 
-  /** Creates a pending transaction. A real payment callback is the only place
-      that may credit the wallet; this route never credits a user itself. */
+  /**
+   * Start a top-up: the price is computed here, a pending transaction is
+   * created and the active gateway returns where to send the payer. This route
+   * never credits anything — only a verified callback settles a transaction.
+   */
   app.post("/topup", async (req) => {
     const input = topUpInput.safeParse(req.body);
     if (!input.success) throw badRequest("invalid_topup", input.error.issues);
-    const userId = req.sessionUser!.id;
-    const transaction = await prisma.transaction.create({
-      data: {
-        userId,
-        type: "topup",
-        tokens: input.data.tokens,
-        minutes: input.data.minutes,
-        // Pricing is server-owned. Replace these rates when a gateway is selected.
-        amount: Math.round(input.data.tokens / 2) + input.data.minutes * 500,
-        provider: process.env.PAYMENT_PROVIDER ?? "none",
-      },
+
+    const checkout = await startCheckout({
+      userId: req.sessionUser!.id,
+      type: "topup",
+      amount: topUpPrice(input.data),
+      tokens: input.data.tokens,
+      minutes: input.data.minutes,
+      description: topUpDescription(input.data),
     });
+
     return {
-      transactionId: transaction.id,
-      redirectUrl: `/payment-required?transaction=${transaction.id}`,
+      transactionId: checkout.transactionId,
+      orderId: checkout.orderId,
+      redirectUrl: checkout.redirectUrl,
+      provider: checkout.provider,
     };
   });
 }

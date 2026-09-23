@@ -43,9 +43,20 @@ const schema = z.object({
   SESSION_COOKIE: blank(z.string().default("agentfa_session")),
   SESSION_TTL_DAYS: blank(z.coerce.number().int().positive().default(30)),
   PAYMENT_PROVIDER: blank(z.enum(["none", "zarinpal", "stripe"]).default("none")),
+  /** Terminal id, for PSPs that issue one next to the merchant id. */
+  PAYMENT_TERMINAL_ID: blank(z.string().optional()),
+  /** Public URL of this API: gateway callbacks must reach it from outside. */
+  PUBLIC_API_URL: blank(z.string().default("http://localhost:8787")),
+  /** Public URL of the SPA: where the payer lands after paying. */
+  PUBLIC_WEB_URL: blank(z.string().default("http://localhost:8443")),
   ZARINPAL_MERCHANT_ID: blank(z.string().optional()),
+  ZARINPAL_SANDBOX: bool(false),
+  /** Host override (tests, staging). Defaults to the Zarinpal host. */
+  ZARINPAL_BASE_URL: blank(z.string().optional()),
   STRIPE_SECRET_KEY: blank(z.string().optional()),
   STRIPE_WEBHOOK_SECRET: blank(z.string().optional()),
+  STRIPE_CURRENCY: blank(z.string().default("usd")),
+  STRIPE_BASE_URL: blank(z.string().default("https://api.stripe.com")),
   COOKIE_SECURE: bool(false),
 });
 

@@ -37,6 +37,20 @@ async function request<T>(path: string, init?: RequestInit): Promise<T> {
 
 export type SessionUser = { id: string; email: string; role: "user" | "admin" };
 
+/**
+ * Send the browser to the payment gateway the API handed back.
+ *
+ * Returns false when `redirectUrl` is not an absolute URL (a gateway that runs
+ * in-process, or payments disabled in development), letting the caller show its
+ * "payment pending" notice instead. The transaction is already `pending` in
+ * either case; only the gateway's verified callback settles it.
+ */
+export function goToGateway(redirectUrl: string): boolean {
+  if (!redirectUrl.startsWith("http")) return false
+  window.location.assign(redirectUrl)
+  return true
+}
+
 export type WalletSnapshot = {
   plan: "free" | "basic" | "pro";
   tokenBalance: number;

@@ -36,11 +36,15 @@ export async function buildApp(): Promise<FastifyInstance> {
   // Endpoints that take no input (purchase, logout) are still called with
   // `Content-Type: application/json` and no body. Fastify's default JSON
   // parser rejects that combination, so treat an empty body as `{}`.
-  app.addContentTypeParser("application/json", { parseAs: "string" }, (_req, body, done) => {
-    const text = typeof body === "string" ? body.trim() : "";
-    if (!text) return done(null, {});
+  // The raw bytes are kept as well: payment webhooks are signed over them, and
+  // re-serialising the parsed object would invalidate every signature.
+  app.addContentTypeParser("application/json", { parseAs: "string" }, (req, body, done) => {
+    const text = typeof body === "string" ? body : "";
+    req.rawBody = text;
+    const trimmed = text.trim();
+    if (!trimmed) return done(null, {});
     try {
-      done(null, JSON.parse(text));
+      done(null, JSON.parse(trimmed));
     } catch (err) {
       done(err as Error);
     }

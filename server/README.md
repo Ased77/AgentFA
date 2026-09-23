@@ -55,11 +55,114 @@ optional: when `REDIS_URL` is unset the rate limiter uses Postgres counters.
 | `SESSION_COOKIE`, `SESSION_TTL_DAYS` | no | Session cookie name (default `agentfa_session`) and lifetime (30 days). |
 | `CORS_ORIGINS` | no | Comma-separated origins. Empty means same-origin only, which is what the Vercel deployment needs. |
 | `COOKIE_SECURE` | no | Force the `Secure` cookie flag outside production. |
-| `PAYMENT_PROVIDER`, `ZARINPAL_MERCHANT_ID`, `STRIPE_*` | no | Gateway config; `none` until a gateway is wired. |
+| `PAYMENT_PROVIDER` | no | `none` (default) \| `zarinpal` \| `stripe`. Selects the adapter. |
+| `PUBLIC_API_URL`, `PUBLIC_WEB_URL` | production | Origins the gateway calls back to and returns the payer to. Must be internet-reachable. |
+| `ZARINPAL_MERCHANT_ID`, `ZARINPAL_SANDBOX`, `ZARINPAL_BASE_URL` | for zarinpal | Merchant id; sandbox host; override host (point at a stub in tests). |
+| `STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET`, `STRIPE_CURRENCY`, `STRIPE_BASE_URL` | for stripe | API key, webhook signing secret, currency, API host. |
+| `PAYMENT_TERMINAL_ID` | no | Second merchant credential for PSPs that need one; unused by Zarinpal v4. |
 | `SEED_ADMIN_EMAIL`, `SEED_ADMIN_PASSWORD` | no | Credentials used by `npm run seed`. |
 
 Variables that are defined but empty are treated as unset (`""` → default), so
 Vercel placeholders never break validation.
+
+## Payments
+
+One interface, two adapters. `src/payments/types.ts` is the whole contract
+(`start`, `referenceFromCallback`, `verify`); `zarinpal.ts` and `stripe.ts`
+implement it, and `index.ts` picks one from `PAYMENT_PROVIDER`. Routes, the
+database and the SPA never import an adapter, so switching gateway is an env
+change and adding a third PSP is one new file plus a line in the registry.
+
+The flow, for a top-up or an agent purchase alike:
+
+1. **Start.** The route computes the amount from server-side data (the agent's
+   price in `Agent.price`, or the top-up price list) — never from the request —
+   creates a `pending` transaction with a human-readable `orderId`
+   (`AF-20260923-9F3C21A4`), and asks the gateway for a redirect. The gateway's
+   handle (`authority` / `client_secret`) is stored as `providerToken`; the
+   browser only ever receives the redirect URL and the order id.
+2. **Redirect.** The SPA sends the browser (or, for a subscription-style
+   checkout, the app) to the gateway.
+3. **Callback.** `GET /api/payments/callback/:provider` (Zarinpal) or
+   `POST .../stripe` (webhook) resolves the pending transaction from the gateway
+   handle, then **verifies with the gateway itself** — Zarinpal by re-submitting
+   the authority *and amount* to `verify.json`, Stripe by checking the
+   `Stripe-Signature` HMAC over the raw body. A `Status=OK` query parameter on
+   its own is never trusted.
+4. **Settle.** `settleTransaction` re-reads the transaction, re-checks the
+   amount and handle, and marks it `success` with the gateway `refId` in one
+   database transaction.
+5. **Return.** The payer's browser is redirected to
+   `/payment-required?transaction=…&status=ok|failed&reason=…`; the SPA polls the
+   transaction and unlocks the agent or wallet balance once it is settled.
+
+Idempotency and safety:
+
+- Replaying a callback returns `credited: false` instead of crediting twice, so
+  a retried webhook or a refreshed browser is harmless.
+- `refId` is unique across transactions and a handle that already settled
+  another order is refused (`payment_ref_reused`) — two orders cannot share one
+  payment.
+- A canceled or failed payment is stored as `failed` with a reason
+  (`payer_canceled`, `amount_mismatch`, `gateway_unreachable`, …) rather than
+  leaving a row that can never settle; a gateway request that throws marks the
+  transaction failed instead of orphaning it.
+- Personas stay gated until the transaction is settled, so a pending payment
+  never leaks content.
+
+`transactions` holds `id`, `order_id`, `amount`, `currency`, `provider`,
+`provider_token`, `ref_id`, `status`, `failure_reason`, `created_at`,
+`paid_at` and `updated_at` (`server/prisma/schema.prisma`); the gateway id
+recorded at checkout means a transaction stays auditable after a provider swap.
+
+## Testing payments
+
+No real PSP is needed for any of this — the adapters talk to a configurable base
+URL and the callback routes are ordinary HTTP.
+
+**Unit (`npm test`)** — signature verification, amount/price math and gateway
+selection, with no database:
+
+- `test/payments.test.ts` covers the Stripe webhook HMAC (valid, tampered,
+  replayed timestamp), Zarinpal `code: 100/101` acceptance, `-33
+  amount_mismatch` and `-54 invalid_authority` rejection, Toman→Rial conversion,
+  and order-id format/uniqueness.
+
+**End-to-end (`npm run smoke`)** — boots the real Vercel entry and drives a
+complete top-up against a **local stub PSP** (an HTTP server that implements
+`request.json` / `verify.json`), asserting:
+
+1. `POST /api/wallet/topup` returns a redirect and records the transaction as
+   `pending` with the gateway and currency attached.
+2. The stub received the amount in **Rial** and the merchant id.
+3. Calling the callback with `Status=OK` credits the wallet and stores the
+   `refId` and `paid_at`.
+4. The same callback a second time credits nothing (replay protection).
+5. A forged authority is refused, a `Status=NOK` callback is stored as `failed`
+   with `payer_canceled`, and one user cannot read another's transaction.
+
+```bash
+docker compose up -d          # Postgres (+ Redis) from the repo root
+cd server
+npm run migrate && npm run seed:content && npm run build
+npm run smoke                 # 45 checks
+```
+
+The smoke test writes a throwaway user and provider config to the configured
+database and deletes them afterwards, so run it locally, not against
+production.
+
+**Manual sandbox check** (Zarinpal, no money moves):
+
+```bash
+PAYMENT_PROVIDER=zarinpal ZARINPAL_MERCHANT_ID=<your id> ZARINPAL_SANDBOX=true \
+  PUBLIC_API_URL=https://<your-tunnel> PUBLIC_WEB_URL=https://<your-tunnel> npm run dev
+```
+
+Then `POST /api/wallet/topup`, open the returned `redirectUrl`, pay in the
+sandbox, and watch the callback land in the server log. `PUBLIC_API_URL` must be
+publicly reachable — the gateway has to be able to call it back, which is why
+localhost only ever works with the stub.
 
 ## Deploying to Vercel
 

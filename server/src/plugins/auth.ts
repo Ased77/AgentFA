@@ -5,6 +5,8 @@ import { forbidden, unauthorized } from "../lib/errors.js";
 declare module "fastify" {
   interface FastifyRequest {
     sessionUser?: SessionUser | null;
+    /** Unparsed request body, kept for gateway signature verification. */
+    rawBody?: string;
   }
   interface FastifyInstance {
     requireUser: (req: unknown, reply: unknown) => Promise<void>;

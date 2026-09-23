@@ -30,10 +30,10 @@ export default function Login({ signup = false }: { signup?: boolean }) {
   }
 
   return (
-    <main className="grid min-h-[calc(100vh-73px)] place-items-center p-5">
+    <main className="auth-shell grid place-items-center p-4 sm:p-5">
       <form
         onSubmit={submit}
-        className="w-full max-w-md rounded-3xl border border-white/10 bg-white/[.03] p-7 shadow-2xl"
+        className="w-full max-w-md rounded-3xl border border-white/10 bg-white/[.03] p-6 shadow-2xl sm:p-7"
       >
         <p className="eyebrow">{t("auth.welcome")}</p>
         <h1 className="mt-3 text-3xl font-black">

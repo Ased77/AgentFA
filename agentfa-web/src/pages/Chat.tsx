@@ -284,7 +284,7 @@ export default function Chat() {
     )
 
   return (
-    <main className="mx-auto flex h-[calc(100vh-73px)] max-w-7xl gap-4 p-4">
+    <main className="chat-shell mx-auto flex max-w-7xl gap-4 p-3 sm:p-4">
       <aside className="hidden w-70 shrink-0 rounded-2xl border border-white/8 bg-white/[.03] p-4 lg:block">
         <button className="btn w-full justify-center text-sm" onClick={reset}>
           {t("chat.newChat")}
@@ -301,16 +301,26 @@ export default function Chat() {
           </span>
         </div>
       </aside>
-      <section className="flex min-w-0 flex-1 flex-col rounded-2xl border border-white/8 bg-[#101936]">
-        <header className="flex items-center justify-between border-b border-white/8 px-5 py-4">
-          <div className="flex gap-3">
+      <section className="flex min-h-0 min-w-0 flex-1 flex-col rounded-2xl border border-white/8 bg-[#101936]">
+        <header className="flex items-center justify-between gap-2 border-b border-white/8 px-4 py-3 sm:px-5 sm:py-4">
+          <div className="flex min-w-0 items-center gap-3">
             <span className="text-2xl">{agent.icon}</span>
-            <div>
-              <b>{agent.name}</b>
+            <div className="min-w-0">
+              <b className="block truncate">{agent.name}</b>
               <small className="block text-emerald-400">● {t("chat.online")}</small>
             </div>
           </div>
-          <div className="flex gap-2">
+          <div className="flex shrink-0 items-center gap-2">
+            {/* The wallet sidebar is xl-only, so phones need their own way in. */}
+            <button
+              className="flex items-center gap-1 rounded-full border border-white/10 px-3 py-1.5 text-xs text-slate-200 xl:hidden"
+              onClick={() => setModal(true)}
+              title={t("chat.buyMore")}
+              aria-label={t("chat.buyMore")}
+            >
+              <Wallet size={14} />
+              {n(wallet.tokenBalance)}
+            </button>
             <button className="icon-btn" onClick={download} aria-label={t("chat.download")}>
               <Download size={18} />
             </button>
@@ -321,14 +331,14 @@ export default function Chat() {
         </header>
         {ratio < 0.2 && (
           <div
-            className={`mx-5 mt-4 rounded-xl p-3 text-sm ${
+            className={`mx-4 mt-3 rounded-xl p-3 text-sm sm:mx-5 sm:mt-4 ${
               ratio < 0.1 ? "bg-red-500/15 text-red-100" : "bg-amber-400/10 text-amber-100"
             }`}
           >
             {t(meter === "time" ? "chat.lowTime" : "chat.lowBalance")}
           </div>
         )}
-        <div className="flex-1 space-y-5 overflow-y-auto p-5">
+        <div className="min-h-0 flex-1 space-y-4 overflow-y-auto p-4 sm:space-y-5 sm:p-5">
           {messages.map((m, i) => (
             <div className={`flex ${m.role === "user" ? "justify-start" : "justify-end"}`} key={i}>
               <div
@@ -369,7 +379,7 @@ export default function Chat() {
               <Paperclip size={18} />
             </button>
             <textarea
-              className="min-h-11 flex-1 resize-none bg-transparent px-3 py-2 text-sm outline-none"
+              className="max-h-32 min-h-11 flex-1 resize-none bg-transparent px-3 py-2 text-sm outline-none"
               value={input}
               onChange={(e) => setInput(e.target.value)}
               onKeyDown={(e) => {
@@ -419,7 +429,7 @@ export default function Chat() {
       </aside>
       {modal && (
         <div className="fixed inset-0 z-50 grid place-items-center bg-slate-950/75 p-4">
-          <div className="w-full max-w-md rounded-3xl border border-white/10 bg-[#101936] p-6">
+          <div className="modal-panel w-full max-w-md rounded-3xl border border-white/10 bg-[#101936] p-5 sm:p-6">
             <button onClick={() => setModal(false)} className="float-left text-slate-400">
               <X />
             </button>

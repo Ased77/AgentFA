@@ -105,7 +105,7 @@ export default function Pricing() {
       <div className="mt-12 grid gap-5 lg:grid-cols-3">
         {plans.map((p) => (
           <article
-            className={`relative rounded-3xl border p-7 ${
+            className={`relative rounded-3xl border p-6 sm:p-7 ${
               p.featured ? "border-violet-400 bg-violet-500/10" : "border-white/10 bg-white/[.03]"
             }`}
             key={p.key}
@@ -132,7 +132,7 @@ export default function Pricing() {
             <ul className="my-8 space-y-3 text-sm text-slate-300">
               {p.featureKeys.map((f) => (
                 <li className="flex gap-2" key={f}>
-                  <Check size={17} className="text-emerald-400" />
+                  <Check size={17} className="mt-0.5 shrink-0 text-emerald-400" />
                   {t(f)}
                 </li>
               ))}
@@ -152,7 +152,7 @@ export default function Pricing() {
           </article>
         ))}
       </div>
-      <section className="mt-18">
+      <section className="mt-14 sm:mt-18">
         <div className="text-center">
           <p className="eyebrow justify-center">{t("pricing.onetime")}</p>
           <h2 className="mt-3 text-3xl font-black">{t("pricing.bundles")}</h2>
@@ -179,7 +179,7 @@ export default function Pricing() {
       </section>
       {confirm && (
         <div className="fixed inset-0 z-50 grid place-items-center bg-slate-950/75 p-4">
-          <div className="w-full max-w-sm rounded-3xl border border-violet-400/30 bg-[#101936] p-7 text-center">
+          <div className="modal-panel w-full max-w-sm rounded-3xl border border-violet-400/30 bg-[#101936] p-6 text-center sm:p-7">
             <button onClick={() => setConfirm("")} className="float-left text-slate-400">
               <X />
             </button>

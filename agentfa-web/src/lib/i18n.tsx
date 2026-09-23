@@ -17,6 +17,7 @@ const fa: Dict = {
   "nav.dashboard": "داشبورد",
   "nav.logout": "خروج",
   "nav.lang": "زبان",
+  "nav.menu": "منو",
   "footer.tagline": "دستیارهای هوشمند، برای کارهای واقعی",
 
   "common.back": "بازگشت",
@@ -286,6 +287,7 @@ const en: Dict = {
   "nav.dashboard": "Dashboard",
   "nav.logout": "Log out",
   "nav.lang": "Language",
+  "nav.menu": "Menu",
   "footer.tagline": "Smart assistants, for real work",
 
   "common.back": "Back",

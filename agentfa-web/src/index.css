@@ -6,3 +6,66 @@ html[dir="rtl"] { direction: rtl; }
 html { background:#0b1124; } body { margin:0; min-width:320px; background:#0b1124; color:#f8fafc; font-family:Vazirmatn, "Segoe UI", system-ui, sans-serif; } ::selection { background:#7c3aed; color:white; } a { transition:color .2s ease; } a:hover { color:#c4b5fd; }
 .btn { display:inline-flex; align-items:center; gap:.5rem; border-radius:.75rem; background:#7c3aed; padding:.7rem 1rem; color:#fff; font-size:.875rem; font-weight:700; box-shadow:0 8px 28px #7c3aed30; transition:transform .2s,background .2s; }.btn:hover{color:#fff;background:#8b5cf6;transform:translateY(-1px)}.btn-soft{background:#ffffff0a;box-shadow:none;border:1px solid #ffffff14}.btn-large{padding:.9rem 1.25rem}.icon-btn{display:grid;place-items:center;width:2.25rem;height:2.25rem;border-radius:.7rem;background:#ffffff0a;color:#cbd5e1;transition:.2s}.icon-btn:hover{background:#ffffff15;color:white}.section{max-width:80rem;margin:auto;padding:5.5rem 1.25rem}.section-head{display:flex;align-items:end;justify-content:space-between;margin-bottom:2rem}.section h2{font-size:1.8rem;font-weight:900}.eyebrow{display:flex;align-items:center;gap:.4rem;color:#c4b5fd;font-size:.72rem;font-weight:700;letter-spacing:.08em}.hero-orb{position:absolute;top:-12rem;right:50%;width:42rem;height:42rem;transform:translateX(50%);background:radial-gradient(circle,#6d28d955,transparent 65%);pointer-events:none}.agent-card{border:1px solid #ffffff12;background:linear-gradient(145deg,#ffffff08,#ffffff02);border-radius:1.35rem;padding:1.35rem;transition:transform .3s,border-color .3s,box-shadow .3s}.agent-card:hover{transform:translateY(-5px);border-color:#a78bfa55;box-shadow:0 25px 40px #02061745}.badge{border:1px solid #c4b5fd44;border-radius:99px;background:#8b5cf622;padding:.25rem .55rem;color:#ddd6fe;font-size:.7rem;font-weight:700}.page-title{font-size:clamp(2.5rem,6vw,4.5rem);font-weight:900;line-height:1.15}.page-title span{color:#c4b5fd}.search{display:flex;flex:1;gap:.7rem;align-items:center;border:1px solid #ffffff14;border-radius:.8rem;background:#ffffff06;padding:0 .9rem;color:#94a3b8}.search input,.field{width:100%;border:0;background:transparent;padding:.95rem 0;color:white;outline:0}.field{border:1px solid #ffffff15;border-radius:.75rem;background:#ffffff05;padding:.85rem 1rem}.select,.tab{border:1px solid #ffffff14;border-radius:.75rem;background:#101936;color:#cbd5e1;padding:.7rem .9rem;font:inherit;font-size:.875rem}.tab.active{background:#7c3aed;border-color:#7c3aed;color:#fff}.empty{margin-top:2rem;border:1px dashed #ffffff20;border-radius:1rem;padding:2.5rem;text-align:center;color:#94a3b8}.prompt{border:1px solid #ffffff14;border-radius:99px;padding:.55rem .75rem;color:#cbd5e1;font-size:.8rem}.prompt:hover{border-color:#a78bfa;color:#ddd6fe}.typing{display:flex;width:max-content;gap:.25rem;border-radius:1rem;background:#ffffff09;padding:.7rem}.typing i{width:.35rem;height:.35rem;border-radius:50%;background:#a78bfa;animation:bounce 1s infinite alternate}.typing i:nth-child(2){animation-delay:.2s}.typing i:nth-child(3){animation-delay:.4s}@keyframes bounce{to{transform:translateY(-.25rem);opacity:.4}}.stat{display:grid;grid-template-columns:auto 1fr;gap:.2rem .8rem;border:1px solid #ffffff10;border-radius:1.25rem;background:#ffffff04;padding:1.3rem}.stat svg{grid-row:span 2}.stat b{font-size:1.6rem}.stat span{color:#94a3b8;font-size:.8rem}.chart{height:11rem}.chart span{flex:1;border-radius:.4rem .4rem 0 0;background:linear-gradient(#a78bfa,#6d28d9)}
 @media(max-width:640px){.section{padding:3.5rem 1rem}.section h2{font-size:1.45rem}.hero-orb{width:30rem;height:30rem}.page-title{font-size:2.6rem}}
+
+/* ---------------------------------------------------------------------------
+   Mobile and touch layer.
+   Appended after the dense base rules above so equal-specificity overrides win
+   here without rewriting them.
+   --------------------------------------------------------------------------- */
+
+/* Code inside a chat bubble. Without this a long line widens the whole page. */
+.code-block{position:relative;margin:.6rem 0;max-width:100%;border:1px solid #ffffff14;border-radius:.9rem;background:#0b1124}
+.code-block pre{margin:0;padding:1rem .9rem;overflow-x:auto;-webkit-overflow-scrolling:touch;font-size:.8rem;line-height:1.9;direction:ltr;text-align:left}
+.code-block button{position:absolute;inset-inline-end:.5rem;top:.5rem;border:1px solid #ffffff1a;border-radius:.5rem;background:#ffffff0f;padding:.2rem .5rem;color:#cbd5e1;font-size:.7rem}
+
+/* Dialogs (top-up, plan change) are taller than a phone: let them scroll. */
+.modal-panel{max-height:calc(100vh - 2rem);max-height:calc(100dvh - 2rem);overflow-y:auto;overscroll-behavior:contain;-webkit-overflow-scrolling:touch}
+
+/* Data tables scroll on their own so the page never scrolls sideways. */
+.table-scroll{overflow-x:auto;-webkit-overflow-scrolling:touch}
+
+/* Long unbroken strings (emails, ids, keys) must wrap instead of pushing. */
+.wrap-anywhere{overflow-wrap:anywhere;word-break:break-word}
+
+/* Full-height shells use dvh so mobile browser chrome cannot clip the bottom
+   (100vh includes the address bar, which pushes the chat input off-screen). */
+.chat-shell{height:calc(100vh - 73px);height:calc(100dvh - 73px)}
+.auth-shell{min-height:calc(100vh - 73px);min-height:calc(100dvh - 73px)}
+
+/* Category chips: one swipeable row on phones, wrapped rows above. */
+.chip-row{display:flex;flex-wrap:wrap;gap:.5rem}
+
+/* Hover styling is for pointers that can actually hover; on touch the effects
+   stick to the tapped element until the next tap elsewhere. */
+@media (hover:none){
+  .agent-card:hover{transform:none;border-color:#ffffff12;box-shadow:none}
+  .btn:hover{transform:none}
+  .prompt:hover{border-color:#ffffff14;color:#cbd5e1}
+}
+
+@media(max-width:640px){
+  body{-webkit-text-size-adjust:100%}
+  .section{padding:2.75rem 1rem}
+  .section-head{flex-wrap:wrap;align-items:flex-start;gap:.6rem;margin-bottom:1.35rem}
+  .section h2{font-size:1.35rem}
+  .page-title{font-size:clamp(1.85rem,8.5vw,2.5rem);overflow-wrap:anywhere}
+  .hero-orb{width:24rem;height:24rem;top:-8rem}
+  .chart{height:8rem}
+  .chart span{border-radius:.3rem .3rem 0 0}
+  .stat{padding:1.05rem}
+  .stat b{font-size:1.35rem}
+  .agent-card{padding:1.15rem}
+  .empty{margin-top:1.25rem;padding:1.75rem 1rem;font-size:.95rem}
+  .btn{padding:.8rem 1rem}
+  .icon-btn{width:2.6rem;height:2.6rem}
+  .prompt{font-size:.75rem}
+  .chip-row{flex-wrap:nowrap;overflow-x:auto;-webkit-overflow-scrolling:touch;scroll-snap-type:x proximity;padding-bottom:.4rem}
+  .chip-row>*{flex:0 0 auto;scroll-snap-align:start}
+  /* iOS zooms any focused field whose text is under 16px. The class selectors
+     are repeated here because `.select`/`.field` outrank a bare type selector. */
+  input,select,textarea,.select,.field,.search input{font-size:1rem}
+  /* Inline links and bare buttons in content reach the 24px hit-area floor. */
+  main a[href]:not(.btn):not(.icon-btn),
+  main button:not(.btn):not(.icon-btn):not(.tab):not(.prompt){padding-block:.35rem}
+  .field{padding:.8rem .9rem}
+}

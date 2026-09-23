@@ -15,10 +15,12 @@ import {
   ChevronDown,
   Languages,
   LayoutDashboard,
+  Menu,
   MessageSquare,
   Search,
   Sparkles,
   Wallet,
+  X,
 } from "lucide-react"
 import { agents, divisions, Agent } from "./data/agents"
 import { useI18n } from "./lib/i18n"
@@ -50,6 +52,17 @@ function Shell() {
   const { pathname } = useLocation()
   const { t } = useI18n()
   const { user, logout } = useSession()
+  const [menu, setMenu] = useState(false)
+  // A menu left open across a navigation is a bug, so follow the route.
+  useEffect(() => setMenu(false), [pathname])
+  useEffect(() => {
+    if (!menu) return
+    const onKey = (event: KeyboardEvent) => {
+      if (event.key === "Escape") setMenu(false)
+    }
+    window.addEventListener("keydown", onKey)
+    return () => window.removeEventListener("keydown", onKey)
+  }, [menu])
   useEffect(() => {
     const page =
       pathname === "/"
@@ -68,15 +81,15 @@ function Shell() {
   return (
     <>
       <header className="sticky top-0 z-30 border-b border-white/8 bg-[#0b1124]/80 backdrop-blur-xl">
-        <div className="mx-auto flex h-18 max-w-7xl items-center justify-between px-5">
+        <div className="mx-auto flex h-16 max-w-7xl items-center justify-between gap-3 px-4 sm:h-18 sm:px-5">
           <Link
             to="/"
-            className="flex items-center gap-2 text-xl font-black tracking-tight"
+            className="flex min-w-0 items-center gap-2 text-lg font-black tracking-tight sm:text-xl"
           >
-            <span className="grid size-9 place-items-center rounded-xl bg-violet-500 text-white">
+            <span className="grid size-9 shrink-0 place-items-center rounded-xl bg-violet-500 text-white">
               <Bot size={20} />
             </span>
-            {t("brand.name")}
+            <span className="truncate">{t("brand.name")}</span>
           </Link>
           <nav className="hidden items-center gap-7 text-sm text-slate-300 md:flex">
             <Link to="/marketplace">{t("nav.marketplace")}</Link>
@@ -88,20 +101,29 @@ function Shell() {
               </Link>
             )}
           </nav>
-          <div className="flex items-center gap-3">
+          <div className="flex shrink-0 items-center gap-2 sm:gap-3">
             <LanguageSwitcher />
             {user ? (
               <>
-                <Link className="btn btn-soft" to="/dashboard">
-                  <LayoutDashboard size={17} /> {t("nav.dashboard")}
+                <Link
+                  className="btn btn-soft"
+                  to="/dashboard"
+                  aria-label={t("nav.dashboard")}
+                >
+                  <LayoutDashboard size={17} />{" "}
+                  <span className="hidden sm:inline">{t("nav.dashboard")}</span>
                 </Link>
-                <button className="text-sm text-slate-400" onClick={() => void logout()}>
+                {/* Logging out lives in the menu on phones, where space is short. */}
+                <button
+                  className="hidden text-sm text-slate-400 md:block"
+                  onClick={() => void logout()}
+                >
                   {t("nav.logout")}
                 </button>
               </>
             ) : (
               <>
-                <Link className="text-sm text-slate-300" to="/login">
+                <Link className="hidden text-sm text-slate-300 sm:block" to="/login">
                   {t("nav.login")}
                 </Link>
                 <Link className="btn" to="/signup">
@@ -109,8 +131,71 @@ function Shell() {
                 </Link>
               </>
             )}
+            <button
+              type="button"
+              className="icon-btn md:hidden"
+              onClick={() => setMenu((open) => !open)}
+              aria-label={t("nav.menu")}
+              aria-expanded={menu}
+              aria-controls="mobile-nav"
+            >
+              {menu ? <X size={18} /> : <Menu size={18} />}
+            </button>
           </div>
         </div>
+        {menu && (
+          <nav
+            id="mobile-nav"
+            className="grid gap-1 border-t border-white/8 px-4 pb-4 pt-3 text-sm md:hidden"
+          >
+            {[
+              { to: "/marketplace", label: t("nav.marketplace") },
+              { to: "/pricing", label: t("nav.pricing") },
+              ...(user?.role === "admin"
+                ? [{ to: "/admin", label: t("nav.admin") }]
+                : []),
+            ].map((link) => (
+              <Link
+                key={link.to}
+                to={link.to}
+                className="rounded-xl px-3 py-3 text-slate-200 transition hover:bg-white/5"
+              >
+                {link.label}
+              </Link>
+            ))}
+            <a
+              href="#how"
+              className="rounded-xl px-3 py-3 text-slate-200 transition hover:bg-white/5"
+              onClick={() => setMenu(false)}
+            >
+              {t("nav.how")}
+            </a>
+            <div className="my-2 h-px bg-white/8" />
+            {user ? (
+              <>
+                <Link
+                  to="/dashboard"
+                  className="rounded-xl px-3 py-3 text-slate-200 transition hover:bg-white/5"
+                >
+                  {t("nav.dashboard")}
+                </Link>
+                <button
+                  className="rounded-xl px-3 py-3 text-start text-slate-400 transition hover:bg-white/5"
+                  onClick={() => void logout()}
+                >
+                  {t("nav.logout")}
+                </button>
+              </>
+            ) : (
+              <Link
+                to="/login"
+                className="rounded-xl px-3 py-3 text-slate-200 transition hover:bg-white/5"
+              >
+                {t("nav.login")}
+              </Link>
+            )}
+          </nav>
+        )}
       </header>
       <Outlet />
       <footer className="border-t border-white/8 py-10 text-center text-sm text-slate-500">
@@ -177,17 +262,17 @@ function Landing() {
     <main>
       <section className="relative overflow-hidden">
         <div className="hero-orb" />
-        <div className="mx-auto grid min-h-[620px] max-w-7xl place-items-center px-5 py-24 text-center">
+        <div className="mx-auto grid max-w-7xl place-items-center px-5 py-20 text-center sm:py-24 lg:min-h-[620px]">
           <div className="max-w-4xl">
             <p className="eyebrow">
               <Sparkles size={14} /> {t("landing.eyebrow")}
             </p>
-            <h1 className="mt-7 text-5xl font-black leading-[1.2] tracking-tight md:text-7xl">
+            <h1 className="mt-6 text-[2rem] font-black leading-[1.3] tracking-tight sm:mt-7 sm:text-5xl sm:leading-[1.2] md:text-7xl">
               {t("landing.title1")}
               <br />
               <span className="text-violet-300">{t("landing.title2")}</span>
             </h1>
-            <p className="mx-auto mt-7 max-w-2xl text-lg leading-8 text-slate-300">
+            <p className="mx-auto mt-6 max-w-2xl text-base leading-8 text-slate-300 sm:mt-7 sm:text-lg">
               {t("landing.subtitle")}
             </p>
             <div className="mt-10 flex flex-wrap justify-center gap-3">
@@ -198,7 +283,7 @@ function Landing() {
                 {t("landing.seeAgents")}
               </Link>
             </div>
-            <div className="mt-14 flex flex-wrap justify-center gap-8 text-sm text-slate-400">
+            <div className="mt-10 flex flex-wrap justify-center gap-4 text-sm text-slate-400 sm:mt-14 sm:gap-8">
               <span>✓ {t("landing.noCard")}</span>
               <span>✓ {t("landing.fluent")}</span>
               <span>✓ {t("landing.oneTime")}</span>
@@ -230,9 +315,9 @@ function Landing() {
         <h2 className="mb-10">{t("landing.howTitle")}</h2>
         <div className="grid gap-px overflow-hidden rounded-3xl border border-white/8 bg-white/8 md:grid-cols-3">
           {steps.map((x) => (
-            <div className="bg-[#101936] p-8" key={x[0]}>
+            <div className="bg-[#101936] p-6 sm:p-8" key={x[0]}>
               <b className="text-4xl text-violet-400">{n(Number(x[0]))}</b>
-              <h3 className="mt-12 text-xl font-bold">{x[1]}</h3>
+              <h3 className="mt-6 text-lg font-bold sm:mt-12 sm:text-xl">{x[1]}</h3>
               <p className="mt-3 text-sm leading-6 text-slate-400">{x[2]}</p>
             </div>
           ))}
@@ -243,7 +328,7 @@ function Landing() {
         <h2 className="mb-8">{t("landing.faqTitle")}</h2>
         <div className="mx-auto max-w-3xl divide-y divide-white/8 rounded-2xl border border-white/8 bg-white/[.03]">
           {faqs.map((q) => (
-            <details className="group px-6 py-5" key={q}>
+            <details className="group px-5 py-4 sm:px-6 sm:py-5" key={q}>
               <summary className="flex cursor-pointer list-none items-center justify-between font-medium">
                 {q}
                 <ChevronDown
@@ -319,7 +404,7 @@ function Marketplace() {
           <option value="expensive">{t("market.sort.expensive")}</option>
         </select>
       </div>
-      <div className="mt-6 flex flex-wrap gap-2">
+      <div className="chip-row mt-6">
         {cats.map((c) => (
           <button
             onClick={() => setCat(c.label)}
@@ -382,13 +467,13 @@ function Detail() {
       </Link>
       <div className="mt-8 grid gap-12 lg:grid-cols-[1fr_.8fr]">
         <div>
-          <div className="flex gap-5">
-            <span className="grid size-22 place-items-center rounded-3xl bg-violet-500/15 text-5xl">
+          <div className="flex flex-wrap items-start gap-4 sm:gap-5">
+            <span className="grid size-16 shrink-0 place-items-center rounded-2xl bg-violet-500/15 text-4xl sm:size-22 sm:rounded-3xl sm:text-5xl">
               {a.icon}
             </span>
-            <div>
+            <div className="min-w-0 flex-1">
               <p className="eyebrow">{agentDivision(a)}</p>
-              <h1 className="mt-2 text-4xl font-black">{a.name}</h1>
+              <h1 className="mt-2 text-3xl font-black sm:text-4xl">{a.name}</h1>
               <p className="mt-2 text-amber-300">
                 ★ {n(a.rating)}{" "}
                 <span className="mx-2 text-slate-500">
@@ -397,14 +482,14 @@ function Detail() {
               </p>
             </div>
           </div>
-          <p className="mt-10 max-w-2xl text-lg leading-9 text-slate-300">
+          <p className="mt-8 max-w-2xl text-base leading-8 text-slate-300 sm:mt-10 sm:text-lg sm:leading-9">
             {a.longDescription}
           </p>
           <h2 className="mt-10 text-xl font-bold">{t("detail.whatItDoes")}</h2>
           <ul className="mt-5 grid gap-3 sm:grid-cols-2">
             {a.features.map((f) => (
               <li className="flex gap-2 text-slate-300" key={f}>
-                <Check size={18} className="text-emerald-400" />
+                <Check size={18} className="mt-1 shrink-0 text-emerald-400" />
                 {f}
               </li>
             ))}
@@ -422,7 +507,7 @@ function Detail() {
             ))}
           </div>
         </div>
-        <aside className="sticky top-24 h-fit rounded-3xl border border-violet-400/25 bg-violet-500/8 p-7">
+        <aside className="h-fit rounded-3xl border border-violet-400/25 bg-violet-500/8 p-6 sm:p-7 lg:sticky lg:top-24">
           <span className="badge">{t("detail.guarantee")}</span>
           <div className="mt-8 text-3xl font-black">{toman(a.price)}</div>
           <p className="mt-2 text-sm text-slate-400">{t("detail.lifetime")}</p>
@@ -458,10 +543,10 @@ function Auth({ signup = false }: { signup?: boolean }) {
     else nav("/dashboard")
   }
   return (
-    <main className="grid min-h-[calc(100vh-73px)] place-items-center p-5">
+    <main className="auth-shell grid place-items-center p-4 sm:p-5">
       <form
         onSubmit={submit}
-        className="w-full max-w-md rounded-3xl border border-white/10 bg-white/[.03] p-7 shadow-2xl"
+        className="w-full max-w-md rounded-3xl border border-white/10 bg-white/[.03] p-6 shadow-2xl sm:p-7"
       >
         <p className="eyebrow">{t("auth.welcome")}</p>
         <h1 className="mt-3 text-3xl font-black">
@@ -533,7 +618,7 @@ function Auth({ signup = false }: { signup?: boolean }) {
       </form>
       {gift && (
         <div className="fixed inset-0 z-50 grid place-items-center bg-slate-950/75 p-4">
-          <div className="w-full max-w-sm rounded-3xl border border-violet-400/30 bg-[#101936] p-7 text-center">
+          <div className="modal-panel w-full max-w-sm rounded-3xl border border-violet-400/30 bg-[#101936] p-6 text-center sm:p-7">
             <Sparkles className="mx-auto text-violet-300" />
             <h2 className="mt-5 text-2xl font-black">{t("auth.giftTitle")}</h2>
             <p className="mt-3 text-slate-300">{t("auth.giftBody")}</p>
@@ -550,7 +635,7 @@ function Auth({ signup = false }: { signup?: boolean }) {
 function Verify() {
   const { t } = useI18n()
   return (
-    <main className="grid min-h-[calc(100vh-73px)] place-items-center p-5">
+    <main className="auth-shell grid place-items-center p-4 sm:p-5">
       <section className="max-w-md rounded-3xl border border-white/10 bg-white/[.03] p-8 text-center">
         <Sparkles className="mx-auto text-violet-300" />
         <h1 className="mt-5 text-2xl font-black">{t("verify.title")}</h1>
@@ -565,13 +650,13 @@ function Reset() {
   const [done, setDone] = useState(false)
   const { t } = useI18n()
   return (
-    <main className="grid min-h-[calc(100vh-73px)] place-items-center p-5">
+    <main className="auth-shell grid place-items-center p-4 sm:p-5">
       <form
         onSubmit={(e) => {
           e.preventDefault()
           setDone(true)
         }}
-        className="w-full max-w-md rounded-3xl border border-white/10 bg-white/[.03] p-7"
+        className="w-full max-w-md rounded-3xl border border-white/10 bg-white/[.03] p-6 sm:p-7"
       >
         <h1 className="text-2xl font-black">{t("reset.title")}</h1>
         <p className="mt-3 text-sm leading-7 text-slate-400">
@@ -609,7 +694,7 @@ function Dashboard() {
   return (
     <main className="section">
       <p className="eyebrow">{t("dash.eyebrow")}</p>
-      <h1 className="page-title">
+      <h1 className="page-title wrap-anywhere">
         {t("dash.hello", { name: user?.email || t("dash.friend") })}
       </h1>
       <div className="mt-9 grid gap-4 md:grid-cols-3">

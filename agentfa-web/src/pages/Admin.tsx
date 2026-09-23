@@ -142,7 +142,7 @@ function ProviderSection() {
   if (loading) return null
 
   return (
-    <section className="mt-8 rounded-2xl border border-white/10 p-6">
+    <section className="mt-8 rounded-2xl border border-white/10 p-4 sm:p-6">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
           <h2 className="font-bold">{t("admin.provider.title")}</h2>
@@ -205,7 +205,7 @@ function ProviderSection() {
       <div className="mt-6 grid gap-4 md:grid-cols-2">
         <div className="text-sm">
           <span className="text-slate-400">{t("admin.provider.meter")}</span>
-          <div className="mt-2 flex gap-2">
+          <div className="mt-2 flex flex-wrap gap-2">
             {(["tokens", "time"] as MeterMode[]).map((mode) => (
               <button
                 key={mode}
@@ -222,7 +222,7 @@ function ProviderSection() {
             ))}
           </div>
         </div>
-        <div className="grid grid-cols-2 gap-3 text-sm">
+        <div className="grid gap-3 text-sm sm:grid-cols-2">
           <label>
             <span className="text-slate-400">{t("admin.provider.rateTokens")}</span>
             <input
@@ -338,12 +338,14 @@ export default function Admin() {
         ))}
       </div>
       <ProviderSection />
-      <section className="mt-8 overflow-x-auto rounded-2xl border border-white/10">
-        <div className="flex items-center justify-between p-5">
+      <section className="mt-8 rounded-2xl border border-white/10">
+        <div className="flex flex-wrap items-center justify-between gap-3 p-4 sm:p-5">
           <h2 className="font-bold">{t("admin.manageAgents")}</h2>
           <button className="btn text-sm">{t("admin.createAgent")}</button>
         </div>
-        <table className="w-full min-w-150 text-right text-sm">
+        {/* Only the table scrolls sideways, so the heading stays put on a phone. */}
+        <div className="table-scroll border-t border-white/10">
+          <table className="w-full min-w-[40rem] text-right text-sm">
           <thead className="border-y border-white/10 text-slate-500">
             <tr>
               <th className="p-4">{t("admin.col.agent")}</th>
@@ -369,9 +371,10 @@ export default function Admin() {
               </tr>
             ))}
           </tbody>
-        </table>
+          </table>
+        </div>
       </section>
-      <section className="mt-8 rounded-2xl border border-white/10 p-6">
+      <section className="mt-8 rounded-2xl border border-white/10 p-4 sm:p-6">
         <h2 className="font-bold">{t("admin.discountCodes")}</h2>
         <p className="mt-3 text-sm text-slate-400">{t("admin.discountBody")}</p>
         <button className="btn btn-soft mt-5">{t("admin.createCode")}</button>

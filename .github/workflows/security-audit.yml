@@ -1,0 +1,47 @@
+# Weekly dependency audit.
+#
+# Advisory by design: it reports vulnerable dependencies without blocking a
+# pull request. A transitive CVE should not stand in the way of an unrelated
+# fix; the report is a prompt to upgrade, and the schedule means a CVE disclosed
+# after the last commit is still surfaced.
+name: Security audit
+
+on:
+  schedule:
+    - cron: "0 5 * * 1"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  audit:
+    name: Dependency audit
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    # Never fail the pipeline: this job exists to inform, not to gate.
+    continue-on-error: true
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: "1.x"
+
+      - name: Audit the web dependencies
+        working-directory: agentfa-web
+        # --audit-level=high reports moderate and low findings without failing
+        # the job on them.
+        run: bun audit --audit-level=high
+
+      - name: Audit the API dependencies
+        working-directory: server
+        # npm audit needs a lockfile; without one it still audits the installed
+        # tree. This is another reason to commit server/package-lock.json.
+        run: |
+          npm install --no-audit --no-fund
+          npm audit --audit-level=high
+
+      # Optional: replace the two steps above with GitHub's Dependabot alerts
+      # once both lockfiles are committed — Dependabot opens ready-made upgrade
+      # pull requests instead of only reporting.

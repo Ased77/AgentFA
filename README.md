@@ -7,6 +7,8 @@
 [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](https://makeapullrequest.com)
 [![Sponsor](https://img.shields.io/badge/Sponsor-%E2%9D%A4-pink?logo=github)](https://github.com/sponsors/msitarzewski)
 [![Download the app](https://img.shields.io/github/v/release/msitarzewski/agency-agents-app?label=Download%20app&color=2563eb)](https://github.com/msitarzewski/agency-agents-app/releases/latest)
+[![CI/CD](https://github.com/Ased77/AgentFA/actions/workflows/ci-cd.yml/badge.svg?branch=main)](https://github.com/Ased77/AgentFA/actions/workflows/ci-cd.yml)
+[![CodeQL](https://github.com/Ased77/AgentFA/actions/workflows/codeql.yml/badge.svg?branch=main)](https://github.com/Ased77/AgentFA/actions/workflows/codeql.yml)
 
 > ### 🆕 There's an app now
 >

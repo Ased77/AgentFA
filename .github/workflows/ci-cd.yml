@@ -1,0 +1,320 @@
+# CI/CD for the AgentFA product (the API in server/, the SPA in agentfa-web/).
+#
+# The other workflows in this directory belong to the upstream agency-agents
+# content repo (agent markdown, install.sh, divisions.json). This one covers the
+# application itself.
+#
+#   CI → every pull request and every push to main.
+#   CD → main only, and only after all three CI jobs pass. The production bundle
+#        is built on the runner and shipped prebuilt, so what deploys is exactly
+#        what was tested.
+#
+# No credentials live in this file: the deploy reads VERCEL_TOKEN /
+# VERCEL_ORG_ID / VERCEL_PROJECT_ID from repository secrets, and the
+# application's own environment (DATABASE_URL, PROVIDER_KEY_SECRET, SMS_*,
+# PAYMENT_*) stays in the Vercel project, which `vercel pull` fetches for the
+# build. CI needs no secrets at all.
+name: CI/CD
+
+on:
+  # Feature branches are covered by pull_request; also triggering on their push
+  # would run the whole pipeline twice for the same commit.
+  push:
+    branches: [main]
+  pull_request:
+  # Lets a maintainer re-run the pipeline from the Actions tab.
+  workflow_dispatch:
+
+# Least privilege: no job here writes to the repository.
+permissions:
+  contents: read
+
+# One pipeline per ref. A new push to a pull request cancels the previous run
+# (feedback on a stale commit is worthless); a run on main is never cancelled,
+# so a deploy that has already started always finishes.
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: ${{ github.ref != 'refs/heads/main' }}
+
+jobs:
+  # ---------------------------------------------------------------------------
+  # API · typecheck, unit tests, compile.
+  # Needs no database: the Vitest suite is pure (server/test/setup.ts supplies a
+  # harmless environment shape).
+  # ---------------------------------------------------------------------------
+  api:
+    name: API · node ${{ matrix.node }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    strategy:
+      fail-fast: false
+      matrix:
+        # 20 is the floor declared in package.json engines; 22 is the runtime
+        # Vercel uses for functions. The same source must pass on both.
+        node: ["20", "22"]
+    defaults:
+      run:
+        working-directory: server
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node }}
+          # Caches the npm download cache. The key is the manifest because no
+          # package-lock.json is committed (see the root .gitignore).
+          cache: npm
+          cache-dependency-path: server/package.json
+
+      # npm ci is impossible without a committed lockfile; `npm install` is the
+      # only option until one is committed.
+      - name: Install dependencies
+        run: npm install --no-audit --no-fund
+
+      - name: Typecheck (src + tests)
+        run: npm run typecheck
+
+      - name: Unit tests
+        run: npm test
+
+      - name: Build
+        run: npm run build
+
+  # ---------------------------------------------------------------------------
+  # Web · install from the committed bun lockfile, format check, typecheck,
+  # production build.
+  # ---------------------------------------------------------------------------
+  web:
+    name: Web · node ${{ matrix.node }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    strategy:
+      fail-fast: false
+      matrix:
+        node: ["20", "22"]
+    defaults:
+      run:
+        working-directory: agentfa-web
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          # The format check diffs against the base commit.
+          fetch-depth: 0
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node }}
+
+      - uses: oven-sh/setup-bun@v2
+        with:
+          # Pin the exact version your team uses if you want byte-identical
+          # installs; the lockfile is the text format (`bun.lock`).
+          bun-version: "1.x"
+
+      - name: Cache bun dependencies
+        uses: actions/cache@v4
+        with:
+          path: agentfa-web/node_modules
+          key: bun-${{ runner.os }}-${{ hashFiles('agentfa-web/bun.lock') }}
+          restore-keys: bun-${{ runner.os }}-
+
+      # --frozen-lockfile fails the run if bun.lock and package.json disagree,
+      # instead of silently resolving versions production does not use.
+      - name: Install dependencies
+        run: bun install --frozen-lockfile
+
+      - name: Format check (changed files)
+        # Node-version independent, so it runs once instead of in both matrix legs.
+        if: matrix.node == '22'
+        # The tree is not oxfmt-clean yet (22 of 23 files differ), so this step
+        # blocks on the files a change touches and reports the rest as advice.
+        # Whole-tree enforcement is one `bun run format` away.
+        env:
+          # A pull request is compared against the target branch; a push to main
+          # against the commit it replaces. Both resolve to a ref that exists in
+          # this checkout (fetch-depth: 0 above).
+          BASE_REF: ${{ github.base_ref && format('origin/{0}', github.base_ref) || github.event.before }}
+        run: |
+          set -euo pipefail
+          BASE="$BASE_REF"
+          if [ -z "$BASE" ] || [ "$BASE" = "0000000000000000000000000000000000000000" ] \
+             || ! git rev-parse --verify --quiet "$BASE" >/dev/null; then
+            BASE="$(git rev-parse HEAD^ 2>/dev/null || git rev-parse HEAD)"
+            echo "::notice::comparing against $BASE"
+          fi
+          # Three dots = the merge base, so only files this change actually
+          # touches are checked. --relative keeps the paths relative to the
+          # working directory, which is what oxfmt resolves against.
+          CHANGED=$(git diff --name-only --relative --diff-filter=ACMR "$BASE...HEAD" -- '*.ts' '*.tsx')
+          if [ -n "$CHANGED" ]; then
+            echo "Checking formatting of:"
+            echo "$CHANGED"
+            bunx oxfmt --check $CHANGED
+          else
+            echo "No TypeScript files changed."
+          fi
+          # Advisory: makes drift elsewhere visible without failing this run.
+          bunx oxfmt --check . || \
+            echo "::warning::oxfmt reports formatting drift outside this change — run 'bun run format'"
+
+      - name: Typecheck
+        run: bunx tsc --noEmit
+
+      - name: Build
+        run: bun run build
+
+  # ---------------------------------------------------------------------------
+  # E2E · the whole product against a real Postgres.
+  # Boots the actual Vercel entry point (api/index.ts → server/dist) and drives
+  # health → SMS login → catalog → purchase → gateway top-up → persona gate →
+  # streamed chat + billing → replay/idempotency checks (65 assertions).
+  # ---------------------------------------------------------------------------
+  e2e:
+    name: E2E · Postgres smoke
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    services:
+      # Mirrors docker-compose.yml so local and CI behave identically. No Redis:
+      # the rate limiter falls back to Postgres counters when REDIS_URL is unset.
+      postgres:
+        image: postgres:17-alpine
+        env:
+          POSTGRES_USER: agentfa
+          POSTGRES_PASSWORD: agentfa
+          POSTGRES_DB: agentfa
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U agentfa -d agentfa"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+    env:
+      DATABASE_URL: postgresql://agentfa:agentfa@localhost:5432/agentfa?schema=public
+      DIRECT_URL: postgresql://agentfa:agentfa@localhost:5432/agentfa?schema=public
+      # A throwaway 32-byte key for this run only: it encrypts nothing that
+      # outlives the job. Real secrets live in the Vercel project, never here.
+      PROVIDER_KEY_SECRET: "0000000000000000000000000000000000000000000000000000000000000000"
+      NODE_ENV: development
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+          cache-dependency-path: server/package.json
+
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: "1.x"
+
+      - name: Install API dependencies
+        working-directory: server
+        run: npm install --no-audit --no-fund
+
+      - name: Apply migrations
+        working-directory: server
+        run: npx prisma migrate deploy
+
+      - name: Create shadow database (for the drift check)
+        # psql speaks libpq, which rejects Prisma's ?schema= parameter, so this
+        # connects to the maintenance database with a plain URL.
+        run: psql "postgresql://agentfa:agentfa@localhost:5432/postgres" -c 'CREATE DATABASE agentfa_shadow'
+
+      - name: Schema drift check
+        working-directory: server
+        # Non-zero exit means prisma/schema.prisma and the committed migrations
+        # disagree — a forgotten migration cannot merge.
+        run: |
+          npx prisma migrate diff \
+            --from-migrations prisma/migrations \
+            --to-schema-datamodel prisma/schema.prisma \
+            --shadow-database-url "postgresql://agentfa:agentfa@localhost:5432/agentfa_shadow?schema=public" \
+            --exit-code
+
+      - name: Export catalog content from the corpus
+        working-directory: agentfa-web
+        # Writes server/content/seed.json (generated, not committed).
+        run: |
+          bun install --frozen-lockfile
+          bun run export:server-content
+
+      - name: Seed catalog content
+        working-directory: server
+        run: npm run seed:content
+
+      - name: Build the API
+        working-directory: server
+        run: npm run build
+
+      - name: Smoke test
+        working-directory: server
+        run: npm run smoke
+
+  # ---------------------------------------------------------------------------
+  # Deploy · production, main only, after every CI job passed.
+  # `vercel build` runs vercel.json's buildCommand on the runner: content export
+  # → prisma generate → prisma migrate deploy → content seed → tsc → vite build.
+  # The output is then shipped prebuilt, so no build happens on Vercel's side.
+  # ---------------------------------------------------------------------------
+  deploy:
+    name: Deploy · production
+    needs: [api, web, e2e]
+    # Only main deploys: a pull request can never reach production. This covers
+    # both a push and a manual dispatch, because `needs` means the three CI jobs
+    # above still have to pass in that same run.
+    if: github.ref == 'refs/heads/main' && (github.event_name == 'push' || github.event_name == 'workflow_dispatch')
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    # Attaching the environment allows required reviewers or a branch
+    # restriction to be configured in GitHub — no YAML change needed.
+    environment:
+      name: production
+      url: ${{ steps.deploy.outputs.url }}
+    # Serialise deploys and never cancel one that already started, even if a
+    # push to another ref appears mid-flight.
+    concurrency:
+      group: deploy-production
+      cancel-in-progress: false
+    env:
+      VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+      VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
+      # The CLI reads VERCEL_TOKEN from the environment, so the token never
+      # appears in a command line or a log.
+      VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+      # Pin the CLI when you want reproducible behaviour of the build itself.
+      VERCEL_CLI: vercel@latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+
+      # vercel.json drives install and build with bun.
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: "1.x"
+
+      - name: Link project and pull production environment
+        run: npx --yes "$VERCEL_CLI" pull --yes --environment=production
+
+      - name: Build the production bundle
+        # Includes `prisma migrate deploy` through DIRECT_URL because
+        # VERCEL_ENV=production (see server/scripts/vercel-build.mjs).
+        # --yes keeps the CLI from stopping on a prompt in a non-interactive
+        # runner, where that would only look like a hang.
+        run: npx --yes "$VERCEL_CLI" build --prod --yes
+
+      - name: Deploy the prebuilt output
+        id: deploy
+        run: |
+          URL=$(npx --yes "$VERCEL_CLI" deploy --prebuilt --prod --yes --archive=tgz)
+          echo "url=$URL" >> "$GITHUB_OUTPUT"
+          {
+            echo "### Deployed to production"
+            echo ""
+            echo "- commit: \`${{ github.sha }}\`"
+            echo "- deployment: $URL"
+          } >> "$GITHUB_STEP_SUMMARY"

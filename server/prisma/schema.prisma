@@ -10,6 +10,10 @@ generator client {
 datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
+  // Migrations (and the CLI) use the direct, non-pooled connection. Set this
+  // to the Supabase "Direct connection" string; DATABASE_URL stays the pooled
+  // one (pgbouncer/Supavisor) used by the app at runtime.
+  directUrl = env("DIRECT_URL")
 }
 
 enum Role {

@@ -1,8 +1,5 @@
 # AgentFA API (`server/`)
 
-[![CI/CD](https://github.com/Ased77/AgentFA/actions/workflows/ci-cd.yml/badge.svg?branch=main)](https://github.com/Ased77/AgentFA/actions/workflows/ci-cd.yml)
-[![CodeQL](https://github.com/Ased77/AgentFA/actions/workflows/codeql.yml/badge.svg?branch=main)](https://github.com/Ased77/AgentFA/actions/workflows/codeql.yml)
-
 Fastify + Prisma API for the AgentFA storefront. **Postgres is the only
 datastore** — users, wallets, entitlements, usage, the provider config, the
 catalog and the persona bodies all live in one database. There is no SQLite
@@ -231,75 +228,6 @@ Then `POST /api/wallet/topup`, open the returned `redirectUrl`, pay in the
 sandbox, and watch the callback land in the server log. `PUBLIC_API_URL` must be
 publicly reachable — the gateway has to be able to call it back, which is why
 localhost only ever works with the stub.
-
-## CI/CD (GitHub Actions)
-
-`.github/workflows/ci-cd.yml` is the only workflow that touches the product;
-the other files in that directory lint the upstream content repo (agent
-markdown, `install.sh`, divisions).
-
-| Job | Runs | Checks |
-| --- | --- | --- |
-| `api` | every push and PR | `npm install` → `typecheck` → `vitest` → `tsc`, on Node 20 **and** 22 |
-| `web` | every push and PR | `bun install --frozen-lockfile` → format check → `tsc --noEmit` → `vite build`, on Node 20 and 22 |
-| `e2e` | every push and PR | real Postgres 17 service, `migrate deploy` → schema-drift check → content export + seed → `build` → `smoke` (65 assertions through the actual `api/index.ts` entry) |
-| `deploy` | pushes to `main`, after all three pass | `vercel pull` → `vercel build --prod` → `vercel deploy --prebuilt --prod` |
-
-Two safeguards worth knowing:
-
-- **Schema drift.** `prisma migrate diff --from-migrations … --exit-code` fails
-the pipeline if `schema.prisma` has changes that no committed migration
-contains. A forgotten migration cannot reach production.
-- **Deploy serialisation.** `deploy` uses its own `concurrency: deploy-production`
-group with `cancel-in-progress: false`, so two merges cannot interleave, and a
-half-finished deploy is never cancelled. The whole pipeline cancels *stale*
-feature-branch runs (`concurrency` at workflow level), but never a run on main.
-
-### Required secrets
-
-Configure these in **Settings → Secrets and variables → Actions** (and, for
-`deploy`, ideally on a `production` environment so they cannot be read by a
-branch build):
-
-| Secret | Where to get it |
-| --- | --- |
-| `VERCEL_TOKEN` | Vercel → Account Settings → Tokens. The CLI reads it from the environment, so it never appears in a command line or a log. |
-| `VERCEL_ORG_ID` | `.vercel/project.json` after `vercel link` |
-| `VERCEL_PROJECT_ID` | `.vercel/project.json` after `vercel link` |
-
-CI itself needs **no secrets**: the e2e job creates its own throwaway Postgres
-and a dummy `PROVIDER_KEY_SECRET` that encrypts nothing outside the job. The
-application's real values (`DATABASE_URL`, `DIRECT_URL`,
-`PROVIDER_KEY_SECRET`, `SMS_*`, `ZARINPAL_*`, `STRIPE_*`) stay in the Vercel
-project, which `vercel pull` fetches into the build.
-
-### Setup checklist
-
-1. Push this branch and open a pull request — `api`, `web` and `e2e` run with no
-   configuration at all. Add `[skip ci]` to a commit message to skip a run.
-2. Create the three secrets above (repository or `production` environment).
-3. Optional but recommended: **Settings → Environments → production** → add
-   required reviewers so a deploy to production waits for a human.
-4. Optional: enable **Security → Code scanning** so the CodeQL workflow's
-   findings appear in the Security tab (it uploads SARIF automatically).
-5. Merge to `main`; the deploy job runs and the URL is attached to the run
-   summary.
-
-### Known gaps in this pipeline
-
-- **No committed lockfile for `server/`.** `package.json` never allowed `npm ci`,
-  so the API job uses `npm install` — reproducible in practice, not guaranteed.
-  Committing `server/package-lock.json` (and removing it from `.gitignore`)
-  fixes it and pairs well with Dependabot.
-- **No linter.** There is no ESLint or oxlint anywhere in the repo, so
-  `typecheck` is the blocking static gate. Adding oxlint (the same family as the
-  existing `oxfmt`) is a deliberate follow-up rather than something this change
-  smuggles in: a new linter on an unlinted codebase fails CI on day one.
-- **`oxfmt` is not clean tree-wide** (22 of 23 web files differ), so the format
-  step blocks on the files a change touches and only *reports* the rest. Run
-  `cd agentfa-web && bun run format` once, then the whole-tree check can become
-  a hard gate.
-- **The web has no tests.** It is covered by typecheck, format and build only.
 
 ## Deploying to Vercel
 

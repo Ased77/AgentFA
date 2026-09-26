@@ -319,7 +319,7 @@ function ProviderSection() {
 }
 
 export default function Admin() {
-  const { t, n, toman } = useI18n()
+  const { t, n, toman, agentName } = useI18n()
   const stats: [string, string][] = [
     [toman(39890000), t("admin.totalSales")],
     [n(1280), t("admin.activeUsers")],
@@ -359,7 +359,7 @@ export default function Admin() {
             {agents.map((a) => (
               <tr className="border-b border-white/5" key={a.id}>
                 <td className="p-4">
-                  {a.icon} {a.name}
+                  {a.icon} {agentName(a)}
                 </td>
                 <td>{a.category}</td>
                 <td>{toman(a.price)}</td>

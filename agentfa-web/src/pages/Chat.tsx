@@ -65,7 +65,7 @@ export default function Chat() {
   const [params] = useSearchParams()
   const nav = useNavigate()
   const agent = useMemo(() => agents.find((a) => a.id === agentId), [agentId])
-  const { t, n, toman, lang } = useI18n()
+  const { t, n, toman, lang, agentName, agentPrompts, agentWelcome } = useI18n()
   const { user, loading: sessionLoading } = useSession()
   const { owns, refresh: refreshEntitlements } = useEntitlements()
 
@@ -81,8 +81,10 @@ export default function Chat() {
 
   const fresh = useMemo(
     (): Message[] =>
-      agent ? [{ role: "assistant", text: agent.welcome, time: t("chat.now") }] : [],
-    [agent, t],
+      agent
+        ? [{ role: "assistant", text: agentWelcome(agent), time: t("chat.now") }]
+        : [],
+    [agent, t, agentWelcome],
   )
   const [messages, setMessages] = useState<Message[]>(fresh)
 
@@ -306,7 +308,7 @@ export default function Chat() {
           <div className="flex min-w-0 items-center gap-3">
             <span className="text-2xl">{agent.icon}</span>
             <div className="min-w-0">
-              <b className="block truncate">{agent.name}</b>
+              <b className="block truncate">{agentName(agent)}</b>
               <small className="block text-emerald-400">● {t("chat.online")}</small>
             </div>
           </div>
@@ -357,7 +359,7 @@ export default function Chat() {
           ))}
           {messages.length === 1 && (
             <div className="flex flex-wrap gap-2">
-              {agent.prompts.map((p) => (
+              {agentPrompts(agent).map((p) => (
                 <button className="prompt" key={p} onClick={() => setInput(p)}>
                   {p}
                 </button>
@@ -402,7 +404,7 @@ export default function Chat() {
       </section>
       <aside className="hidden w-62 shrink-0 rounded-2xl border border-white/8 bg-white/[.03] p-5 xl:block">
         <span className="text-4xl">{agent.icon}</span>
-        <h2 className="mt-3 font-bold">{agent.name}</h2>
+        <h2 className="mt-3 font-bold">{agentName(agent)}</h2>
         <p className="mt-1 text-sm text-slate-500">{agent.category}</p>
         <div className="mt-8 border-y border-white/8 py-5">
           <p className="text-xs text-slate-500">{t("chat.thisChatUsage")}</p>

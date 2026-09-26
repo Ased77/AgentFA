@@ -1,5 +1,6 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useState, type ReactNode } from "react";
 import { formatPhone, localizeDigits } from "./phone";
+import { faAgents } from "../data/fa-agents";
 
 export type Lang = "fa" | "en";
 
@@ -567,11 +568,32 @@ type I18nValue = {
   /** Division label for a division record: labelFa in fa, label in en. */
   division: (d: { label: string; labelFa: string }) => string;
   /** Division label for an agent: its localized category in fa, English divisionLabel in en. */
-  agentDivision: (a: { category: string; divisionLabel: string }) => string;
+  agentDivision: (a: LocalizableAgent) => string;
   /** Localized agent-card title. */
-  agentName: (a: { name: string; category: string; divisionLabel: string }) => string;
+  agentName: (a: LocalizableAgent) => string;
   /** Localized agent-card summary. */
-  agentDescription: (a: { name: string; description: string; category: string; divisionLabel: string }) => string;
+  agentDescription: (a: LocalizableAgent) => string;
+  /** Localized detail-page blurb. */
+  agentLongDescription: (a: LocalizableAgent) => string;
+  /** Localized "what it does" bullets for the detail page. */
+  agentFeatures: (a: LocalizableAgent) => string[];
+  /** Localized starter prompts for the detail page and the chat composer. */
+  agentPrompts: (a: LocalizableAgent) => string[];
+  /** Localized chat greeting, the assistant's first message. */
+  agentWelcome: (a: LocalizableAgent) => string;
+};
+
+/** The catalog fields the agent i18n helpers read; `CatalogAgent` satisfies it. */
+export type LocalizableAgent = {
+  id: string;
+  name: string;
+  category: string;
+  divisionLabel: string;
+  description: string;
+  longDescription: string;
+  features: string[];
+  prompts: string[];
+  welcome: string;
 };
 
 const I18nContext = createContext<I18nValue | null>(null);
@@ -610,6 +632,8 @@ export function I18nProvider({ children }: { children: ReactNode }) {
   const value = useMemo<I18nValue>(() => {
     const dict = dicts[lang];
     const locale = lang === "fa" ? "fa-IR" : "en-US";
+    const faCopy = (a: LocalizableAgent) =>
+      lang === "fa" ? faAgents[a.id] : undefined;
     const t = (key: string, vars?: Record<string, string | number>) =>
       interpolate(dict[key] ?? dicts.en[key] ?? key, vars);
     return {
@@ -623,12 +647,24 @@ export function I18nProvider({ children }: { children: ReactNode }) {
       phone: (value: string) => localizeDigits(formatPhone(value), lang),
       division: (d) => (lang === "fa" ? d.labelFa : d.label),
       agentDivision: (a) => (lang === "fa" ? a.category : a.divisionLabel),
-      agentName: (a) =>
-        lang === "fa" ? `ایجنت تخصصی ${a.category}` : a.name,
-      agentDescription: (a) =>
-        lang === "fa"
-          ? `دستیار تخصصی ${a.category} برای تحلیل، برنامه‌ریزی و اجرای حرفه‌ای کارهای این حوزه.`
-          : a.description,
+      // The generated catalog is English-only, so Persian copy comes from the
+      // per-agent faAgents map. Falling back to the English catalog (rather than
+      // a generic "specialized agent in <division>" line) keeps every card
+      // distinct even for an agent that has not been translated yet.
+      agentName: (a) => faCopy(a)?.name ?? a.name,
+      agentDescription: (a) => faCopy(a)?.description ?? a.description,
+      agentLongDescription: (a) =>
+        faCopy(a)?.longDescription ?? a.longDescription,
+      agentFeatures: (a) => faCopy(a)?.features ?? a.features,
+      agentPrompts: (a) => faCopy(a)?.prompts ?? a.prompts,
+      // The catalog greeting is "سلام! من <English name> هستم. <English tagline>";
+      // rebuild it from the localized name and blurb.
+      agentWelcome: (a) => {
+        const copy = faCopy(a);
+        return copy
+          ? `سلام! من ${copy.name} هستم. ${copy.longDescription}`
+          : a.welcome;
+      },
     };
   }, [lang, setLang]);
 

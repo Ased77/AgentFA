@@ -437,7 +437,8 @@ function Detail() {
   const nav = useNavigate()
   const [notice, setNotice] = useState("")
   const [buying, setBuying] = useState(false)
-  const { t, n, toman, agentDivision } = useI18n()
+  const { t, n, toman, agentDivision, agentName, agentLongDescription, agentFeatures, agentPrompts } =
+    useI18n()
   const { user } = useSession()
   const { owns, refresh } = useEntitlements()
   if (!a) return <Navigate to="/marketplace" />
@@ -472,7 +473,7 @@ function Detail() {
             </span>
             <div className="min-w-0 flex-1">
               <p className="eyebrow">{agentDivision(a)}</p>
-              <h1 className="mt-2 text-3xl font-black sm:text-4xl">{a.name}</h1>
+              <h1 className="mt-2 text-3xl font-black sm:text-4xl">{agentName(a)}</h1>
               <p className="mt-2 text-amber-300">
                 ★ {n(a.rating)}{" "}
                 <span className="mx-2 text-slate-500">
@@ -482,11 +483,11 @@ function Detail() {
             </div>
           </div>
           <p className="mt-8 max-w-2xl text-base leading-8 text-slate-300 sm:mt-10 sm:text-lg sm:leading-9">
-            {a.longDescription}
+            {agentLongDescription(a)}
           </p>
           <h2 className="mt-10 text-xl font-bold">{t("detail.whatItDoes")}</h2>
           <ul className="mt-5 grid gap-3 sm:grid-cols-2">
-            {a.features.map((f) => (
+            {agentFeatures(a).map((f) => (
               <li className="flex gap-2 text-slate-300" key={f}>
                 <Check size={18} className="mt-1 shrink-0 text-emerald-400" />
                 {f}
@@ -495,7 +496,7 @@ function Detail() {
           </ul>
           <h2 className="mt-10 text-xl font-bold">{t("detail.startHere")}</h2>
           <div className="mt-4 flex flex-wrap gap-2">
-            {a.prompts.map((p) => (
+            {agentPrompts(a).map((p) => (
               <Link
                 to={`/chat/${a.id}?prompt=${encodeURIComponent(p)}`}
                 className="prompt"

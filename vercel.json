@@ -1,6 +1,6 @@
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
-  "installCommand": "cd server && npx --yes bun@1.4.0 install && cd ../agentfa-web && npx --yes bun@1.4.0 install",
+  "installCommand": "cd server && bun install && cd ../agentfa-web && bun install",
   "buildCommand": "cd agentfa-web && bun run export:server-content && cd ../server && bun run build:vercel && cd ../agentfa-web && bun run build",
   "outputDirectory": "agentfa-web/dist",
   "functions": {

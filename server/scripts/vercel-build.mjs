@@ -22,19 +22,6 @@ function run(label, file, args, env = process.env) {
   execFileSync(process.execPath, [file, ...args], { stdio: "inherit", cwd: serverRoot, env });
 }
 
-/** Vercel can define a variable as an empty string; treat that as "not set". */
-const envValue = (name) => {
-  const value = process.env[name]?.trim();
-  return value ? value : undefined;
-};
-
-/** Connection used by app + seed (pooled). */
-const databaseUrl = envValue("DATABASE_URL");
-/** Connection used by migrations (direct, non-pooled); falls back to the pooled one. */
-const directUrl = envValue("DIRECT_URL") ?? databaseUrl;
-/** True only for Vercel Production deployments. */
-const isProduction = process.env.VERCEL_ENV === "production";
-
 const prismaCli = local("prisma", "build", "index.js");
 const tsc = local("typescript", "bin", "tsc");
 const tsx = local("tsx", "dist", "cli.mjs");
@@ -45,44 +32,29 @@ if (!existsSync(prismaCli)) {
 
 run("prisma generate", prismaCli, ["generate"]);
 
-if (isProduction) {
+const databaseUrl = process.env.DIRECT_URL || process.env.DATABASE_URL;
+
+if (process.env.VERCEL_ENV === "production") {
   if (!databaseUrl) {
-    throw new Error(
-      "DATABASE_URL (and DIRECT_URL) are required to deploy migrations.\n" +
-        "Set them for this Vercel project under Settings > Environment Variables,\n" +
-        "scope: Production (and Preview if you want migrations there too),\n" +
-        "then redeploy.",
-    );
+    throw new Error("DIRECT_URL (or DATABASE_URL) is required to deploy migrations");
   }
-  // Migrations must not run through a connection pooler: statements may be
-  // sent through different pooler sessions and transactional DDL guarantees
-  // are lost. Point DATABASE_URL (and DIRECT_URL, for the schema's directUrl)
-  // at the direct connection for this one command.
+  // Migrations must not run through a connection pooler.
   run("prisma migrate deploy", prismaCli, ["migrate", "deploy"], {
     ...process.env,
-    DATABASE_URL: directUrl,
-    DIRECT_URL: directUrl,
+    DATABASE_URL: databaseUrl,
   });
 } else {
-  console.log(
-    `\n[build:vercel] skipping migrations (VERCEL_ENV=${process.env.VERCEL_ENV ?? "unset"})`,
-  );
+  console.log(`\n[build:vercel] skipping migrations (VERCEL_ENV=${process.env.VERCEL_ENV ?? "unset"})`);
 }
 
 if (databaseUrl) {
   if (!existsSync(tsx)) {
     throw new Error(`tsx not found at ${tsx} — did the install step run?`);
   }
-  // Idempotent catalog/persona upsert, kept non-fatal: a transient pooler
-  // hiccup should not fail an otherwise-good build.
-  try {
-    run("seed catalog content", tsx, ["src/seed-content.ts"], {
-      ...process.env,
-      DATABASE_URL: databaseUrl,
-    });
-  } catch (error) {
-    console.warn(`\n[build:vercel] content seed failed (non-fatal): ${error?.message ?? error}`);
-  }
+  run("seed catalog content", tsx, ["src/seed-content.ts"], {
+    ...process.env,
+    DATABASE_URL: databaseUrl,
+  });
 } else {
   console.log("\n[build:vercel] skipping content seed (no DATABASE_URL)");
 }

@@ -11,6 +11,7 @@ import {
 } from "react-router-dom"
 import {
   ArrowLeft,
+  ArrowRight,
   Bot,
   Check,
   ChevronDown,
@@ -207,7 +208,7 @@ function Shell() {
 function AgentCard({ agent }: { agent: Agent }) {
   const { owns } = useEntitlements()
   const own = owns(agent.id)
-  const { t, n, toman, agentName, agentDescription } = useI18n()
+  const { t, n, toman, agentName, agentDescription, isRtl } = useI18n()
   return (
     <article className="agent-card group relative">
       <div className="mb-7 flex items-start justify-between">
@@ -234,10 +235,13 @@ function AgentCard({ agent }: { agent: Agent }) {
         </div>
         <Link
           to={own ? `/chat/${agent.id}` : `/agent/${agent.slug}`}
-          className="icon-btn"
-          aria-label={t("common.view")}
+          // The pseudo-element stretches this link across the whole card, so the
+          // entire card is clickable while the arrow stays the only anchor.
+          className="icon-btn after:absolute after:inset-0 after:content-['']"
+          aria-label={`${t("common.view")} ${agentName(agent)}`}
         >
-          <ArrowLeft size={18} />
+          {/* Forward points left in RTL (fa) and right in LTR (en). */}
+          {isRtl ? <ArrowLeft size={18} /> : <ArrowRight size={18} />}
         </Link>
       </div>
     </article>

@@ -11,20 +11,13 @@
       CDN here and no third-party origin is contacted on first paint.
     -->
     <title>ایجنت‌فا | ایجنت‌های هوش مصنوعی فارسی</title>
-    <script>
-      (function () {
-        try {
-          var saved = localStorage.getItem("agentfa-lang");
-          var lang = saved === "fa" || saved === "en" ? saved : "fa";
-          var root = document.documentElement;
-          root.setAttribute("lang", lang);
-          root.setAttribute("dir", lang === "fa" ? "rtl" : "ltr");
-          if (lang === "en") {
-            root.title = "AgentFa | Persian AI agents";
-          }
-        } catch (e) {}
-      })();
-    </script>
+    <!--
+      Language is applied before first paint by an external script rather than an
+      inline one: the deployment sets a Content-Security-Policy, and keeping this
+      inline would mean shipping `script-src 'unsafe-inline'` for the whole app
+      just to boot one file.
+    -->
+    <script src="/boot.js"></script>
     <!-- site:head-end -->
   </head>
   <body>

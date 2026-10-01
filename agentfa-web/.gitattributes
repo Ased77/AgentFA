@@ -144,3 +144,19 @@
 *.stl                filter=lfs diff=lfs merge=lfs -text
 *.nc                 filter=lfs diff=lfs merge=lfs -text
 *.mat                filter=lfs diff=lfs merge=lfs -text
+
+# ---------------------------------------------------------------------------
+# This app's assets are plain Git objects, not LFS
+# ---------------------------------------------------------------------------
+# The rules above are generic and put every binary extension into LFS, but
+# GitHub refuses to *upload* new LFS objects to a public fork:
+#
+#   batch response: @Ased77 can not upload new objects to public fork
+#
+# This repository is a fork of a public upstream, so an LFS-tracked asset here
+# cannot be pushed at all — the `og.png` social card and the touch icon were the
+# first two, and adding them failed the push outright. Last rule wins, so this
+# one takes the app out of LFS. Revisit if the fork relationship is ever removed
+# and large binaries belong in this app.
+# Patterns here are relative to this directory, so `**` is the whole app.
+**                   -filter -diff -merge -text

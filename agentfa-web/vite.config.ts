@@ -2,6 +2,7 @@ import { defineConfig, type HtmlTagDescriptor, type Plugin } from 'vite'
 import react from '@vitejs/plugin-react'
 import tailwindcss from '@tailwindcss/vite'
 import path from 'node:path'
+import { readFileSync } from 'node:fs'
 
 import siteConfig from './site.config.json' with { type: 'json' }
 
@@ -60,12 +61,15 @@ export default defineConfig(({ mode }) => {
 type SiteConfiguration = {
   title?: string
   description?: string
+  /** Absolute origin of the deployed site; a sitemap needs absolute URLs. */
+  url?: string
   language?: string
   robots?: {
     index?: boolean
   }
   icons?: {
     icon?: string
+    appleTouch?: string
   }
   openGraph?: {
     image?: string
@@ -97,6 +101,8 @@ function siteConfiguration(config: SiteConfiguration): Plugin {
   }
 
   const title = config.title ?? 'AgentFA'
+  const siteUrl = (config.url ?? '').replace(/\/+$/, '')
+  const appleTouchIcon = config.icons?.appleTouch ?? ''
   const description = config.description ?? ''
   const favicon = config.icons?.icon ?? ''
   const socialImage = config.openGraph?.image ?? ''
@@ -106,7 +112,13 @@ function siteConfiguration(config: SiteConfiguration): Plugin {
   const headEnd = config.customScripts?.headEnd ?? ''
   const bodyStart = config.customScripts?.bodyStart ?? ''
   const bodyEnd = config.customScripts?.bodyEnd ?? ''
-  const robotsTxt = config.robots?.index === false ? 'User-agent: *\nDisallow: /\n' : ''
+  // Leaving this inverted is how the public site spent its first weeks telling
+  // every crawler to go away: `noindex, nofollow` in the HTML and `Disallow: /`
+  // in robots.txt, both generated from a template default.
+  const robotsTxt =
+    config.robots?.index === false
+      ? 'User-agent: *\nDisallow: /\n'
+      : `User-agent: *\nAllow: /\n${siteUrl ? `\nSitemap: ${siteUrl}/sitemap.xml\n` : ''}`
 
   return {
     name: 'site-configuration',
@@ -147,6 +159,13 @@ function siteConfiguration(config: SiteConfiguration): Plugin {
         }
         if (favicon) {
           tags.push({ tag: 'link', attrs: { rel: 'icon', href: favicon }, injectTo: 'head' })
+        }
+        if (appleTouchIcon) {
+          tags.push({
+            tag: 'link',
+            attrs: { rel: 'apple-touch-icon', href: appleTouchIcon },
+            injectTo: 'head',
+          })
         }
         if (title) {
           tags.push({ tag: 'meta', attrs: { property: 'og:title', content: title }, injectTo: 'head' })
@@ -211,8 +230,16 @@ function siteConfiguration(config: SiteConfiguration): Plugin {
             },
             {
               tag: 'a',
-              attrs: { class: 'site-bypass-link', href: '#root' },
-              children: 'Skip to content',
+              // Both labels are injected so `public/boot.js` can pick one: the
+              // shell cannot reach the app's string dictionaries, and hardcoding
+              // English here put "Skip to content" on every Persian page.
+              attrs: {
+                class: 'site-bypass-link',
+                href: '#root',
+                'data-label-fa': 'پرش به محتوا',
+                'data-label-en': 'Skip to content',
+              },
+              children: 'پرش به محتوا',
               injectTo: 'body-prepend',
             },
           )

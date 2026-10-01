@@ -1,8 +1,16 @@
 {
   "title": "AgentFa",
   "description": "AgentFa — specialized AI agents for real work. Buy an agent once, keep it forever, and chat with it in Persian or English.",
+  "url": "https://agent-fa-three.vercel.app",
   "robots": {
-    "index": false
+    "index": true
+  },
+  "icons": {
+    "icon": "/favicon.svg",
+    "appleTouch": "/apple-touch-icon.png"
+  },
+  "openGraph": {
+    "image": "/og.png"
   },
   "accessibility": {
     "addBypassLinks": true

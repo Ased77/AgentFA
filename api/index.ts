@@ -11,9 +11,16 @@ import type { FastifyInstance } from "fastify";
  * `NOT_FOUND`, because a filesystem route cannot express a nested catch-all
  * here. The comment that used to sit in that file claimed the opposite, which is
  * why the API looked wired up while two thirds of its routes 404'd in
- * production. A `vercel.json` rewrite (see the root `vercel.json`) is the
- * supported way to send `/api/**` to one function; do not reintroduce a
- * bracketed catch-all.
+ * production. A `vercel.json` rewrite is the supported way to send `/api/**` to
+ * one function; do not reintroduce a bracketed catch-all.
+ *
+ * What that rewrite actually does was confirmed from the deployment logs rather
+ * than assumed, because it decides whether Fastify can route at all: it keeps the
+ * original path **and** appends the capture from its destination to the query
+ * string. A request for `/api/auth/me` therefore arrived as
+ * `/api/auth/me?__path=auth%2Fme`. The path needed no repair, but that stray
+ * parameter had to go — it would otherwise land in `request.query` on every
+ * route.
  *
  * The SPA and this function ship as one Vercel project, so the browser only ever
  * talks to its own origin: first-party cookies, no CORS, and the existing static
@@ -22,39 +29,40 @@ import type { FastifyInstance } from "fastify";
  */
 const holder = globalThis as unknown as { __agentfaApp?: Promise<FastifyInstance> };
 
-/** The rewrite's destination; seeing this path means our own rewrite ran. */
+/** The rewrite's destination; seeing this path means it had to be rebuilt. */
 const REWRITE_DESTINATION = "/api/index";
 
-/** The capture is passed through the query string by `vercel.json`. */
+/** Reserved parameter the rewrite uses to carry its capture — never a real one. */
 const CAPTURE_PARAM = "__path";
 
 /** A substituted capture looks like a path. An unsubstituted `$1` does not. */
 const looksLikePath = (value: string): boolean => /^[\w\-./%~]*$/.test(value);
 
 /**
- * Give Fastify the path it must route on.
+ * Undo the rewrite's effect on the URL Fastify will route on.
  *
- * A rewrite replaces the request path with its destination, so `req.url` may
- * arrive as `/api/index?__path=auth/me` instead of `/api/auth/me`. Fastify
- * matches routes on `req.url`, so the original path has to be put back. When
- * Vercel keeps the original path instead, `req.url` is already correct and this
- * does nothing — both behaviours are handled, which is why the routing contract
- * is asserted by `scripts/check-deploy.mjs` rather than assumed.
+ * Two things can be true when a request arrives, and both are handled here:
+ * Vercel keeps the original path (the observed behaviour) or it hands over the
+ * destination, in which case the captured path has to be put back. Either way the
+ * capture parameter is removed, because it exists only to make this possible.
  */
-function restoreOriginalPath(req: IncomingMessage): void {
+function restoreOriginalUrl(req: IncomingMessage): void {
   const raw = req.url ?? "/";
   const queryAt = raw.indexOf("?");
-  const pathname = queryAt === -1 ? raw : raw.slice(0, queryAt);
-  if (pathname !== REWRITE_DESTINATION) return;
+  if (queryAt === -1) return;
 
-  const params = new URLSearchParams(queryAt === -1 ? "" : raw.slice(queryAt + 1));
-  const captured = params.get(CAPTURE_PARAM);
-  // An unsubstituted capture (`$1`) leaves the destination path as the only
-  // signal we have, and guessing from it would be worse than failing loudly.
-  if (captured === null || !looksLikePath(captured)) return;
+  const pathname = raw.slice(0, queryAt);
+  const params = new URLSearchParams(raw.slice(queryAt + 1));
+  if (!params.has(CAPTURE_PARAM)) return;
 
+  const captured = params.get(CAPTURE_PARAM) ?? "";
   params.delete(CAPTURE_PARAM);
-  const path = `/api/${captured.replace(/^\/+/, "")}`;
+
+  const path =
+    pathname === REWRITE_DESTINATION && looksLikePath(captured)
+      ? `/api/${captured.replace(/^\/+/, "")}`
+      : pathname;
+
   const query = params.toString();
   req.url = query ? `${path}?${query}` : path;
 }
@@ -83,10 +91,10 @@ export default async function handler(
   req: IncomingMessage,
   res: ServerResponse,
 ): Promise<void> {
-  restoreOriginalPath(req);
+  restoreOriginalUrl(req);
   // TEMPORARY VERIFICATION — removed in the next commit. The function crashes on
   // the missing database before Fastify routes anything, so this is the only way
-  // to confirm what path the rewrite actually hands us.
+  // to confirm what URL the rewrite actually hands us.
   console.log(`[api] ${req.method} ${req.url}`);
   const instance = await getApp();
   // Hand the raw Node request/response to Fastify rather than adding a proxy

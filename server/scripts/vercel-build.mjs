@@ -3,6 +3,9 @@
 //   1. `prisma generate`     — never ship a client generated from an older schema.
 //   2. `prisma migrate deploy` — production builds only, through the direct
 //      (non-pooled) connection. Preview builds must not mutate the schema.
+//      Skipped, loudly, when no database URL is configured at all: that is a
+//      configuration gap rather than a broken build, and failing the whole
+//      deployment for it takes the frontend down with it.
 //   3. `seed:content`        — idempotent catalog/persona upsert, skipped when
 //      no database is configured.
 //   4. `tsc`                 — compile the API that api/index.ts imports.
@@ -36,13 +39,19 @@ const databaseUrl = process.env.DIRECT_URL || process.env.DATABASE_URL;
 
 if (process.env.VERCEL_ENV === "production") {
   if (!databaseUrl) {
-    throw new Error("DIRECT_URL (or DATABASE_URL) is required to deploy migrations");
+    // No database configured at all: nothing to migrate and nothing for the API
+    // to talk to, but the SPA still has a catalog to render. Skip the schema work
+    // and say exactly what is missing rather than failing the deployment, which
+    // previously left the site serving whatever build last succeeded.
+    console.warn("\n[build:vercel] DATABASE_URL (or DIRECT_URL) is not set — skipping migrations");
+    console.warn("[build:vercel] The frontend will deploy; /api/* will keep failing until one is set.");
+  } else {
+    // Migrations must not run through a connection pooler.
+    run("prisma migrate deploy", prismaCli, ["migrate", "deploy"], {
+      ...process.env,
+      DATABASE_URL: databaseUrl,
+    });
   }
-  // Migrations must not run through a connection pooler.
-  run("prisma migrate deploy", prismaCli, ["migrate", "deploy"], {
-    ...process.env,
-    DATABASE_URL: databaseUrl,
-  });
 } else {
   console.log(`\n[build:vercel] skipping migrations (VERCEL_ENV=${process.env.VERCEL_ENV ?? "unset"})`);
 }

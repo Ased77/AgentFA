@@ -22,7 +22,11 @@ import {
   Wallet,
   X,
 } from "lucide-react"
-import { agents, divisions, Agent } from "./data/agents"
+import type { Agent, CatalogDivision } from "./data/agents"
+// The featured list is small and belongs to the landing page; the full catalog
+// is fetched on demand by the routes that need all 264 agents.
+import { featuredAgents } from "./data/featured.generated"
+import { useCatalog } from "./data/useCatalog"
 import { useI18n } from "./lib/i18n"
 import { useSession } from "./lib/session"
 import { useEntitlements } from "./lib/useEntitlements"
@@ -249,6 +253,15 @@ function Shell() {
   )
 }
 
+/**
+ * Stable empty fallbacks for the catalog's own loading state.
+ *
+ * A fresh `[]` on every render would change identity each time and make the
+ * `useMemo`s keyed on the divisions recompute on every keystroke.
+ */
+const EMPTY_AGENTS: Agent[] = []
+const EMPTY_DIVISIONS: CatalogDivision[] = []
+
 function AgentCard({ agent }: { agent: Agent }) {
   const { owns } = useEntitlements()
   const own = owns(agent.id)
@@ -348,12 +361,9 @@ function Landing() {
           </Link>
         </div>
         <div className="grid gap-5 md:grid-cols-2 xl:grid-cols-3">
-          {agents
-            .filter((a) => a.featured)
-            .slice(0, 6)
-            .map((a) => (
-              <AgentCard key={a.id} agent={a} />
-            ))}
+          {featuredAgents.slice(0, 6).map((a) => (
+            <AgentCard key={a.id} agent={a} />
+          ))}
         </div>
       </section>
       <section id="how" className="section">
@@ -398,6 +408,10 @@ function Marketplace() {
   const [cat, setCat] = useState<string | null>(null)
   const [sort, setSort] = useState<"popular" | "cheap" | "expensive">("popular")
   const { t, division, agentName, agentDescription, agentDivision } = useI18n()
+  const catalog = useCatalog()
+  const agents = catalog?.agents ?? EMPTY_AGENTS
+  const divisions = catalog?.divisions ?? EMPTY_DIVISIONS
+
   const cats = useMemo(
     () => [
       { slug: "all", label: t("common.all") },
@@ -427,6 +441,9 @@ function Marketplace() {
         ),
     [q, cat, sort, agentName, agentDescription, agentDivision],
   )
+  // Wait for the catalog instead of flashing an empty grid and filling it in a
+  // moment later. This is where the 264-agent chunk is actually requested.
+  if (!catalog) return <PageLoading />
   return (
     <main className="section min-h-screen">
       <p className="eyebrow">{t("market.eyebrow")}</p>
@@ -482,7 +499,9 @@ function Marketplace() {
 
 function Detail() {
   const { slug } = useParams()
-  const a = agents.find((x) => x.slug === slug)
+  const catalog = useCatalog()
+  if (!catalog) return <PageLoading />
+  const a = catalog.agents.find((x) => x.slug === slug)
   const nav = useNavigate()
   const [notice, setNotice] = useState("")
   const [buying, setBuying] = useState(false)
@@ -631,7 +650,8 @@ function Detail() {
 function Dashboard() {
   const { user } = useSession()
   const { owned } = useEntitlements()
-  const own = agents.filter((a) => owned.includes(a.id))
+  const catalog = useCatalog()
+  const own = (catalog?.agents ?? EMPTY_AGENTS).filter((a) => owned.includes(a.id))
   const { t, n, toman, phone, agentName, lang } = useI18n()
   const locale = lang === "fa" ? "fa-IR" : "en-US"
   // Set right after a first login, when the gift balance was just created.
@@ -662,7 +682,7 @@ function Dashboard() {
   ]
   const peak = Math.max(1, ...usage.map((point) => point.tokens))
   const txLabel = (row: TransactionRow) => {
-    const agent = row.agentId ? agents.find((a) => a.id === row.agentId) : undefined;
+    const agent = row.agentId ? catalog?.agents.find((a) => a.id === row.agentId) : undefined;
     return row.type === "purchase" && agent
       ? `${t("dash.tx.purchase")} · ${agentName(agent)}`
       : t(`dash.tx.${row.type}`);

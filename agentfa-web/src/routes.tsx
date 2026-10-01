@@ -439,7 +439,11 @@ function Marketplace() {
               ? b.price - a.price
               : b.sales - a.sales,
         ),
-    [q, cat, sort, agentName, agentDescription, agentDivision],
+    // `agents` belongs in this list now that it arrives asynchronously: it was a
+    // module constant when it was imported at the top of the file, and leaving it
+    // out meant the grid stayed computed from the empty placeholder and rendered
+    // "No agents match your search" with a fully populated category row above it.
+    [q, cat, sort, agents, agentName, agentDescription, agentDivision],
   )
   // Wait for the catalog instead of flashing an empty grid and filling it in a
   // moment later. This is where the 264-agent chunk is actually requested.
@@ -499,9 +503,6 @@ function Marketplace() {
 
 function Detail() {
   const { slug } = useParams()
-  const catalog = useCatalog()
-  if (!catalog) return <PageLoading />
-  const a = catalog.agents.find((x) => x.slug === slug)
   const nav = useNavigate()
   const [notice, setNotice] = useState("")
   const [buying, setBuying] = useState(false)
@@ -511,6 +512,14 @@ function Detail() {
   const { owns, refresh } = useEntitlements()
   const [error, setError] = useState("")
   const [refunding, setRefunding] = useState(false)
+  const catalog = useCatalog()
+  // Both waits belong *after* every hook in this component. Returning early
+  // above them changes how many hooks run between two renders, and React rejects
+  // that outright with "Rendered more hooks than during the previous render" —
+  // which is exactly how this broke when the catalog became asynchronous. The
+  // not-found return was already in this position for the same reason.
+  if (!catalog) return <PageLoading />
+  const a = catalog.agents.find((x) => x.slug === slug)
   if (!a) return <NotFound />
   const agentId = a.id
   const own = owns(agentId)

@@ -84,6 +84,10 @@ export default async function handler(
   res: ServerResponse,
 ): Promise<void> {
   restoreOriginalPath(req);
+  // TEMPORARY VERIFICATION — removed in the next commit. The function crashes on
+  // the missing database before Fastify routes anything, so this is the only way
+  // to confirm what path the rewrite actually hands us.
+  console.log(`[api] ${req.method} ${req.url}`);
   const instance = await getApp();
   // Hand the raw Node request/response to Fastify rather than adding a proxy
   // layer, so the SSE frames written by the chat route reach the client as they

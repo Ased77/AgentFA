@@ -8,12 +8,13 @@
       "memory": 1024,
       "maxDuration": 60,
       "includeFiles": "server/dist/**"
-    },
-    "api/[...path].ts": {
-      "memory": 1024,
-      "maxDuration": 60,
-      "includeFiles": "server/dist/**"
     }
   },
-  "rewrites": [{ "source": "/((?!api/).*)", "destination": "/index.html" }]
+  "rewrites": [
+    {
+      "source": "/api/(.*)",
+      "destination": "/api/index?__path=$1"
+    },
+    { "source": "/((?!api/).*)", "destination": "/index.html" }
+  ]
 }

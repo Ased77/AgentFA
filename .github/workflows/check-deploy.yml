@@ -1,0 +1,37 @@
+name: Check Deployment
+
+# The deployed site once sat broken for ten days: every production build failed,
+# `/api/**` never reached the function that serves it, and production kept
+# serving a ten-day-old build. Every existing workflow lints the repository, so
+# none of that was visible — a green build is not a working site. This runs the
+# external check against the running deployment on a schedule.
+#
+# Deploy-triggered rather than push-triggered on purpose: a `push` run would race
+# the build it is meant to verify and report failures for a deploy still in
+# flight. Every 30 minutes lands within the hour without spending a private
+# repository's action minutes on a tight loop.
+
+on:
+  schedule:
+    - cron: "*/30 * * * *"
+  workflow_dispatch:
+    inputs:
+      base:
+        description: Base URL to check (defaults to production)
+        required: false
+        default: ""
+
+jobs:
+  check-deploy:
+    name: the running site answers
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Verify the deployment from the outside
+        run: node scripts/check-deploy.mjs ${{ inputs.base }}

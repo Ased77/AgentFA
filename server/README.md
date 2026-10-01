@@ -132,6 +132,10 @@ happens in production: that path requires a real provider, and login answers 503
 
 ## Payments
 
+See [`BILLING.md`](BILLING.md) for the money model itself — the price list, how
+plan allowances and their 30-day period work, the transaction lifecycle and the
+7-day refund flow.
+
 One interface, two adapters. `src/payments/types.ts` is the whole contract
 (`start`, `referenceFromCallback`, `verify`); `zarinpal.ts` and `stripe.ts`
 implement it, and `index.ts` picks one from `PAYMENT_PROVIDER`. Routes, the

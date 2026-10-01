@@ -31,6 +31,8 @@ enum MeterMode {
 enum TxType {
   topup
   purchase
+  plan
+  refund
 }
 
 enum TxStatus {
@@ -52,6 +54,8 @@ model User {
   sessions     Session[]
   transactions Transaction[]
   usage        UsageEvent[]
+  conversations Conversation[]
+  previews      PreviewUsage[]
 }
 
 model Wallet {
@@ -75,6 +79,8 @@ model Entitlement {
   agentId    String
   pricePaid  Int
   purchasedAt DateTime @default(now())
+  /// Set when a purchase is refunded. The row is kept for the audit trail.
+  revokedAt  DateTime?
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
@@ -118,6 +124,9 @@ model Transaction {
   providerToken String?   @unique
   refId         String?   @unique
   agentId       String?
+  /// Plan purchased by a `plan` transaction, and the period it buys.
+  plan          PlanKey?
+  billingPeriod String?
   paidAt        DateTime?
   failureReason String?
   createdAt     DateTime  @default(now())
@@ -156,6 +165,57 @@ model ProviderConfig {
   enabled         Boolean   @default(true)
   createdAt       DateTime  @default(now())
   updatedAt       DateTime  @updatedAt
+}
+
+/// One conversation between a user and one agent.
+///
+/// Chats used to live only in the browser tab, so a refresh erased them. Titles
+/// are derived from the first user message when the conversation is created;
+/// `totalTokens` mirrors the debits so the sidebar can show usage without a join.
+model Conversation {
+  id          String   @id @default(cuid())
+  userId      String
+  agentId     String
+  title       String   @default("")
+  totalTokens Int      @default(0)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  user     User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  messages Message[]
+
+  @@index([userId, agentId, updatedAt])
+}
+
+/// A persisted chat turn. `role` is `user` or `assistant` (kept as text so the
+/// assistant's own name is never confused with the account Role enum).
+model Message {
+  id             String   @id @default(cuid())
+  conversationId String
+  role           String
+  content        String
+  tokens         Int      @default(0)
+  seconds        Int      @default(0)
+  model          String?
+  createdAt      DateTime @default(now())
+
+  conversation Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+
+  @@index([conversationId, createdAt])
+}
+
+/// Free-preview counter: how many trial replies a user has used on an agent they
+/// have not bought. Kept server-side so the allowance cannot be reset by
+/// clearing browser storage.
+model PreviewUsage {
+  userId    String
+  agentId   String
+  used      Int      @default(0)
+  updatedAt DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@id([userId, agentId])
 }
 
 model Session {

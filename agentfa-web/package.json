@@ -5,13 +5,17 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "vite build",
+    "build": "bun run check && vite build",
     "preview": "vite preview",
     "catalog": "node scripts/generate-catalog.mjs",
     "export:server-content": "bun run catalog && node scripts/export-personas.mjs",
+    "check:i18n": "node scripts/check-i18n.mjs",
+    "typecheck": "tsc --noEmit -p tsconfig.json",
+    "check": "bun run check:i18n && bun run typecheck",
     "format": "oxfmt"
   },
   "dependencies": {
+    "@fontsource/vazirmatn": "^5.3.0",
     "lucide-react": "^1.43.0",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",

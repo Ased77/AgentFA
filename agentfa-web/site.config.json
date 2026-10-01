@@ -1,5 +1,10 @@
 {
+  "title": "AgentFa",
+  "description": "AgentFa — specialized AI agents for real work. Buy an agent once, keep it forever, and chat with it in Persian or English.",
   "robots": {
     "index": false
+  },
+  "accessibility": {
+    "addBypassLinks": true
   }
 }

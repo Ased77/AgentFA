@@ -3,9 +3,10 @@ import { prisma } from "../db.js";
 import { env } from "../env.js";
 import { badRequest } from "../lib/errors.js";
 import { requireGateway } from "./index.js";
+import type { BillingPeriod, PlanKey } from "./pricing.js";
 import { PaymentError } from "./types.js";
 
-export type CheckoutType = "topup" | "purchase";
+export type CheckoutType = "topup" | "purchase" | "plan";
 
 export type CheckoutInput = {
   userId: string;
@@ -15,6 +16,9 @@ export type CheckoutInput = {
   tokens?: number;
   minutes?: number;
   agentId?: string;
+  /** Set for `plan` checkouts: which plan and which billing period it buys. */
+  plan?: PlanKey;
+  billingPeriod?: BillingPeriod;
   description: string;
 };
 
@@ -74,6 +78,8 @@ export async function startCheckout(input: CheckoutInput): Promise<Checkout> {
       tokens: input.tokens ?? 0,
       minutes: input.minutes ?? 0,
       agentId: input.agentId,
+      plan: input.plan,
+      billingPeriod: input.billingPeriod,
       provider: gateway.id,
     },
   });

@@ -1,4 +1,7 @@
-@import url('https://fonts.googleapis.com/css2?family=Vazirmatn:wght@400;500;600;700;800;900&display=swap');
+/* Vazirmatn is self-hosted (see the `@fontsource/vazirmatn` imports in
+   `src/main.tsx`): the woff2 files ship with the bundle instead of coming from a
+   font CDN, so the Persian UI renders on networks where fonts.googleapis.com is
+   unreachable and no third-party origin sees the visitor. */
 @import 'tailwindcss';
 
 @theme { --color-background:#0b1124; --color-card:#101936; --color-primary:#7c3aed; --radius-card:1.5rem; }

@@ -1,83 +1,110 @@
-import { useState } from "react"
-import { Check, X } from "lucide-react"
-import { ApiError, api, goToGateway } from "../lib/account"
-import { useSession } from "../lib/session"
-import { useI18n } from "../lib/i18n"
+import { useEffect, useState } from "react";
+import { Check } from "lucide-react";
+import {
+  ApiError,
+  api,
+  goToGateway,
+  type BillingPeriod,
+  type PlanKey,
+  type WalletSnapshot,
+} from "../lib/account";
+import { Modal } from "../components/Modal";
+import { useSession } from "../lib/session";
+import { useI18n } from "../lib/i18n";
+import { usePricing } from "../lib/pricing";
 
-type PlanKey = "free" | "basic" | "pro"
-
-/** Monthly allowance per plan, mirrored from the server's wallet module. */
-const PLAN_ALLOWANCE: Record<PlanKey, { tokens: number; minutes: number }> = {
-  free: { tokens: 50000, minutes: 60 },
-  basic: { tokens: 500000, minutes: 600 },
-  pro: { tokens: 2000000, minutes: 2400 },
-}
-
-const plans: {
-  nameKey: string
-  key: PlanKey
-  tokens: number
-  minutes: number
-  price: number
-  featured?: boolean
-  featureKeys: [string, string]
-}[] = [
-  {
-    nameKey: "plan.free",
-    key: "free",
-    ...PLAN_ALLOWANCE.free,
-    price: 0,
-    featureKeys: ["plan.free.f1", "plan.free.f2"],
-  },
-  {
-    nameKey: "plan.basic",
-    key: "basic",
-    ...PLAN_ALLOWANCE.basic,
-    price: 290000,
-    featured: true,
-    featureKeys: ["plan.basic.f1", "plan.basic.f2"],
-  },
-  {
-    nameKey: "plan.pro",
-    key: "pro",
-    ...PLAN_ALLOWANCE.pro,
-    price: 990000,
-    featureKeys: ["plan.pro.f1", "plan.pro.f2"],
-  },
-]
-
-const bundles: [number, number][] = [
-  [100000, 50000],
-  [300000, 130000],
-  [1000000, 400000],
-]
-
+/**
+ * Plans and top-ups.
+ *
+ * Every amount on this page comes from `GET /api/pricing`, and every purchase is
+ * priced again by the server, so what is shown and what is charged cannot drift
+ * apart — which is exactly how the old page came to advertise a free plan that
+ * charged 55,000 Toman. The yearly toggle is server-side too: the discount is
+ * applied where the plan price is computed, not in the browser.
+ */
 export default function Pricing() {
-  const [yearly, setYearly] = useState(false)
-  const [confirm, setConfirm] = useState("")
-  const [error, setError] = useState("")
-  const { user } = useSession()
-  const { t, n, toman } = useI18n()
+  const [yearly, setYearly] = useState(false);
+  const [confirm, setConfirm] = useState("");
+  const [error, setError] = useState("");
+  const [busy, setBusy] = useState<PlanKey | number | null>(null);
+  const { user } = useSession();
+  const { t, n, toman } = useI18n();
+  const { prices, source } = usePricing();
 
-  function price(value: number) {
-    if (value === 0) return t("pricing.free")
-    return toman(yearly ? Math.round(value * 0.8) : value)
+  const [wallet, setWallet] = useState<WalletSnapshot | null>(null);
+  useEffect(() => {
+    if (!user) {
+      setWallet(null);
+      return;
+    }
+    let alive = true;
+    void api
+      .wallet()
+      .then((snapshot) => alive && setWallet(snapshot))
+      .catch(() => {});
+    return () => {
+      alive = false;
+    };
+  }, [user]);
+
+  const billing: BillingPeriod = yearly ? "yearly" : "monthly";
+
+  /** The amount one period costs. Mirrors `planPrice()` on the server. */
+  function periodPrice(monthlyPrice: number): number {
+    if (monthlyPrice === 0) return 0;
+    return yearly ? Math.round(monthlyPrice * (1 - prices.yearlyDiscount) * 12) : monthlyPrice;
+  }
+
+  function localizedError(err: unknown): string {
+    const code = err instanceof ApiError ? err.code : "network";
+    const key = `purchase.error.${code}`;
+    const message = t(key);
+    return message === key ? t("purchase.error.generic") : message;
+  }
+
+  async function choosePlan(key: PlanKey) {
+    if (!user) {
+      setError(t("pricing.loginRequired"));
+      return;
+    }
+    setError("");
+    setConfirm("");
+    setBusy(key);
+    try {
+      const result = await api.plan(key, billing);
+      // A paid plan goes through the gateway; the wallet only changes once the
+      // verified callback settles the transaction.
+      if (result.redirectUrl && goToGateway(result.redirectUrl)) return;
+      setConfirm(
+        result.redirectUrl
+          ? t("pricing.planPending")
+          : t("pricing.active", { name: t(`plan.${key}`) }),
+      );
+      setWallet(await api.wallet());
+    } catch (err) {
+      setError(localizedError(err));
+    } finally {
+      setBusy(null);
+    }
   }
 
   async function buy(tokens: number, minutes: number, message: string) {
     if (!user) {
-      setError(t("chat.error.not_owned"))
-      return
+      setError(t("pricing.loginRequired"));
+      return;
     }
-    setError("")
+    setError("");
+    setConfirm("");
+    setBusy(tokens || minutes);
     try {
-      const { redirectUrl } = await api.topUp(tokens, minutes)
-      // Leave the SPA for the gateway's hosted checkout; the purchase is only
-      // final once the gateway's callback settles it.
-      if (goToGateway(redirectUrl)) return
-      setConfirm(message)
+      const { redirectUrl } = await api.topUp(tokens, minutes);
+      if (goToGateway(redirectUrl)) return;
+      setConfirm(message);
+      setWallet(await api.wallet());
     } catch (err) {
-      setError(err instanceof ApiError ? err.code : "network")
+      setError(localizedError(err));
+    } finally {
+      setBusy(null);
     }
   }
 
@@ -90,7 +117,9 @@ export default function Pricing() {
         </h1>
         <p className="mx-auto mt-5 max-w-xl leading-8 text-slate-400">{t("pricing.body")}</p>
         <button
+          type="button"
           onClick={() => setYearly(!yearly)}
+          aria-pressed={yearly}
           className={`mt-7 rounded-full border px-4 py-2 text-sm ${
             yearly
               ? "border-violet-400 bg-violet-500/20 text-violet-200"
@@ -98,59 +127,76 @@ export default function Pricing() {
           }`}
         >
           {t("pricing.yearly")}{" "}
-          <span className="mx-2 text-emerald-300">{t("pricing.discount")}</span>
+          <span className="mx-2 text-emerald-300">
+            {t("pricing.discount", { percent: Math.round(prices.yearlyDiscount * 100) })}
+          </span>
         </button>
+        {source === "fallback" && (
+          <p className="mt-4 text-xs text-amber-300">{t("pricing.offlinePrices")}</p>
+        )}
       </div>
-      {error && <p className="mt-6 text-center text-sm text-rose-300">{error}</p>}
+      {error && (
+        <p className="mt-6 text-center text-sm text-rose-300" role="alert">
+          {error}
+        </p>
+      )}
       <div className="mt-12 grid gap-5 lg:grid-cols-3">
-        {plans.map((p) => (
-          <article
-            className={`relative rounded-3xl border p-6 sm:p-7 ${
-              p.featured ? "border-violet-400 bg-violet-500/10" : "border-white/10 bg-white/[.03]"
-            }`}
-            key={p.key}
-          >
-            {p.featured && (
-              <span className="badge absolute -top-3 right-6">{t("pricing.featured")}</span>
-            )}
-            <h2 className="text-2xl font-black">{t(p.nameKey)}</h2>
-            <p className="mt-6 text-4xl font-black">
-              {price(p.price)}
-              {p.price > 0 && (
-                <small className="text-sm font-normal text-slate-400">
-                  {" "}
-                  {t("pricing.perMonth")}
-                </small>
-              )}
-            </p>
-            <p className="mt-3 text-sm text-violet-200">
-              {t("pricing.allowance", {
-                tokens: n(p.tokens),
-                minutes: n(p.minutes),
-              })}
-            </p>
-            <ul className="my-8 space-y-3 text-sm text-slate-300">
-              {p.featureKeys.map((f) => (
-                <li className="flex gap-2" key={f}>
-                  <Check size={17} className="mt-0.5 shrink-0 text-emerald-400" />
-                  {t(f)}
-                </li>
-              ))}
-            </ul>
-            <button
-              onClick={() =>
-                void buy(
-                  p.tokens,
-                  p.minutes,
-                  t("pricing.active", { name: t(p.nameKey) }),
-                )
-              }
-              className="btn w-full justify-center"
+        {prices.plans.map((plan) => {
+          const total = periodPrice(plan.monthlyPrice);
+          const current = wallet?.plan === plan.key;
+          return (
+            <article
+              className={`relative rounded-3xl border p-6 sm:p-7 ${
+                plan.featured
+                  ? "border-violet-400 bg-violet-500/10"
+                  : "border-white/10 bg-white/[.03]"
+              }`}
+              key={plan.key}
             >
-              {t("pricing.choose")}
-            </button>
-          </article>
-        ))}
+              {plan.featured && (
+                <span className="badge absolute -top-3 right-6">{t("pricing.featured")}</span>
+              )}
+              <div className="flex items-center justify-between gap-3">
+                <h2 className="text-2xl font-black">{t(`plan.${plan.key}`)}</h2>
+                {current && <span className="badge">{t("pricing.current")}</span>}
+              </div>
+              <p className="mt-6 text-4xl font-black">
+                {total === 0 ? t("pricing.free") : toman(total)}
+                {total > 0 && (
+                  <small className="text-sm font-normal text-slate-400">
+                    {" "}
+                    {t(yearly ? "pricing.perYear" : "pricing.perMonth")}
+                  </small>
+                )}
+              </p>
+              {yearly && total > 0 && (
+                <p className="mt-1 text-xs text-slate-400">
+                  {t("pricing.perMonthShort", { price: toman(plan.monthlyEquivalent) })} ·{" "}
+                  {t("pricing.billedYearly")}
+                </p>
+              )}
+              <p className="mt-3 text-sm text-violet-200">
+                {t("pricing.allowance", { tokens: n(plan.tokens), minutes: n(plan.minutes) })}
+              </p>
+              <ul className="my-8 space-y-3 text-sm text-slate-300">
+                {[`plan.${plan.key}.f1`, `plan.${plan.key}.f2`].map((key) => (
+                  <li className="flex gap-2" key={key}>
+                    <Check size={17} className="mt-0.5 shrink-0 text-emerald-400" />
+                    {t(key)}
+                  </li>
+                ))}
+              </ul>
+              <button
+                type="button"
+                onClick={() => void choosePlan(plan.key)}
+                disabled={busy !== null || current}
+                className="btn w-full justify-center disabled:opacity-60"
+              >
+                {current ? t("pricing.current") : t("pricing.choose")}
+              </button>
+            </article>
+          );
+        })}
       </div>
       <section className="mt-14 sm:mt-18">
         <div className="text-center">
@@ -158,17 +204,46 @@ export default function Pricing() {
           <h2 className="mt-3 text-3xl font-black">{t("pricing.bundles")}</h2>
         </div>
         <div className="mx-auto mt-8 grid max-w-4xl gap-4 md:grid-cols-3">
-          {bundles.map(([tokens, amount]) => (
+          {prices.bundles.map((bundle) => (
             <div
               className="rounded-2xl border border-white/10 bg-white/[.03] p-5 text-center"
-              key={tokens}
+              key={`t${bundle.tokens}`}
             >
-              <b className="text-xl">{t("pricing.tokensBundle", { tokens: n(tokens) })}</b>
-              <p className="mt-2 text-sm text-slate-400">{toman(amount)}</p>
+              <b className="text-xl">{t("pricing.tokensBundle", { tokens: n(bundle.tokens) })}</b>
+              <p className="mt-2 text-sm text-slate-400">{toman(bundle.price)}</p>
               <button
+                type="button"
                 onClick={() =>
-                  void buy(tokens, 0, t("pricing.added", { tokens: n(tokens) }))
+                  void buy(bundle.tokens, 0, t("pricing.added", { tokens: n(bundle.tokens) }))
                 }
+                disabled={busy !== null}
+                className="btn btn-soft mt-5"
+              >
+                {t("pricing.buy")}
+              </button>
+            </div>
+          ))}
+        </div>
+        <div className="mx-auto mt-6 grid max-w-4xl gap-4 md:grid-cols-3">
+          {prices.timePasses.map((pass) => (
+            <div
+              className="rounded-2xl border border-white/10 bg-white/[.03] p-5 text-center"
+              key={`m${pass.minutes}`}
+            >
+              <b className="text-xl">
+                {t("pricing.minutesBundle", { minutes: n(pass.minutes) })}
+              </b>
+              <p className="mt-2 text-sm text-slate-400">{toman(pass.price)}</p>
+              <button
+                type="button"
+                onClick={() =>
+                  void buy(
+                    0,
+                    pass.minutes,
+                    t("pricing.minutesAdded", { minutes: n(pass.minutes) }),
+                  )
+                }
+                disabled={busy !== null}
                 className="btn btn-soft mt-5"
               >
                 {t("pricing.buy")}
@@ -178,20 +253,20 @@ export default function Pricing() {
         </div>
       </section>
       {confirm && (
-        <div className="fixed inset-0 z-50 grid place-items-center bg-slate-950/75 p-4">
-          <div className="modal-panel w-full max-w-sm rounded-3xl border border-violet-400/30 bg-[#101936] p-6 text-center sm:p-7">
-            <button onClick={() => setConfirm("")} className="float-left text-slate-400">
-              <X />
-            </button>
+        <Modal
+          title={t("pricing.success")}
+          onClose={() => setConfirm("")}
+          closeLabel={t("common.close")}
+        >
+          <div className="text-center">
             <Check className="mx-auto size-10 rounded-full bg-emerald-500/20 p-2 text-emerald-300" />
-            <h2 className="mt-5 text-xl font-bold">{t("pricing.success")}</h2>
-            <p className="mt-3 text-slate-300">{confirm}</p>
+            <p className="mt-4 text-slate-300">{confirm}</p>
             <button className="btn mt-6" onClick={() => setConfirm("")}>
               {t("pricing.gotIt")}
             </button>
           </div>
-        </div>
+        </Modal>
       )}
     </main>
-  )
+  );
 }

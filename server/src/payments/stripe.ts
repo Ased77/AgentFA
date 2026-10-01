@@ -9,6 +9,7 @@ import {
   type PaymentGateway,
   type PaymentIntent,
   type PaymentStart,
+  type RefundResult,
 } from "./types.js";
 
 /**
@@ -84,6 +85,33 @@ export const stripeGateway: PaymentGateway = {
     }
 
     return { redirectUrl: session.url, providerToken: session.id };
+  },
+
+  /**
+   * Refund a settled checkout.
+   *
+   * `refId` holds the payment intent the webhook reported, which is what Stripe
+   * refunds against; the checkout session id is only a fallback for older rows.
+   */
+  async refund({ transaction, amount }): Promise<RefundResult> {
+    const target = transaction.refId ?? transaction.providerToken;
+    if (!target) return { ok: false, reason: "no_payment_reference" };
+
+    const form = new URLSearchParams({
+      ...(transaction.refId
+        ? { payment_intent: transaction.refId }
+        : { payment_intent: String(target) }),
+      amount: String(amount),
+    });
+
+    const { status, body } = await postForm(`${apiBase()}/v1/refunds`, form, {
+      headers: { Authorization: `Bearer ${secretKey()}` },
+    });
+    const refund = body as { id?: unknown; status?: unknown } | null;
+    if (status >= 400 || typeof refund?.id !== "string") {
+      return { ok: false, reason: "gateway_rejected" };
+    }
+    return { ok: true, refId: refund.id };
   },
 
   referenceFromCallback(payload: CallbackPayload): CallbackReference | null {

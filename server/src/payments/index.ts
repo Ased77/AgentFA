@@ -36,5 +36,7 @@ export type {
   CallbackReference,
   PaymentGateway,
   PaymentProviderId,
+  RefundInput,
+  RefundResult,
   TransactionRef,
 } from "./types.js";

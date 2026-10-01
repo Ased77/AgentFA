@@ -1,22 +1,28 @@
-import { useEffect, useState } from "react"
-import { Plug, Save, Trash2 } from "lucide-react"
-import { agents } from "../data/agents"
-import { useI18n } from "../lib/i18n"
-import { ApiError, api, type PublicProvider } from "../lib/account"
+import { useCallback, useEffect, useState } from "react";
+import { Check, Plug, Save, Trash2, X } from "lucide-react";
+import { agents } from "../data/agents";
+import { useI18n } from "../lib/i18n";
+import {
+  ApiError,
+  api,
+  type AdminStats,
+  type PublicProvider,
+  type RefundRow,
+} from "../lib/account";
 
-type MeterMode = "tokens" | "time"
+type MeterMode = "tokens" | "time";
 
 type Draft = {
-  label: string
-  baseUrl: string
-  model: string
-  apiKey: string
-  meter: MeterMode
-  tomanPer1kTokens: number
-  tomanPerMinute: number
-  agentScopeText: string
-  enabled: boolean
-}
+  label: string;
+  baseUrl: string;
+  model: string;
+  apiKey: string;
+  meter: MeterMode;
+  tomanPer1kTokens: number;
+  tomanPerMinute: number;
+  agentScopeText: string;
+  enabled: boolean;
+};
 
 const EMPTY_DRAFT: Draft = {
   label: "",
@@ -28,24 +34,24 @@ const EMPTY_DRAFT: Draft = {
   tomanPerMinute: 30000,
   agentScopeText: "",
   enabled: true,
-}
+};
 
 function ProviderSection() {
-  const { t, n } = useI18n()
-  const [draft, setDraft] = useState<Draft>(EMPTY_DRAFT)
-  const [saved, setSaved] = useState<PublicProvider | null>(null)
-  const [savedFlag, setSavedFlag] = useState(false)
-  const [testing, setTesting] = useState(false)
-  const [result, setResult] = useState("")
-  const [loading, setLoading] = useState(true)
+  const { t, n } = useI18n();
+  const [draft, setDraft] = useState<Draft>(EMPTY_DRAFT);
+  const [saved, setSaved] = useState<PublicProvider | null>(null);
+  const [savedFlag, setSavedFlag] = useState(false);
+  const [testing, setTesting] = useState(false);
+  const [result, setResult] = useState("");
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    let alive = true
+    let alive = true;
     api
       .adminProvider()
       .then(({ provider }) => {
-        if (!alive) return
-        setSaved(provider)
+        if (!alive) return;
+        setSaved(provider);
         if (provider) {
           setDraft({
             label: provider.label,
@@ -57,36 +63,36 @@ function ProviderSection() {
             tomanPerMinute: provider.tomanPerMinute,
             agentScopeText: provider.agentScope.includes("*") ? "" : provider.agentScope.join(", "),
             enabled: provider.enabled,
-          })
+          });
         }
       })
       .catch(() => {})
-      .finally(() => alive && setLoading(false))
+      .finally(() => alive && setLoading(false));
     return () => {
-      alive = false
-    }
-  }, [])
+      alive = false;
+    };
+  }, []);
 
   function update(patch: Partial<Draft>) {
-    setSavedFlag(false)
-    setDraft((d) => ({ ...d, ...patch }))
+    setSavedFlag(false);
+    setDraft((d) => ({ ...d, ...patch }));
   }
 
   const scopeIds = draft.agentScopeText
     .split(",")
     .map((s) => s.trim())
-    .filter(Boolean)
-  const unknown = scopeIds.filter((id) => !agents.some((a) => a.id === id))
+    .filter(Boolean);
+  const unknown = scopeIds.filter((id) => !agents.some((a) => a.id === id));
 
-  const problems: string[] = []
-  if (!draft.baseUrl.trim()) problems.push("admin.provider.problem.baseUrl")
+  const problems: string[] = [];
+  if (!draft.baseUrl.trim()) problems.push("admin.provider.problem.baseUrl");
   else if (!/^https?:\/\//i.test(draft.baseUrl.trim()))
-    problems.push("admin.provider.problem.scheme")
-  if (!draft.model.trim()) problems.push("admin.provider.problem.model")
-  if (!draft.apiKey.trim() && !saved) problems.push("admin.provider.problem.key")
+    problems.push("admin.provider.problem.scheme");
+  if (!draft.model.trim()) problems.push("admin.provider.problem.model");
+  if (!draft.apiKey.trim() && !saved) problems.push("admin.provider.problem.key");
 
   async function save() {
-    setResult("")
+    setResult("");
     try {
       const { provider } = await api.saveProvider({
         label: draft.label,
@@ -98,20 +104,20 @@ function ProviderSection() {
         tomanPerMinute: draft.tomanPerMinute,
         agentScope: scopeIds.length ? scopeIds : ["*"],
         enabled: draft.enabled,
-      })
-      setSaved(provider)
-      setDraft((d) => ({ ...d, apiKey: "" }))
-      setSavedFlag(true)
+      });
+      setSaved(provider);
+      setDraft((d) => ({ ...d, apiKey: "" }));
+      setSavedFlag(true);
     } catch (err) {
-      setResult(`✕ ${err instanceof ApiError ? err.code : "network"}`)
+      setResult(`✕ ${err instanceof ApiError ? err.code : "network"}`);
     }
   }
 
   async function test() {
-    setTesting(true)
-    setResult("")
+    setTesting(true);
+    setResult("");
     try {
-      const outcome = await api.testProvider()
+      const outcome = await api.testProvider();
       if (outcome.ok)
         setResult(
           t("admin.provider.testOk", {
@@ -119,27 +125,27 @@ function ProviderSection() {
             tokens: n(outcome.tokens ?? 0),
             seconds: String(outcome.seconds ?? 0),
           }),
-        )
-      else setResult(`✕ ${outcome.error ?? "network"}`)
+        );
+      else setResult(`✕ ${outcome.error ?? "network"}`);
     } catch (err) {
-      setResult(`✕ ${err instanceof ApiError ? err.code : "network"}`)
+      setResult(`✕ ${err instanceof ApiError ? err.code : "network"}`);
     } finally {
-      setTesting(false)
+      setTesting(false);
     }
   }
 
   async function clear() {
     try {
-      await api.deleteProvider()
+      await api.deleteProvider();
     } catch {
       /* ignore */
     }
-    setSaved(null)
-    setDraft(EMPTY_DRAFT)
-    setSavedFlag(true)
+    setSaved(null);
+    setDraft(EMPTY_DRAFT);
+    setSavedFlag(true);
   }
 
-  if (loading) return null
+  if (loading) return null;
 
   return (
     <section className="mt-8 rounded-2xl border border-white/10 p-4 sm:p-6">
@@ -230,9 +236,7 @@ function ProviderSection() {
               dir="ltr"
               inputMode="numeric"
               value={draft.tomanPer1kTokens}
-              onChange={(e) =>
-                update({ tomanPer1kTokens: Number(e.target.value.replace(/\D/g, "")) })
-              }
+              onChange={(e) => update({ tomanPer1kTokens: Number(e.target.value.replace(/\D/g, "")) })}
             />
           </label>
           <label>
@@ -242,9 +246,7 @@ function ProviderSection() {
               dir="ltr"
               inputMode="numeric"
               value={draft.tomanPerMinute}
-              onChange={(e) =>
-                update({ tomanPerMinute: Number(e.target.value.replace(/\D/g, "")) })
-              }
+              onChange={(e) => update({ tomanPerMinute: Number(e.target.value.replace(/\D/g, "")) })}
             />
           </label>
         </div>
@@ -294,20 +296,13 @@ function ProviderSection() {
         <button className="btn text-sm" onClick={save}>
           <Save size={16} /> {t("admin.provider.save")}
         </button>
-        <button
-          className="btn btn-soft text-sm"
-          onClick={test}
-          disabled={testing || !saved}
-        >
-          <Plug size={16} />{" "}
-          {testing ? t("admin.provider.testing") : t("admin.provider.test")}
+        <button className="btn btn-soft text-sm" onClick={test} disabled={testing || !saved}>
+          <Plug size={16} /> {testing ? t("admin.provider.testing") : t("admin.provider.test")}
         </button>
         <button className="flex items-center gap-1 text-sm text-red-300" onClick={clear}>
           <Trash2 size={15} /> {t("admin.provider.clear")}
         </button>
-        {savedFlag && (
-          <span className="text-sm text-emerald-300">{t("admin.provider.saved")}</span>
-        )}
+        {savedFlag && <span className="text-sm text-emerald-300">{t("admin.provider.saved")}</span>}
       </div>
       {result && (
         <p className="mt-4 break-words text-sm text-slate-300" dir="auto">
@@ -315,70 +310,200 @@ function ProviderSection() {
         </p>
       )}
     </section>
-  )
+  );
+}
+
+/** Requests waiting on a decision. Approving settles money and revokes access. */
+function RefundQueue() {
+  const { t, n, toman } = useI18n();
+  const [refunds, setRefunds] = useState<RefundRow[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [busy, setBusy] = useState<string | null>(null);
+  const [error, setError] = useState("");
+
+  const load = useCallback(async () => {
+    try {
+      const { refunds: rows } = await api.adminRefunds();
+      setRefunds(rows);
+    } catch (err) {
+      setError(err instanceof ApiError ? err.code : "network");
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    void load();
+  }, [load]);
+
+  async function approve(id: string) {
+    setBusy(id);
+    setError("");
+    try {
+      await api.approveRefund(id);
+      setRefunds((rows) => rows.filter((row) => row.id !== id));
+    } catch (err) {
+      setError(err instanceof ApiError ? err.code : "network");
+    } finally {
+      setBusy(null);
+    }
+  }
+
+  async function reject(id: string) {
+    const reason = window.prompt(t("admin.rejectReason"));
+    if (!reason) return;
+    setBusy(id);
+    setError("");
+    try {
+      await api.rejectRefund(id, reason);
+      setRefunds((rows) => rows.filter((row) => row.id !== id));
+    } catch (err) {
+      setError(err instanceof ApiError ? err.code : "network");
+    } finally {
+      setBusy(null);
+    }
+  }
+
+  return (
+    <section className="mt-8 rounded-2xl border border-white/10 p-4 sm:p-6">
+      <h2 className="font-bold">{t("admin.refunds")}</h2>
+      {error && (
+        <p className="mt-3 text-sm text-rose-300" role="alert">
+          {error}
+        </p>
+      )}
+      {loading ? (
+        <p className="mt-3 text-sm text-slate-500">{t("common.loading")}</p>
+      ) : refunds.length === 0 ? (
+        <p className="mt-3 text-sm text-slate-400">{t("admin.noRefunds")}</p>
+      ) : (
+        <div className="table-scroll mt-4 rounded-2xl border border-white/10">
+          <table className="w-full min-w-[36rem] text-start text-sm">
+            <tbody>
+              {refunds.map((row) => (
+                <tr className="border-b border-white/5" key={row.id}>
+                  <td className="p-3" dir="ltr">
+                    {row.user.phone ?? row.userId}
+                  </td>
+                  <td className="p-3">{row.agentId}</td>
+                  <td className="p-3">{toman(row.amount)}</td>
+                  <td className="p-3 text-slate-400">
+                    {new Date(row.createdAt).toLocaleDateString()}
+                  </td>
+                  <td className="p-3">
+                    <div className="flex gap-3">
+                      <button
+                        className="flex items-center gap-1 text-emerald-300 disabled:opacity-50"
+                        disabled={busy === row.id}
+                        onClick={() => void approve(row.id)}
+                      >
+                        <Check size={15} /> {t("admin.approve")}
+                      </button>
+                      <button
+                        className="flex items-center gap-1 text-rose-300 disabled:opacity-50"
+                        disabled={busy === row.id}
+                        onClick={() => void reject(row.id)}
+                      >
+                        <X size={15} /> {t("admin.reject")}
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
+      {refunds.length > 0 && (
+        <p className="mt-3 text-xs text-slate-500">
+          {t("admin.pendingRefunds")}: {n(refunds.length)}
+        </p>
+      )}
+    </section>
+  );
 }
 
 export default function Admin() {
-  const { t, n, toman, agentName } = useI18n()
-  const stats: [string, string][] = [
-    [toman(39890000), t("admin.totalSales")],
-    [n(1280), t("admin.activeUsers")],
-    [n(5400000), t("admin.tokensUsed")],
-  ]
+  const { t, n, toman, agentName, agentDivision } = useI18n();
+  const [stats, setStats] = useState<AdminStats | null>(null);
+  const [failed, setFailed] = useState(false);
+
+  useEffect(() => {
+    let alive = true;
+    api
+      .adminStats()
+      .then((data) => alive && setStats(data))
+      .catch(() => alive && setFailed(true));
+    return () => {
+      alive = false;
+    };
+  }, []);
+
+  // Real figures from the database; the panel used to show hardcoded ones.
+  const tiles: [string, string][] = stats
+    ? [
+        [toman(stats.revenueToman), t("admin.totalSales")],
+        [n(stats.users), t("admin.activeUsers")],
+        [n(stats.purchases), t("admin.purchases")],
+        [n(stats.tokensUsed), t("admin.tokensUsed")],
+      ]
+    : [];
+
   return (
     <main className="section">
       <p className="eyebrow">{t("admin.eyebrow")}</p>
       <h1 className="page-title">{t("admin.pageTitle")}</h1>
-      <div className="mt-8 grid gap-4 md:grid-cols-3">
-        {stats.map(([v, l]) => (
-          <div className="stat" key={l}>
-            <b>{v}</b>
-            <span>{l}</span>
-          </div>
-        ))}
-      </div>
+      {failed ? (
+        <p className="mt-8 text-sm text-rose-300" role="alert">
+          {t("purchase.error.network")}
+        </p>
+      ) : (
+        <div className="mt-8 grid gap-4 md:grid-cols-4">
+          {stats ? (
+            tiles.map(([value, label]) => (
+              <div className="stat" key={label}>
+                <b>{value}</b>
+                <span>{label}</span>
+              </div>
+            ))
+          ) : (
+            <p className="text-sm text-slate-500">{t("common.loading")}</p>
+          )}
+        </div>
+      )}
+      <RefundQueue />
       <ProviderSection />
       <section className="mt-8 rounded-2xl border border-white/10">
         <div className="flex flex-wrap items-center justify-between gap-3 p-4 sm:p-5">
           <h2 className="font-bold">{t("admin.manageAgents")}</h2>
-          <button className="btn text-sm">{t("admin.createAgent")}</button>
+          <span className="text-xs text-slate-500">
+            {stats ? t("admin.catalogCount", { count: n(stats.agents) }) : ""}
+          </span>
         </div>
         {/* Only the table scrolls sideways, so the heading stays put on a phone. */}
         <div className="table-scroll border-t border-white/10">
-          <table className="w-full min-w-[40rem] text-right text-sm">
-          <thead className="border-y border-white/10 text-slate-500">
-            <tr>
-              <th className="p-4">{t("admin.col.agent")}</th>
-              <th>{t("admin.col.category")}</th>
-              <th>{t("admin.col.price")}</th>
-              <th>{t("admin.col.sales")}</th>
-              <th className="p-4">{t("admin.col.actions")}</th>
-            </tr>
-          </thead>
-          <tbody>
-            {agents.map((a) => (
-              <tr className="border-b border-white/5" key={a.id}>
-                <td className="p-4">
-                  {a.icon} {agentName(a)}
-                </td>
-                <td>{a.category}</td>
-                <td>{toman(a.price)}</td>
-                <td>{n(a.sales)}</td>
-                <td className="p-4">
-                  <button className="text-violet-300">{t("admin.edit")}</button>
-                  <button className="mx-4 text-red-300">{t("admin.disable")}</button>
-                </td>
+          <table className="w-full min-w-[40rem] text-start text-sm">
+            <thead className="border-y border-white/10 text-slate-500">
+              <tr>
+                <th className="p-4">{t("admin.col.agent")}</th>
+                <th>{t("admin.col.category")}</th>
+                <th>{t("admin.col.price")}</th>
               </tr>
-            ))}
-          </tbody>
+            </thead>
+            <tbody>
+              {agents.map((a) => (
+                <tr className="border-b border-white/5" key={a.id}>
+                  <td className="p-4">
+                    {a.icon} {agentName(a)}
+                  </td>
+                  <td>{agentDivision(a)}</td>
+                  <td>{toman(a.price)}</td>
+                </tr>
+              ))}
+            </tbody>
           </table>
         </div>
       </section>
-      <section className="mt-8 rounded-2xl border border-white/10 p-4 sm:p-6">
-        <h2 className="font-bold">{t("admin.discountCodes")}</h2>
-        <p className="mt-3 text-sm text-slate-400">{t("admin.discountBody")}</p>
-        <button className="btn btn-soft mt-5">{t("admin.createCode")}</button>
-      </section>
     </main>
-  )
+  );
 }

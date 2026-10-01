@@ -2,6 +2,7 @@ import type { FastifyInstance, FastifyRequest } from "fastify";
 import { prisma } from "../db.js";
 import { badRequest, notFound } from "../lib/errors.js";
 import { returnUrlFor } from "../payments/checkout.js";
+import { findPlan } from "../payments/pricing.js";
 import { activeGateway, gatewayById, PaymentError } from "../payments/index.js";
 import type {
   CallbackPayload,
@@ -46,23 +47,54 @@ export async function settleTransaction(input: {
 
     if (row.type === "purchase") {
       if (!row.agentId) throw badRequest("agent_not_found");
+      // A re-purchase after a refund clears `revokedAt` instead of leaving the
+      // old revoked row in place (which would silently deny access).
       await tx.entitlement.upsert({
         where: { userId_agentId: { userId: row.userId, agentId: row.agentId } },
         create: { userId: row.userId, agentId: row.agentId, pricePaid: row.amount },
-        update: {},
+        update: { revokedAt: null, pricePaid: row.amount },
       });
       return { credited: true, status: "success" as const };
     }
 
-    await tx.wallet.update({
-      where: { userId: row.userId },
-      data: {
-        tokenBalance: { increment: row.tokens },
-        timeBalanceSeconds: { increment: row.minutes * 60 },
-        monthlyTimeLimitSeconds: { increment: row.minutes * 60 },
-      },
-    });
-    return { credited: true, status: "success" as const };
+    if (row.type === "plan") {
+      const plan = row.plan ? findPlan(row.plan) : null;
+      if (!plan) throw badRequest("unknown_plan");
+      const wallet = await tx.wallet.findUnique({ where: { userId: row.userId } });
+      if (!wallet) throw notFound("wallet_missing");
+      // Buying a period sets the allowance the plan grants, refills up to it and
+      // starts a fresh period. Anything bought on top is preserved.
+      await tx.wallet.update({
+        where: { userId: row.userId },
+        data: {
+          plan: plan.key,
+          monthlyTokenLimit: plan.tokens,
+          monthlyTimeLimitSeconds: plan.minutes * 60,
+          tokenBalance: Math.max(wallet.tokenBalance, plan.tokens),
+          timeBalanceSeconds: Math.max(wallet.timeBalanceSeconds, plan.minutes * 60),
+          monthlyUsage: 0,
+          monthlyTimeUsedSeconds: 0,
+          periodStart: new Date(),
+        },
+      });
+      return { credited: true, status: "success" as const };
+    }
+
+    if (row.type === "topup") {
+      // Top-ups add spendable balance. They must not inflate the plan's monthly
+      // allowance: that is what `plan` transactions are for.
+      await tx.wallet.update({
+        where: { userId: row.userId },
+        data: {
+          tokenBalance: { increment: row.tokens },
+          timeBalanceSeconds: { increment: row.minutes * 60 },
+        },
+      });
+      return { credited: true, status: "success" as const };
+    }
+
+    // A refund recorded as a transaction never credits anything.
+    return { credited: false, status: "success" as const };
   });
 }
 

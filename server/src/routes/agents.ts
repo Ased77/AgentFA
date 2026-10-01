@@ -4,6 +4,7 @@ import { ownedAgentIds, ownsAgent } from "../entitlements.js";
 import { startCheckout } from "../payments/checkout.js";
 import { findAgent } from "../provider/catalog.js";
 import { loadPersona } from "../provider/persona.js";
+import { requestRefund } from "../refunds.js";
 
 export async function agentsRoutes(app: FastifyInstance): Promise<void> {
   app.addHook("onRequest", async (req, reply) => {
@@ -49,5 +50,16 @@ export async function agentsRoutes(app: FastifyInstance): Promise<void> {
       redirectUrl: checkout.redirectUrl,
       provider: checkout.provider,
     };
+  });
+
+  /**
+   * Ask for the 7-day money-back refund. This only records the request; the
+   * entitlement stays until an admin settles it, so a buyer never loses access
+   * to something they might be keeping.
+   */
+  app.post("/:agentId/refund", async (req) => {
+    const { agentId } = req.params as { agentId: string };
+    const refund = await requestRefund(req.sessionUser!.id, agentId);
+    return { refundId: refund.id, status: refund.status, amount: refund.amount };
   });
 }

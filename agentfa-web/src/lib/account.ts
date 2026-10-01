@@ -70,6 +70,87 @@ export type WalletSnapshot = {
   monthlyTimeUsedSeconds: number;
 };
 
+export type PlanKey = "free" | "basic" | "pro";
+export type BillingPeriod = "monthly" | "yearly";
+
+/** The server-owned price list (`GET /api/pricing`). */
+export type PriceListData = {
+  currency: string;
+  yearlyDiscount: number;
+  bundles: { tokens: number; price: number }[];
+  timePasses: { minutes: number; price: number }[];
+  plans: {
+    key: PlanKey;
+    tokens: number;
+    minutes: number;
+    monthlyPrice: number;
+    monthlyEquivalent: number;
+    featured?: boolean;
+  }[];
+};
+
+export type TransactionRow = {
+  id: string;
+  orderId: string;
+  type: "topup" | "purchase" | "plan" | "refund";
+  status: "pending" | "success" | "failed";
+  amount: number;
+  currency: string;
+  tokens: number;
+  minutes: number;
+  agentId: string | null;
+  plan: PlanKey | null;
+  billingPeriod: string | null;
+  createdAt: string;
+  paidAt: string | null;
+  failureReason: string | null;
+};
+
+export type ConversationSummary = {
+  id: string;
+  agentId: string;
+  title: string;
+  totalTokens: number;
+  createdAt: string;
+  updatedAt: string;
+};
+
+export type StoredMessage = {
+  id: string;
+  role: "user" | "assistant";
+  content: string;
+  tokens: number;
+  seconds: number;
+  model: string | null;
+  createdAt: string;
+};
+
+export type ConversationDetail = ConversationSummary & { messages: StoredMessage[] };
+
+export type UsagePoint = { day: string; tokens: number; seconds: number };
+
+export type AdminStats = {
+  users: number;
+  agents: number;
+  divisions: number;
+  purchases: number;
+  pendingRefunds: number;
+  revenueToman: number;
+  tokensUsed: number;
+};
+
+export type RefundRow = {
+  id: string;
+  orderId: string;
+  userId: string;
+  agentId: string | null;
+  amount: number;
+  currency: string;
+  provider: string | null;
+  createdAt: string;
+  user: { phone: string | null };
+};
+
 export type PublicProvider = {
   id: string;
   label: string;
@@ -102,16 +183,7 @@ export const api = {
 
   me: () => request<{ user: SessionUser }>("/api/auth/me"),
 
-  catalog: () =>
-    request<{
-      agents: Array<Record<string, unknown>>;
-      divisions: Array<Record<string, unknown>>;
-    }>("/api/catalog"),
-
   ownedAgents: () => request<{ owned: string[] }>("/api/agents/owned"),
-
-  persona: (agentId: string) =>
-    request<{ agentId: string; persona: string }>(`/api/agents/${agentId}/persona`),
 
   buyAgent: (agentId: string) =>
     request<{ transactionId: string; redirectUrl: string; price: number }>(
@@ -119,12 +191,73 @@ export const api = {
       { method: "POST" },
     ),
 
+  pricing: () => request<PriceListData>("/api/pricing"),
+
   wallet: () => request<WalletSnapshot>("/api/wallet"),
 
   topUp: (tokens: number, minutes: number) =>
     request<{ transactionId: string; redirectUrl: string }>("/api/wallet/topup", {
       method: "POST",
       body: JSON.stringify({ tokens, minutes }),
+    }),
+
+  plan: (plan: PlanKey, billing: BillingPeriod) =>
+    request<{ plan?: PlanKey; transactionId: string | null; redirectUrl: string | null }>(
+      "/api/wallet/plan",
+      { method: "POST", body: JSON.stringify({ plan, billing }) },
+    ),
+
+  transactions: () => request<{ transactions: TransactionRow[] }>("/api/wallet/transactions"),
+
+  usage: (days = 30) =>
+    request<{ days: number; points: UsagePoint[] }>(`/api/wallet/usage?days=${days}`),
+
+  transaction: (id: string) => request<TransactionRow>(`/api/payments/${id}`),
+
+  /**
+   * How much of the free preview is left on an agent. The allowance lives on the
+   * server, so the composer asks rather than counting locally.
+   */
+  preview: (agentId: string) =>
+    request<{ owned: boolean; limit: number; used: number; remaining: number }>(
+      `/api/chat/preview?agentId=${encodeURIComponent(agentId)}`,
+    ),
+
+  conversations: (agentId: string) =>
+    request<{ conversations: ConversationSummary[] }>(
+      `/api/chat/conversations?agentId=${encodeURIComponent(agentId)}`,
+    ),
+
+  conversation: (id: string) =>
+    request<{ conversation: ConversationDetail }>(`/api/chat/conversations/${id}`),
+
+  newConversation: (agentId: string) =>
+    request<{ conversation: ConversationDetail }>("/api/chat/conversations", {
+      method: "POST",
+      body: JSON.stringify({ agentId }),
+    }),
+
+  deleteConversation: (id: string) =>
+    request<{ ok: true }>(`/api/chat/conversations/${id}`, { method: "DELETE" }),
+
+  refundAgent: (agentId: string) =>
+    request<{ refundId: string; status: string; amount: number }>(
+      `/api/agents/${agentId}/refund`,
+      { method: "POST" },
+    ),
+
+  deleteAccount: () => request<{ ok: true }>("/api/account", { method: "DELETE" }),
+
+  startPhoneChange: (phone: string) =>
+    request<OtpStart>("/api/account/phone/start", {
+      method: "POST",
+      body: JSON.stringify({ phone }),
+    }),
+
+  verifyPhoneChange: (phone: string, code: string) =>
+    request<{ user: SessionUser }>("/api/account/phone/verify", {
+      method: "POST",
+      body: JSON.stringify({ phone, code }),
     }),
 
   adminProvider: () => request<{ provider: PublicProvider | null }>("/api/admin/provider"),
@@ -143,6 +276,19 @@ export const api = {
       "/api/admin/provider/test",
       { method: "POST" },
     ),
+
+  adminStats: () => request<AdminStats>("/api/admin/stats"),
+
+  adminRefunds: () => request<{ refunds: RefundRow[] }>("/api/admin/refunds"),
+
+  approveRefund: (id: string) =>
+    request<{ settled: boolean }>(`/api/admin/refunds/${id}/approve`, { method: "POST" }),
+
+  rejectRefund: (id: string, reason: string) =>
+    request<{ ok: true }>(`/api/admin/refunds/${id}/reject`, {
+      method: "POST",
+      body: JSON.stringify({ reason }),
+    }),
 };
 
 export { API_BASE };
@@ -157,11 +303,15 @@ export type ChatStreamEvent =
       truncated: boolean;
       charged: number;
       meter: "tokens" | "time";
+      conversationId: string;
+      preview: boolean;
+      previewRemaining: number | null;
     }
   | { type: "error"; error: string };
 
 export async function streamAgentChat(input: {
   agentId: string;
+  conversationId?: string;
   message: string;
   history: { role: "user" | "assistant"; content: string }[];
   lang: "fa" | "en";
@@ -174,6 +324,7 @@ export async function streamAgentChat(input: {
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({
       agentId: input.agentId,
+      conversationId: input.conversationId,
       message: input.message,
       history: input.history,
       lang: input.lang,

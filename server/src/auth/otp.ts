@@ -141,20 +141,23 @@ export type VerifyOutcome =
   | { ok: true; userId: string; isNewUser: boolean }
   | { ok: false; reason: "invalid_code" | "code_expired" | "too_many_attempts" };
 
+export type ChallengeCheck =
+  | { ok: true }
+  | { ok: false; reason: "invalid_code" | "code_expired" | "too_many_attempts" };
+
 /**
- * Check a code and resolve the account it unlocks.
+ * Check a code and consume it, without touching any account.
  *
- * The account is created here, not when the code is requested, so asking for a
- * code against somebody else's number leaves no trace — and signup and login are
- * the same flow, which is why a first-time visitor and a returning user see an
- * identical screen.
+ * Split out from `consumeChallenge` so flows that already have a user (for
+ * example changing the phone number on an existing account) can verify a code
+ * without the side effect of creating an account for an unknown number.
  */
-export async function consumeChallenge(input: {
+export async function verifyChallenge(input: {
   phone: string;
   code: string;
   ip?: string;
   log?: (line: string) => void;
-}): Promise<VerifyOutcome> {
+}): Promise<ChallengeCheck> {
   const { phone } = input;
   const env = currentEnv();
   const log = input.log ?? (() => {});
@@ -191,10 +194,28 @@ export async function consumeChallenge(input: {
     return { ok: false, reason: exhausted ? "too_many_attempts" : "invalid_code" };
   }
 
-  // Single use: the code dies here, before the session exists.
+  // Single use: the code dies here, before anything is granted.
   await prisma.loginCode.update({ where: { id: row.id }, data: { consumedAt: new Date() } });
+  return { ok: true };
+}
 
-  const { userId, isNewUser } = await findOrCreateUser(phone);
+/**
+ * Check a code and resolve the account it unlocks.
+ *
+ * The account is created here, not when the code is requested, so asking for a
+ * code against somebody else's number leaves no trace — and signup and login are
+ * the same flow, which is why a first-time visitor and a returning user see an
+ * identical screen.
+ */
+export async function consumeChallenge(input: {
+  phone: string;
+  code: string;
+  ip?: string;
+  log?: (line: string) => void;
+}): Promise<VerifyOutcome> {
+  const check = await verifyChallenge(input);
+  if (!check.ok) return check;
+  const { userId, isNewUser } = await findOrCreateUser(input.phone);
   return { ok: true, userId, isNewUser };
 }
 

@@ -1,29 +1,36 @@
-import { FormEvent, useEffect, useMemo, useRef, useState } from "react"
-import { Download, Lock, Paperclip, Send, Sparkles, Trash2, Wallet, X } from "lucide-react"
-import { Link, useNavigate, useParams, useSearchParams } from "react-router-dom"
-import { agents } from "../data/agents"
+import { FormEvent, useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { Download, Lock, Plus, Paperclip, Send, Sparkles, Trash2, Wallet } from "lucide-react";
+import { Link, useNavigate, useParams, useSearchParams } from "react-router-dom";
+import { agents } from "../data/agents";
 import {
   ApiError,
   api,
   goToGateway,
   streamAgentChat,
+  type ConversationSummary,
+  type StoredMessage,
   type WalletSnapshot,
-} from "../lib/account"
-import { useSession } from "../lib/session"
-import { useEntitlements } from "../lib/useEntitlements"
-import { useI18n } from "../lib/i18n"
+} from "../lib/account";
+import { Modal } from "../components/Modal";
+import { useSession } from "../lib/session";
+import { useEntitlements } from "../lib/useEntitlements";
+import { usePricing } from "../lib/pricing";
+import { useI18n } from "../lib/i18n";
 
 type Message = {
-  role: "assistant" | "user"
-  text: string
-  time: string
-  tokens?: number
-  seconds?: number
-  streaming?: boolean
-}
+  role: "assistant" | "user";
+  text: string;
+  /** Pre-formatted clock time for the bubble footer. */
+  time: string;
+  tokens?: number;
+  seconds?: number;
+  streaming?: boolean;
+};
+
+type Preview = { owned: boolean; limit: number; used: number; remaining: number };
 
 function Code({ text }: { text: string }) {
-  const { t } = useI18n()
+  const { t } = useI18n();
   return (
     <>
       {text.split(/(```[\s\S]*?```)/g).map((part, i) =>
@@ -39,16 +46,8 @@ function Code({ text }: { text: string }) {
         ),
       )}
     </>
-  )
+  );
 }
-
-const bundleTokens = [100000, 300000, 1000000]
-const bundlePrices = [50000, 130000, 400000]
-const timePasses: [number, number][] = [
-  [60, 30000],
-  [300, 120000],
-  [1200, 400000],
-]
 
 const EMPTY_WALLET: WalletSnapshot = {
   plan: "free",
@@ -58,204 +57,278 @@ const EMPTY_WALLET: WalletSnapshot = {
   monthlyTimeLimitSeconds: 1,
   monthlyUsage: 0,
   monthlyTimeUsedSeconds: 0,
-}
+};
 
 export default function Chat() {
-  const { agentId } = useParams()
-  const [params] = useSearchParams()
-  const nav = useNavigate()
-  const agent = useMemo(() => agents.find((a) => a.id === agentId), [agentId])
-  const { t, n, toman, lang, agentName, agentPrompts, agentWelcome } = useI18n()
-  const { user, loading: sessionLoading } = useSession()
-  const { owns, refresh: refreshEntitlements } = useEntitlements()
+  const { agentId } = useParams();
+  const [params] = useSearchParams();
+  const nav = useNavigate();
+  const agent = useMemo(() => agents.find((a) => a.id === agentId), [agentId]);
+  const { t, n, toman, lang, agentName, agentPrompts, agentWelcome } = useI18n();
+  const { user, loading: sessionLoading } = useSession();
+  const { owns, refresh: refreshEntitlements } = useEntitlements();
+  const { prices } = usePricing();
 
-  const [wallet, setWallet] = useState<WalletSnapshot>(EMPTY_WALLET)
-  const [meter, setMeter] = useState<"tokens" | "time">("tokens")
-  const [input, setInput] = useState("")
-  const [loading, setLoading] = useState(false)
-  const [error, setError] = useState("")
-  const [modal, setModal] = useState(false)
-  const abortRef = useRef<AbortController | null>(null)
+  const [wallet, setWallet] = useState<WalletSnapshot>(EMPTY_WALLET);
+  const [meter, setMeter] = useState<"tokens" | "time">("tokens");
+  const [input, setInput] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
+  const [modal, setModal] = useState(false);
+  const [conversations, setConversations] = useState<ConversationSummary[]>([]);
+  const [activeId, setActiveId] = useState<string | null>(null);
+  const [preview, setPreview] = useState<Preview | null>(null);
+  const abortRef = useRef<AbortController | null>(null);
 
-  const owned = agent ? owns(agent.id) : false
+  const owned = agent ? owns(agent.id) : false;
+  const locale = lang === "fa" ? "fa-IR" : "en-US";
+
+  const stamp = useCallback(
+    (value?: string) =>
+      new Date(value ?? Date.now()).toLocaleTimeString(locale, {
+        hour: "2-digit",
+        minute: "2-digit",
+      }),
+    [locale],
+  );
 
   const fresh = useMemo(
     (): Message[] =>
-      agent
-        ? [{ role: "assistant", text: agentWelcome(agent), time: t("chat.now") }]
-        : [],
-    [agent, t, agentWelcome],
-  )
-  const [messages, setMessages] = useState<Message[]>(fresh)
+      agent ? [{ role: "assistant", text: agentWelcome(agent), time: stamp() }] : [],
+    [agent, agentWelcome, stamp],
+  );
+  const [messages, setMessages] = useState<Message[]>(fresh);
 
-  useEffect(() => setMessages(fresh), [agent, fresh])
-
-  const preset = params.get("prompt")
+  // A fresh agent (or a fresh greeting) starts a new thread.
   useEffect(() => {
-    if (preset) setInput(preset)
-  }, [preset])
+    setMessages(fresh);
+    setActiveId(null);
+  }, [fresh]);
 
-  useEffect(() => () => abortRef.current?.abort(), [])
-
-  // Server-side wallet snapshot; never trusted from localStorage.
+  const preset = params.get("prompt");
   useEffect(() => {
-    if (!user) return
-    let alive = true
-    api
+    if (preset) setInput(preset);
+  }, [preset]);
+
+  useEffect(() => () => abortRef.current?.abort(), []);
+
+  const refreshConversations = useCallback(async () => {
+    if (!agent || !user) return;
+    try {
+      const { conversations: list } = await api.conversations(agent.id);
+      setConversations(list);
+    } catch {
+      /* an empty sidebar is not worth an error banner */
+    }
+  }, [agent, user]);
+
+  // Server-side wallet and preview state; neither is ever trusted from storage.
+  useEffect(() => {
+    if (!agent || !user) return;
+    let alive = true;
+    void api
       .wallet()
       .then((w) => alive && setWallet(w))
-      .catch(() => {})
+      .catch(() => {});
+    void api
+      .preview(agent.id)
+      .then((p) => alive && setPreview(p))
+      .catch(() => {});
+    void refreshConversations();
     return () => {
-      alive = false
-    }
-  }, [user])
+      alive = false;
+    };
+  }, [agent, user, refreshConversations]);
 
-  if (sessionLoading) return null
+  if (sessionLoading) return null;
 
   if (!agent)
     return (
       <main className="section text-center">
         <h1 className="text-3xl font-black">{t("chat.notFound")}</h1>
       </main>
-    )
+    );
 
-  const stamp = () =>
-    new Date().toLocaleTimeString(lang === "fa" ? "fa-IR" : "en-US", {
-      hour: "2-digit",
-      minute: "2-digit",
-    })
+  const previewExhausted = !owned && preview !== null && preview.remaining <= 0;
+  const previewActive = !owned && !previewExhausted;
 
   const appendDelta = (chunk: string) =>
     setMessages((m) => {
-      const copy = [...m]
-      const last = copy[copy.length - 1]
+      const copy = [...m];
+      const last = copy[copy.length - 1];
       if (last?.role === "assistant" && last.streaming)
-        copy[copy.length - 1] = { ...last, text: last.text + chunk }
-      return copy
-    })
+        copy[copy.length - 1] = { ...last, text: last.text + chunk };
+      return copy;
+    });
 
   function fail(code: string) {
-    setError(t(`chat.error.${code}`))
+    const key = `chat.error.${code}`;
+    const message = t(key);
+    setError(message === key ? t("chat.error.server") : message);
   }
 
   function reset() {
-    abortRef.current?.abort()
-    abortRef.current = null
-    setMessages(fresh)
-    setInput("")
-    setError("")
-    setLoading(false)
+    abortRef.current?.abort();
+    abortRef.current = null;
+    setMessages(fresh);
+    setActiveId(null);
+    setInput("");
+    setError("");
+    setLoading(false);
+  }
+
+  async function openConversation(id: string) {
+    setError("");
+    try {
+      const { conversation } = await api.conversation(id);
+      setActiveId(conversation.id);
+      setMessages(
+        conversation.messages.map((m: StoredMessage) => ({
+          role: m.role,
+          text: m.content,
+          time: stamp(m.createdAt),
+          tokens: m.tokens || undefined,
+          seconds: m.seconds || undefined,
+        })),
+      );
+    } catch (err) {
+      fail(err instanceof ApiError ? err.code : "network");
+    }
+  }
+
+  async function removeConversation(id: string) {
+    if (!window.confirm(t("chat.deleteConversation"))) return;
+    try {
+      await api.deleteConversation(id);
+      setConversations((list) => list.filter((c) => c.id !== id));
+      if (activeId === id) reset();
+    } catch {
+      /* the list is refreshed below either way */
+    }
+    void refreshConversations();
   }
 
   async function submit(e?: FormEvent) {
-    e?.preventDefault()
-    const target = agent
-    if (!target || !input.trim() || loading) return
+    e?.preventDefault();
+    const target = agent;
+    if (!target || !input.trim() || loading) return;
 
-    if (!user) return nav("/login")
-    if (!owned) return fail("not_owned")
+    if (!user) return nav("/login");
+    if (previewExhausted) return;
 
-    const text = input
-    const now = stamp()
-    setMessages((m) => [...m, { role: "user", text, time: now }])
-    setInput("")
-    setError("")
-    setLoading(true)
-    setMessages((m) => [...m, { role: "assistant", text: "", time: now, streaming: true }])
+    const text = input;
+    const now = stamp();
+    setMessages((m) => [...m, { role: "user", text, time: now }]);
+    setInput("");
+    setError("");
+    setLoading(true);
+    setMessages((m) => [...m, { role: "assistant", text: "", time: now, streaming: true }]);
 
     const history = messages
       .filter((m) => !m.streaming && m.text)
       .slice(-10)
-      .map((m) => ({ role: m.role, content: m.text }))
+      .map((m) => ({ role: m.role, content: m.text }));
 
-    const controller = new AbortController()
-    abortRef.current = controller
+    const controller = new AbortController();
+    abortRef.current = controller;
 
     try {
       await streamAgentChat({
         agentId: target.id,
+        conversationId: activeId ?? undefined,
         message: text,
         history,
         lang,
         signal: controller.signal,
         onEvent: (event) => {
           if (event.type === "delta") {
-            appendDelta(event.chunk)
-            return
+            appendDelta(event.chunk);
+            return;
           }
           if (event.type === "done") {
-            setMeter(event.meter)
+            setMeter(event.meter);
             setMessages((m) => {
-              const copy = [...m]
-              const last = copy[copy.length - 1]
+              const copy = [...m];
+              const last = copy[copy.length - 1];
               if (last?.role === "assistant")
                 copy[copy.length - 1] = {
                   ...last,
                   streaming: false,
                   tokens: event.meter === "tokens" ? event.charged : undefined,
                   seconds: event.meter === "time" ? event.charged : undefined,
-                }
-              return copy
-            })
-            if (event.truncated) setError(t("chat.error.budget"))
-            void api.wallet().then(setWallet).catch(() => {})
-            return
+                };
+              return copy;
+            });
+            if (event.truncated) setError(t("chat.error.budget"));
+            // The thread now exists server-side: remember it so the next turn
+            // continues the same conversation and the sidebar shows it.
+            setActiveId((current) => current ?? event.conversationId);
+            setPreview((p) =>
+              p && !p.owned
+                ? { ...p, used: p.used + 1, remaining: event.previewRemaining ?? Math.max(0, p.remaining - 1) }
+                : p,
+            );
+            void api.wallet().then(setWallet).catch(() => {});
+            void refreshConversations();
+            return;
           }
-          if (event.type === "error") fail(event.error)
+          if (event.type === "error") fail(event.error);
         },
-      })
+      });
     } catch (err) {
-      const code = err instanceof ApiError ? err.code : "network"
-      fail(code)
+      const code = err instanceof ApiError ? err.code : "network";
+      fail(code);
+      if (code === "not_owned") void api.preview(target.id).then(setPreview).catch(() => {});
       setMessages((m) => {
-        const copy = [...m]
-        const last = copy[copy.length - 1]
+        const copy = [...m];
+        const last = copy[copy.length - 1];
         if (last?.role === "assistant" && last.streaming) {
-          if (last.text) copy[copy.length - 1] = { ...last, streaming: false }
-          else copy.pop()
+          if (last.text) copy[copy.length - 1] = { ...last, streaming: false };
+          else copy.pop();
         }
-        return copy
-      })
+        return copy;
+      });
     } finally {
-      abortRef.current = null
-      setLoading(false)
+      abortRef.current = null;
+      setLoading(false);
     }
   }
 
   async function topUp(tokens: number, minutes: number) {
     try {
-      const { redirectUrl } = await api.topUp(tokens, minutes)
+      const { redirectUrl } = await api.topUp(tokens, minutes);
       // The balance only changes once the gateway confirms the payment; until
-      // then we send the payer to checkout and let /payment-required report the
-      // result when they come back.
-      if (goToGateway(redirectUrl)) return
-      const w = await api.wallet()
-      setWallet(w)
-      setModal(false)
+      // then we hand off to checkout and let /payment-required report the result.
+      if (goToGateway(redirectUrl)) return;
+      setWallet(await api.wallet());
+      setModal(false);
+      void refreshEntitlements();
     } catch (err) {
-      fail(err instanceof ApiError ? err.code : "network")
+      fail(err instanceof ApiError ? err.code : "network");
     }
   }
 
   function download() {
+    const target = agent;
+    if (!target) return;
     const data = messages
-      .map((m) => `[${m.time}] ${m.role === "user" ? t("chat.you") : agent!.name}: ${m.text}`)
-      .join("\n\n")
-    const u = URL.createObjectURL(new Blob([data], { type: "text/plain;charset=utf-8" }))
-    const a = document.createElement("a")
-    a.href = u
-    a.download = `chat-${agent!.slug}.txt`
-    a.click()
-    URL.revokeObjectURL(u)
+      .map((m) => `[${m.time}] ${m.role === "user" ? t("chat.you") : agentName(target)}: ${m.text}`)
+      .join("\n\n");
+    const u = URL.createObjectURL(new Blob([data], { type: "text/plain;charset=utf-8" }));
+    const a = document.createElement("a");
+    a.href = u;
+    a.download = `chat-${target.slug}.txt`;
+    a.click();
+    URL.revokeObjectURL(u);
   }
 
   const ratio =
     meter === "time"
       ? wallet.timeBalanceSeconds / Math.max(1, wallet.monthlyTimeLimitSeconds)
-      : wallet.tokenBalance / Math.max(1, wallet.monthlyTokenLimit)
-  const used = messages.reduce((acc, m) => acc + (m.tokens || 0), 0)
-  const spent = messages.reduce((acc, m) => acc + (m.seconds || 0), 0)
-  const minutes = (seconds: number) => n(Math.max(1, Math.round(seconds / 60)))
+      : wallet.tokenBalance / Math.max(1, wallet.monthlyTokenLimit);
+  const used = messages.reduce((acc, m) => acc + (m.tokens || 0), 0);
+  const spent = messages.reduce((acc, m) => acc + (m.seconds || 0), 0);
+  const minutes = (seconds: number) => n(Math.max(1, Math.round(seconds / 60)));
 
   if (!user)
     return (
@@ -269,38 +342,58 @@ export default function Chat() {
           </Link>
         </div>
       </main>
-    )
+    );
 
-  if (!owned)
+  if (previewExhausted)
     return (
       <main className="section grid min-h-[60vh] place-items-center text-center">
         <div className="max-w-lg rounded-3xl border border-white/10 bg-white/[.03] p-8">
-          <Lock className="mx-auto text-violet-300" />
-          <h1 className="mt-5 text-2xl font-black">{t("chat.lockedTitle")}</h1>
+          <Sparkles className="mx-auto text-violet-300" />
+          <h1 className="mt-5 text-2xl font-black">{t("chat.previewEnded")}</h1>
           <p className="mt-4 leading-8 text-slate-400">{t("chat.lockedBody")}</p>
           <Link className="btn mt-7" to={`/agent/${agent.slug}`}>
-            {t("chat.lockedCta")}
+            {t("chat.buyAgent")}
           </Link>
         </div>
       </main>
-    )
+    );
 
   return (
     <main className="chat-shell mx-auto flex max-w-7xl gap-4 p-3 sm:p-4">
       <aside className="hidden w-70 shrink-0 rounded-2xl border border-white/8 bg-white/[.03] p-4 lg:block">
         <button className="btn w-full justify-center text-sm" onClick={reset}>
-          {t("chat.newChat")}
+          <Plus size={15} /> {t("chat.newChat")}
         </button>
-        <p className="mt-7 text-xs text-slate-500">{t("chat.agentChats")}</p>
-        <div className="mt-3 rounded-xl bg-white/7 p-3 text-sm">
-          {t("chat.newChatTitle")}
-          <br />
-          <span className="text-xs text-slate-500">
-            {t("chat.now")} ·{" "}
-            {meter === "time"
-              ? `${minutes(spent)} ${t("chat.minutes")}`
-              : `${n(used)} ${t("common.token")}`}
-          </span>
+        <p className="mt-7 text-xs text-slate-500">{t("chat.conversations")}</p>
+        <div className="mt-3 space-y-2">
+          {conversations.length === 0 && (
+            <p className="text-xs text-slate-500">{t("chat.noConversations")}</p>
+          )}
+          {conversations.map((conversation) => (
+            <div
+              className={`group flex items-center gap-1 rounded-xl p-2 text-sm ${
+                activeId === conversation.id ? "bg-white/10" : "hover:bg-white/5"
+              }`}
+              key={conversation.id}
+            >
+              <button
+                className="min-w-0 flex-1 text-start"
+                onClick={() => void openConversation(conversation.id)}
+              >
+                <span className="block truncate">{conversation.title || t("chat.untitled")}</span>
+                <span className="block truncate text-xs text-slate-500">
+                  {n(conversation.totalTokens)} {t("common.token")}
+                </span>
+              </button>
+              <button
+                className="icon-btn size-7 shrink-0 opacity-0 transition group-hover:opacity-100 focus:opacity-100"
+                onClick={() => void removeConversation(conversation.id)}
+                aria-label={t("common.delete")}
+              >
+                <Trash2 size={14} />
+              </button>
+            </div>
+          ))}
         </div>
       </aside>
       <section className="flex min-h-0 min-w-0 flex-1 flex-col rounded-2xl border border-white/8 bg-[#101936]">
@@ -331,7 +424,18 @@ export default function Chat() {
             </button>
           </div>
         </header>
-        {ratio < 0.2 && (
+        {previewActive && (
+          <div className="mx-4 mt-3 flex flex-wrap items-center justify-between gap-3 rounded-xl bg-violet-500/15 p-3 text-sm sm:mx-5 sm:mt-4">
+            <span className="text-violet-100">
+              <b>{t("chat.previewBadge")}</b> ·{" "}
+              {t("chat.previewLeft", { count: n(preview?.remaining ?? 0) })}
+            </span>
+            <Link className="text-violet-200 underline" to={`/agent/${agent.slug}`}>
+              {t("chat.buyAgent")}
+            </Link>
+          </div>
+        )}
+        {!previewActive && ratio < 0.2 && (
           <div
             className={`mx-4 mt-3 rounded-xl p-3 text-sm sm:mx-5 sm:mt-4 ${
               ratio < 0.1 ? "bg-red-500/15 text-red-100" : "bg-amber-400/10 text-amber-100"
@@ -387,7 +491,7 @@ export default function Chat() {
               onKeyDown={(e) => {
                 if (e.key === "Enter" && !e.shiftKey) {
                   e.preventDefault()
-                  submit()
+                  void submit()
                 }
               }}
               placeholder={t("chat.inputPlaceholder")}
@@ -430,47 +534,45 @@ export default function Chat() {
         </Link>
       </aside>
       {modal && (
-        <div className="fixed inset-0 z-50 grid place-items-center bg-slate-950/75 p-4">
-          <div className="modal-panel w-full max-w-md rounded-3xl border border-white/10 bg-[#101936] p-5 sm:p-6">
-            <button onClick={() => setModal(false)} className="float-left text-slate-400">
-              <X />
-            </button>
-            <h2 className="text-xl font-bold">{t("chat.buyTokens")}</h2>
-            <p className="mt-3 text-sm leading-7 text-slate-400">
-              {error || t("chat.chooseBundle")}
-            </p>
-            <div className="mt-6 grid gap-3">
-              {bundleTokens.map((tokens, i) => (
-                <button
-                  key={tokens}
-                  onClick={() => topUp(tokens, 0)}
-                  className="flex justify-between rounded-xl border border-white/10 p-4 hover:border-violet-400"
-                >
-                  <b>
-                    {n(tokens)} {t("common.token")}
-                  </b>
-                  <span className="text-violet-300">{toman(bundlePrices[i])}</span>
-                </button>
-              ))}
-            </div>
-            <h3 className="mt-7 text-sm font-bold">{t("chat.timePasses")}</h3>
-            <div className="mt-3 grid gap-3">
-              {timePasses.map(([mins, price]) => (
-                <button
-                  key={mins}
-                  onClick={() => topUp(0, mins)}
-                  className="flex justify-between rounded-xl border border-white/10 p-4 hover:border-violet-400"
-                >
-                  <b>
-                    {n(mins)} {t("chat.minutes")}
-                  </b>
-                  <span className="text-violet-300">{toman(price)}</span>
-                </button>
-              ))}
-            </div>
+        <Modal
+          title={t("chat.buyTokens")}
+          onClose={() => setModal(false)}
+          closeLabel={t("common.close")}
+        >
+          <p className="text-sm leading-7 text-slate-400">{error || t("chat.chooseBundle")}</p>
+          <div className="mt-6 grid gap-3">
+            {prices.bundles.map((bundle) => (
+              <button
+                key={bundle.tokens}
+                onClick={() => void topUp(bundle.tokens, 0)}
+                disabled={loading}
+                className="flex justify-between rounded-xl border border-white/10 p-4 hover:border-violet-400"
+              >
+                <b>
+                  {n(bundle.tokens)} {t("common.token")}
+                </b>
+                <span className="text-violet-300">{toman(bundle.price)}</span>
+              </button>
+            ))}
           </div>
-        </div>
+          <h3 className="mt-7 text-sm font-bold">{t("chat.timePasses")}</h3>
+          <div className="mt-3 grid gap-3">
+            {prices.timePasses.map((pass) => (
+              <button
+                key={pass.minutes}
+                onClick={() => void topUp(0, pass.minutes)}
+                disabled={loading}
+                className="flex justify-between rounded-xl border border-white/10 p-4 hover:border-violet-400"
+              >
+                <b>
+                  {n(pass.minutes)} {t("chat.minutes")}
+                </b>
+                <span className="text-violet-300">{toman(pass.price)}</span>
+              </button>
+            ))}
+          </div>
+        </Modal>
       )}
     </main>
-  )
+  );
 }

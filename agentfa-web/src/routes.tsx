@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState, type ReactNode } from "react"
+import { lazy, Suspense, useEffect, useMemo, useState, type ReactNode } from "react"
 import {
   createBrowserRouter,
   Link,
@@ -10,8 +10,6 @@ import {
   useSearchParams,
 } from "react-router-dom"
 import {
-  ArrowLeft,
-  ArrowRight,
   Bot,
   Check,
   ChevronDown,
@@ -28,11 +26,27 @@ import { agents, divisions, Agent } from "./data/agents"
 import { useI18n } from "./lib/i18n"
 import { useSession } from "./lib/session"
 import { useEntitlements } from "./lib/useEntitlements"
-import { api, ApiError, goToGateway } from "./lib/account"
-import Admin from "./pages/Admin"
-import Chat from "./pages/Chat"
-import Login from "./pages/Login"
-import Pricing from "./pages/Pricing"
+import {
+  api,
+  ApiError,
+  goToGateway,
+  type TransactionRow,
+  type UsagePoint,
+  type WalletSnapshot,
+} from "./lib/account"
+import { ForwardArrow } from "./components/ForwardArrow"
+import Legal from "./pages/Legal"
+import NotFound from "./pages/NotFound"
+
+// Everything except the landing/marketplace/detail/ dashboard surface is split
+// out: the initial bundle used to carry Admin, Chat, Login and Pricing whether or
+// not they were ever opened.
+const Admin = lazy(() => import("./pages/Admin"))
+const Chat = lazy(() => import("./pages/Chat"))
+const Login = lazy(() => import("./pages/Login"))
+const Pricing = lazy(() => import("./pages/Pricing"))
+const Account = lazy(() => import("./pages/Account"))
+const PaymentReturn = lazy(() => import("./pages/PaymentReturn"))
 
 function LanguageSwitcher() {
   const { lang, setLang, t } = useI18n()
@@ -66,18 +80,34 @@ function Shell() {
     return () => window.removeEventListener("keydown", onKey)
   }, [menu])
   useEffect(() => {
-    const page =
-      pathname === "/"
-        ? t("titles.home")
-        : pathname.includes("marketplace")
-          ? t("nav.marketplace")
-          : pathname.includes("chat")
+    // Order matters: `/agent` must not be caught by `/account`.
+    const page = pathname === "/"
+      ? t("titles.home")
+      : pathname.startsWith("/marketplace")
+        ? t("titles.marketplace")
+        : pathname.startsWith("/agent")
+          ? t("titles.agent")
+          : pathname.startsWith("/chat")
             ? t("titles.chat")
-            : pathname.includes("dashboard")
+            : pathname.startsWith("/dashboard")
               ? t("nav.dashboard")
-              : pathname.includes("pricing")
-                ? t("nav.pricing")
-                : t("titles.account")
+              : pathname.startsWith("/account")
+                ? t("titles.account")
+                : pathname.startsWith("/pricing")
+                  ? t("titles.pricing")
+                  : pathname.startsWith("/admin")
+                    ? t("titles.admin")
+                    : pathname.startsWith("/payment-required")
+                      ? t("pay.title")
+                      : pathname.startsWith("/terms")
+                        ? t("footer.terms")
+                        : pathname.startsWith("/privacy")
+                          ? t("footer.privacy")
+                          : pathname.startsWith("/contact")
+                            ? t("footer.contact")
+                            : pathname.startsWith("/login") || pathname.startsWith("/signup")
+                              ? t("titles.login")
+                              : t("notFound.title")
     document.title = `${page} | ${t("brand.name")}`
   }, [pathname, t])
   return (
@@ -115,6 +145,9 @@ function Shell() {
                   <LayoutDashboard size={17} />{" "}
                   <span className="hidden sm:inline">{t("nav.dashboard")}</span>
                 </Link>
+                <Link className="text-sm text-slate-300" to="/account">
+                  {t("account.title")}
+                </Link>
                 {/* Logging out lives in the menu on phones, where space is short. */}
                 <button
                   className="hidden text-sm text-slate-400 md:block"
@@ -127,7 +160,7 @@ function Shell() {
               <>
                 {/* One entry point: /login creates the account on first use. */}
                 <Link className="btn" to="/login">
-                  {t("nav.login")} <ArrowLeft size={16} />
+                  {t("nav.login")} <ForwardArrow size={16} />
                 </Link>
               </>
             )}
@@ -179,6 +212,12 @@ function Shell() {
                 >
                   {t("nav.dashboard")}
                 </Link>
+                <Link
+                  to="/account"
+                  className="rounded-xl px-3 py-3 text-slate-200 transition hover:bg-white/5"
+                >
+                  {t("account.title")}
+                </Link>
                 <button
                   className="rounded-xl px-3 py-3 text-start text-slate-400 transition hover:bg-white/5"
                   onClick={() => void logout()}
@@ -199,6 +238,11 @@ function Shell() {
       </header>
       <Outlet />
       <footer className="border-t border-white/8 py-10 text-center text-sm text-slate-500">
+        <nav className="mb-4 flex flex-wrap items-center justify-center gap-x-6 gap-y-2">
+          <Link to="/terms">{t("footer.terms")}</Link>
+          <Link to="/privacy">{t("footer.privacy")}</Link>
+          <Link to="/contact">{t("footer.contact")}</Link>
+        </nav>
         © {t("brand.name")} · {t("footer.tagline")}
       </footer>
     </>
@@ -208,7 +252,7 @@ function Shell() {
 function AgentCard({ agent }: { agent: Agent }) {
   const { owns } = useEntitlements()
   const own = owns(agent.id)
-  const { t, n, toman, agentName, agentDescription, isRtl } = useI18n()
+  const { t, n, toman, agentName, agentDescription } = useI18n()
   return (
     <article className="agent-card group relative">
       <div className="mb-7 flex items-start justify-between">
@@ -240,8 +284,7 @@ function AgentCard({ agent }: { agent: Agent }) {
           className="icon-btn after:absolute after:inset-0 after:content-['']"
           aria-label={`${t("common.view")} ${agentName(agent)}`}
         >
-          {/* Forward points left in RTL (fa) and right in LTR (en). */}
-          {isRtl ? <ArrowLeft size={18} /> : <ArrowRight size={18} />}
+          <ForwardArrow size={18} />
         </Link>
       </div>
     </article>
@@ -249,11 +292,11 @@ function AgentCard({ agent }: { agent: Agent }) {
 }
 
 function Landing() {
-  const { t, n } = useI18n()
-  const steps = [
-    ["۰۱", t("landing.step1t"), t("landing.step1d")],
-    ["۰۲", t("landing.step2t"), t("landing.step2d")],
-    ["۰۳", t("landing.step3t"), t("landing.step3d")],
+  const { t, n, lang } = useI18n()
+  const steps: [number, string, string][] = [
+    [1, t("landing.step1t"), t("landing.step1d")],
+    [2, t("landing.step2t"), t("landing.step2d")],
+    [3, t("landing.step3t"), t("landing.step3d")],
   ]
   const faqs = [
     t("landing.faqQ1"),
@@ -280,7 +323,7 @@ function Landing() {
             </p>
             <div className="mt-10 flex flex-wrap justify-center gap-3">
               <Link className="btn btn-large" to="/login">
-                {t("landing.cta")} <ArrowLeft size={18} />
+                {t("landing.cta")} <ForwardArrow size={18} />
               </Link>
               <Link className="btn btn-soft btn-large" to="/marketplace">
                 {t("landing.seeAgents")}
@@ -301,7 +344,7 @@ function Landing() {
             <h2>{t("landing.findTitle")}</h2>
           </div>
           <Link to="/marketplace" className="text-sm text-violet-300">
-            {t("landing.seeAll")} ←
+            {t("landing.seeAll")} <ForwardArrow size={16} />
           </Link>
         </div>
         <div className="grid gap-5 md:grid-cols-2 xl:grid-cols-3">
@@ -319,7 +362,7 @@ function Landing() {
         <div className="grid gap-px overflow-hidden rounded-3xl border border-white/8 bg-white/8 md:grid-cols-3">
           {steps.map((x) => (
             <div className="bg-[#101936] p-6 sm:p-8" key={x[0]}>
-              <b className="text-4xl text-violet-400">{n(Number(x[0]))}</b>
+              <b className="text-4xl text-violet-400">{n(x[0]).padStart(2, lang === "fa" ? "۰" : "0")}</b>
               <h3 className="mt-6 text-lg font-bold sm:mt-12 sm:text-xl">{x[1]}</h3>
               <p className="mt-3 text-sm leading-6 text-slate-400">{x[2]}</p>
             </div>
@@ -362,13 +405,15 @@ function Marketplace() {
     ],
     [divisions, division, t],
   )
-  const allLabel = t("common.all")
   const list = useMemo(
     () =>
       agents
         .filter(
           (a) =>
-            (!cat || cat === allLabel || a.category === cat) &&
+            // Filter by division slug, never by a localized label: the previous
+            // version compared the English chip text against the Persian
+            // `category`, so every category returned nothing in English.
+            (!cat || cat === "all" || a.division === cat) &&
             (agentName(a).toLowerCase().includes(q.toLowerCase()) ||
               agentDescription(a).toLowerCase().includes(q.toLowerCase()) ||
               agentDivision(a).toLowerCase().includes(q.toLowerCase())),
@@ -380,7 +425,7 @@ function Marketplace() {
               ? b.price - a.price
               : b.sales - a.sales,
         ),
-    [q, cat, sort, allLabel, agentName, agentDescription, agentDivision],
+    [q, cat, sort, agentName, agentDescription, agentDivision],
   )
   return (
     <main className="section min-h-screen">
@@ -410,8 +455,8 @@ function Marketplace() {
       <div className="chip-row mt-6">
         {cats.map((c) => (
           <button
-            onClick={() => setCat(c.label)}
-            className={`tab ${cat === c.label ? "active" : ""}`}
+            onClick={() => setCat(c.slug)}
+            className={`tab ${cat === c.slug ? "active" : ""}`}
             key={c.slug}
             title={`${c.label}${
               c.slug !== "all"
@@ -445,13 +490,25 @@ function Detail() {
     useI18n()
   const { user } = useSession()
   const { owns, refresh } = useEntitlements()
-  if (!a) return <Navigate to="/marketplace" />
+  const [error, setError] = useState("")
+  const [refunding, setRefunding] = useState(false)
+  if (!a) return <NotFound />
   const agentId = a.id
   const own = owns(agentId)
+
+  // An unknown error code falls back to a readable message instead of leaking a
+  // raw code into the UI.
+  const localizedError = (code: string) => {
+    const key = `purchase.error.${code}`
+    const message = t(key)
+    return message === key ? t("purchase.error.generic") : message
+  }
+
   async function purchase() {
     if (!user) return nav("/login")
     setBuying(true)
     setNotice("")
+    setError("")
     try {
       const { redirectUrl } = await api.buyAgent(agentId)
       // Hand off to the gateway's hosted checkout; the agent unlocks only after
@@ -459,15 +516,31 @@ function Detail() {
       if (!goToGateway(redirectUrl)) setNotice(t("payment.pending"))
       await refresh()
     } catch (err) {
-      setNotice(err instanceof ApiError ? err.code : "network")
+      setError(localizedError(err instanceof ApiError ? err.code : "network"))
     } finally {
       setBuying(false)
+    }
+  }
+
+  async function refund() {
+    if (!window.confirm(t("refund.request"))) return
+    setRefunding(true)
+    setNotice("")
+    setError("")
+    try {
+      await api.refundAgent(agentId)
+      setNotice(t("refund.requested"))
+      await refresh()
+    } catch (err) {
+      setError(localizedError(err instanceof ApiError ? err.code : "network"))
+    } finally {
+      setRefunding(false)
     }
   }
   return (
     <main className="section">
       <Link to="/marketplace" className="text-sm text-slate-400">
-        → {t("detail.back")}
+        <ForwardArrow size={16} /> {t("detail.back")}
       </Link>
       <div className="mt-8 grid gap-12 lg:grid-cols-[1fr_.8fr]">
         <div>
@@ -521,7 +594,7 @@ function Detail() {
             disabled={buying}
           >
             {own ? t("common.startChat") : t("common.buy")}
-            <ArrowLeft size={17} />
+            <ForwardArrow size={17} />
           </button>
           <button
             className="btn btn-soft mt-3 w-full justify-center"
@@ -530,6 +603,20 @@ function Detail() {
             {t("detail.preview")}
           </button>
           {notice && <p className="mt-4 text-sm text-emerald-300">✓ {notice}</p>}
+          {error && (
+            <p className="mt-4 text-sm text-rose-300" role="alert">
+              {error}
+            </p>
+          )}
+          {own && (
+            <button
+              className="btn btn-soft mt-3 w-full justify-center text-xs"
+              onClick={() => void refund()}
+              disabled={refunding}
+            >
+              {t("refund.request")}
+            </button>
+          )}
         </aside>
       </div>
     </main>
@@ -544,15 +631,41 @@ function Dashboard() {
   const { user } = useSession()
   const { owned } = useEntitlements()
   const own = agents.filter((a) => owned.includes(a.id))
-  const { t, n, phone } = useI18n()
+  const { t, n, toman, phone, agentName, lang } = useI18n()
+  const locale = lang === "fa" ? "fa-IR" : "en-US"
   // Set right after a first login, when the gift balance was just created.
   const [params] = useSearchParams()
   const welcome = params.get("welcome") === "1"
+
+  // Real figures: the balance, the chart and the receipts all come from the
+  // wallet endpoints instead of hardcoded Persian digits and fake bars.
+  const [wallet, setWallet] = useState<WalletSnapshot | null>(null)
+  const [usage, setUsage] = useState<UsagePoint[]>([])
+  const [transactions, setTransactions] = useState<TransactionRow[]>([])
+  useEffect(() => {
+    if (!user) return
+    let alive = true
+    void api.wallet().then((w) => alive && setWallet(w)).catch(() => {})
+    void api.usage(30).then((u) => alive && setUsage(u.points)).catch(() => {})
+    void api.transactions().then((x) => alive && setTransactions(x.transactions)).catch(() => {})
+    return () => {
+      alive = false
+    }
+  }, [user])
+
+  const planKey = wallet?.plan ?? "free"
   const stats: [string, string, typeof Wallet][] = [
-    ["۵۰٬۰۰۰", t("dash.balance"), Wallet],
+    [n(wallet?.tokenBalance ?? 0), t("dash.balance"), Wallet],
     [n(own.length), t("dash.myAgents"), Bot],
-    ["۰", t("dash.chats"), MessageSquare],
+    [t(`plan.${planKey}`), t("dash.currentPlan"), MessageSquare],
   ]
+  const peak = Math.max(1, ...usage.map((point) => point.tokens))
+  const txLabel = (row: TransactionRow) => {
+    const agent = row.agentId ? agents.find((a) => a.id === row.agentId) : undefined;
+    return row.type === "purchase" && agent
+      ? `${t("dash.tx.purchase")} · ${agentName(agent)}`
+      : t(`dash.tx.${row.type}`);
+  }
   return (
     <main className="section">
       <p className="eyebrow">{t("dash.eyebrow")}</p>
@@ -579,11 +692,19 @@ function Dashboard() {
             <h2 className="font-bold">{t("dash.usage")}</h2>
             <span className="text-sm text-slate-500">{t("common.token")}</span>
           </div>
-          <div className="chart mt-8 flex items-end gap-2">
-            {[24, 38, 29, 54, 41, 67, 47, 72, 58, 87, 65, 38].map((h, i) => (
-              <span key={i} style={{ height: `${h}%` }} />
-            ))}
-          </div>
+          {usage.length ? (
+            <div className="chart mt-8 flex items-end gap-2">
+              {usage.map((point) => (
+                <span
+                  key={point.day}
+                  title={`${point.day}: ${n(point.tokens)} ${t("common.token")}`}
+                  style={{ height: `${Math.max(4, Math.round((point.tokens / peak) * 100))}%` }}
+                />
+              ))}
+            </div>
+          ) : (
+            <p className="mt-8 text-sm text-slate-500">{t("dash.usageEmpty")}</p>
+          )}
         </section>
         <section className="rounded-3xl border border-violet-400/20 bg-violet-500/8 p-6">
           <Sparkles className="text-violet-300" />
@@ -592,7 +713,7 @@ function Dashboard() {
             {t("dash.readyBody")}
           </p>
           <Link className="btn mt-6" to="/marketplace">
-            {t("dash.goShop")} <ArrowLeft size={16} />
+            {t("dash.goShop")} <ForwardArrow size={16} />
           </Link>
         </section>
       </div>
@@ -618,20 +739,66 @@ function Dashboard() {
           </div>
         )}
       </div>
+      <div className="section px-0">
+        <div className="section-head">
+          <h2>{t("dash.billing")}</h2>
+          <span className="text-sm text-slate-500">
+            {t("dash.currentPlan")}: {t(`plan.${planKey}`)}
+          </span>
+        </div>
+        {transactions.length ? (
+          <div className="table-scroll rounded-2xl border border-white/10">
+            <table className="w-full min-w-[34rem] text-start text-sm">
+              <tbody>
+                {transactions.map((row) => (
+                  <tr className="border-b border-white/5" key={row.id}>
+                    <td className="p-3">{txLabel(row)}</td>
+                    <td className="p-3 text-slate-400">
+                      {new Date(row.createdAt).toLocaleDateString(locale)}
+                    </td>
+                    <td className="p-3">{toman(row.amount)}</td>
+                    <td className="p-3">
+                      <span
+                        className={
+                          row.status === "success"
+                            ? "text-emerald-300"
+                            : row.status === "failed"
+                              ? "text-rose-300"
+                              : "text-amber-300"
+                        }
+                      >
+                        {t(`dash.status.${row.status}`)}
+                      </span>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        ) : (
+          <div className="empty">{t("dash.noTransactions")}</div>
+        )}
+      </div>
     </main>
   )
 }
 
-function RequireUser({ children }: { children: ReactNode }) {
-  const { user, loading } = useSession()
-  if (loading) return null
-  return user ? <>{children}</> : <Navigate to="/login" replace />
+function PageLoading() {
+  const { t } = useI18n()
+  return <main className="section text-center text-slate-500">{t("common.loading")}</main>
 }
 
-function RequireAdmin({ children }: { children: ReactNode }) {
+/**
+ * Guards a lazily-loaded page and shows a fallback while its chunk loads.
+ * `loading` is the session check, so an authenticated page never flashes its
+ * logged-out state.
+ */
+function LazyPage({ children, guard }: { children: ReactNode; guard?: "user" | "admin" }) {
   const { user, loading } = useSession()
-  if (loading) return null
-  return user?.role === "admin" ? <>{children}</> : <Navigate to="/dashboard" replace />
+  if (loading) return <PageLoading />
+  if (guard === "user" && !user) return <Navigate to="/login" replace />
+  if (guard === "admin" && user?.role !== "admin") return <Navigate to="/dashboard" replace />
+  return <Suspense fallback={<PageLoading />}>{children}</Suspense>
 }
 
 export const router = createBrowserRouter([
@@ -642,18 +809,53 @@ export const router = createBrowserRouter([
       { index: true, Component: Landing },
       { path: "marketplace", Component: Marketplace },
       { path: "agent/:slug", Component: Detail },
-      { path: "chat/:agentId", Component: () => <RequireUser><Chat /></RequireUser> },
-      { path: "dashboard", Component: () => <RequireUser><Dashboard /></RequireUser> },
-      { path: "pricing", Component: Pricing },
-      { path: "admin", Component: () => <RequireAdmin><Admin /></RequireAdmin> },
-      { path: "login", Component: Login },
+      {
+        path: "chat/:agentId",
+        Component: () => (
+          <LazyPage guard="user">
+            <Chat />
+          </LazyPage>
+        ),
+      },
+      {
+        path: "dashboard",
+        Component: () => (
+          <LazyPage guard="user">
+            <Dashboard />
+          </LazyPage>
+        ),
+      },
+      {
+        path: "account",
+        Component: () => (
+          <LazyPage guard="user">
+            <Account />
+          </LazyPage>
+        ),
+      },
+      { path: "pricing", Component: () => <LazyPage><Pricing /></LazyPage> },
+      {
+        path: "admin",
+        Component: () => (
+          <LazyPage guard="admin">
+            <Admin />
+          </LazyPage>
+        ),
+      },
+      { path: "login", Component: () => <LazyPage><Login /></LazyPage> },
       // Sign up and log in are the same flow: an unknown number gets an account
       // the moment its first code is verified.
-      { path: "signup", Component: Login },
+      { path: "signup", Component: () => <LazyPage><Login /></LazyPage> },
+      // Where the payment gateway returns the payer.
+      { path: "payment-required", Component: () => <LazyPage><PaymentReturn /></LazyPage> },
+      { path: "terms", Component: () => <Legal kind="terms" /> },
+      { path: "privacy", Component: () => <Legal kind="privacy" /> },
+      { path: "contact", Component: () => <Legal kind="contact" /> },
       // Kept as redirects so old links and bookmarks keep working.
       { path: "verify", Component: () => <Navigate to="/login" replace /> },
       { path: "reset-password", Component: () => <Navigate to="/login" replace /> },
-      { path: "*", Component: () => <Navigate to="/" /> },
+      // A real 404 instead of silently bouncing to the marketing page.
+      { path: "*", Component: NotFound },
     ],
   },
 ])

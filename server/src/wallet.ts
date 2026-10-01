@@ -3,10 +3,51 @@ import { paymentRequired } from "./lib/errors.js";
 
 export const MIN_TIME_CHARGE_SECONDS = 60;
 
+/** How long one allowance period lasts. */
+export const PERIOD_MS = 30 * 24 * 60 * 60 * 1000;
+
+type WalletClient = {
+  wallet: {
+    findUnique: (args: { where: { userId: string } }) => Promise<Wallet | null>;
+    update: (args: { where: { userId: string }; data: Prisma.WalletUpdateInput }) => Promise<Wallet>;
+  };
+};
+
+/** True once the current period has elapsed. */
+export function periodRolled(periodStart: Date, now = Date.now()): boolean {
+  return now - periodStart.getTime() >= PERIOD_MS;
+}
+
+/**
+ * Roll the allowance period when it has elapsed: clear the usage counters and
+ * refill the balance up to the plan allowance, keeping anything bought on top.
+ * Returns the wallet as it stands now, rolled or not.
+ *
+ * Rolling lazily on read (rather than via a cron) keeps the serverless deploy
+ * working with no scheduler configured.
+ */
+export async function ensurePeriod(
+  client: WalletClient,
+  wallet: Wallet,
+  now = new Date(),
+): Promise<Wallet> {
+  if (!periodRolled(wallet.periodStart, now.getTime())) return wallet;
+
+  return client.wallet.update({
+    where: { userId: wallet.userId },
+    data: {
+      periodStart: now,
+      monthlyUsage: 0,
+      monthlyTimeUsedSeconds: 0,
+      tokenBalance: Math.max(wallet.tokenBalance, wallet.monthlyTokenLimit),
+      timeBalanceSeconds: Math.max(wallet.timeBalanceSeconds, wallet.monthlyTimeLimitSeconds),
+    },
+  });
+}
+
+/** Spendable balance for the configured meter. The balance is the only cap. */
 export function remaining(wallet: Wallet, meter: MeterMode): number {
-  return meter === "time"
-    ? Math.max(0, Math.min(wallet.timeBalanceSeconds, wallet.monthlyTimeLimitSeconds - wallet.monthlyTimeUsedSeconds))
-    : Math.max(0, Math.min(wallet.tokenBalance, wallet.monthlyTokenLimit - wallet.monthlyUsage));
+  return meter === "time" ? wallet.timeBalanceSeconds : wallet.tokenBalance;
 }
 
 export function assertAffordable(wallet: Wallet, meter: MeterMode, amount: number): void {
@@ -18,16 +59,17 @@ export async function debitUsage(
   input: { userId: string; agentId: string; meter: MeterMode; tokens: number; seconds: number; estimated: boolean; providerModel: string },
 ) {
   const amount = input.meter === "time" ? Math.max(MIN_TIME_CHARGE_SECONDS, input.seconds) : input.tokens;
-  const wallet = await (tx as any).wallet.findUnique({ where: { userId: input.userId } });
-  if (!wallet) throw paymentRequired("wallet_missing");
+  const found = await tx.wallet.findUnique({ where: { userId: input.userId } });
+  if (!found) throw paymentRequired("wallet_missing");
+  const wallet = await ensurePeriod(tx as unknown as WalletClient, found);
   assertAffordable(wallet, input.meter, amount);
 
   const update = input.meter === "time"
     ? { timeBalanceSeconds: { decrement: amount }, monthlyTimeUsedSeconds: { increment: amount } }
     : { tokenBalance: { decrement: amount }, monthlyUsage: { increment: amount } };
 
-  await (tx as any).wallet.update({ where: { userId: input.userId }, data: update });
-  await (tx as any).usageEvent.create({
+  await tx.wallet.update({ where: { userId: input.userId }, data: update });
+  await tx.usageEvent.create({
     data: {
       userId: input.userId,
       agentId: input.agentId,
@@ -49,5 +91,6 @@ export function publicWallet(wallet: Wallet) {
     monthlyTimeLimitSeconds: wallet.monthlyTimeLimitSeconds,
     monthlyUsage: wallet.monthlyUsage,
     monthlyTimeUsedSeconds: wallet.monthlyTimeUsedSeconds,
+    periodStart: wallet.periodStart,
   };
 }

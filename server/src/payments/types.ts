@@ -79,6 +79,13 @@ export type CallbackOutcome =
   /** A signature-verified event that does not concern us (Stripe sends many). */
   | { status: "ignored"; reason: string; raw: unknown };
 
+export type RefundInput = {
+  transaction: TransactionRef & { refId: string | null };
+  amount: number;
+};
+
+export type RefundResult = { ok: true; refId?: string } | { ok: false; reason: string };
+
 export type PaymentGateway = {
   id: PaymentProviderId;
   /** Shown in logs and stored on the transaction. */
@@ -86,6 +93,14 @@ export type PaymentGateway = {
   /** Currency the gateway charges in. Stored on the transaction at checkout. */
   currency: string;
   start(intent: PaymentIntent): Promise<PaymentStart>;
+  /**
+   * Optional: move the money back for a settled transaction.
+   *
+   * Adapters that cannot refund programmatically omit this, and the refund is
+   * then settled manually against the gateway; the accounting on our side is the
+   * same either way.
+   */
+  refund?(input: RefundInput): Promise<RefundResult>;
   /** Find which pending transaction a callback refers to. */
   referenceFromCallback(payload: CallbackPayload): CallbackReference | null;
   /**

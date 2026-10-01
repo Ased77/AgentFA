@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState, type FormEvent } from "react";
 import { useNavigate } from "react-router-dom";
-import { ArrowLeft, ShieldCheck, Smartphone } from "lucide-react";
+import { ShieldCheck, Smartphone } from "lucide-react";
+import { ForwardArrow } from "../components/ForwardArrow";
 import { ApiError } from "../lib/account";
 import { useI18n } from "../lib/i18n";
 import { formatPhone, localizeDigits, normalizePhone } from "../lib/phone";
@@ -151,7 +152,7 @@ export default function Login() {
             />
             <button className="btn mt-5 w-full justify-center" disabled={busy}>
               {busy ? t("auth.sending") : t("auth.sendCode")}
-              <ArrowLeft size={17} />
+              <ForwardArrow size={17} />
             </button>
             <p className="mt-5 text-center text-xs leading-6 text-slate-500">
               {t("auth.newAccount")}
@@ -183,7 +184,7 @@ export default function Login() {
               disabled={busy || code.length < 6}
             >
               {busy ? t("auth.verifying") : t("auth.verify")}
-              <ArrowLeft size={17} />
+              <ForwardArrow size={17} />
             </button>
             <div className="mt-5 flex flex-wrap items-center justify-center gap-x-5 gap-y-2 text-sm">
               <button

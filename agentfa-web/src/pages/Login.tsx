@@ -61,11 +61,20 @@ export default function Login() {
     if (step === "code") codeRef.current?.focus();
   }, [step]);
 
-  function message(err: unknown): string {
-    const key = err instanceof ApiError ? err.code : "network";
-    return (ERROR_CODES as readonly string[]).includes(key)
-      ? t(`auth.error.${key}`)
-      : t("auth.error.generic");
+  /**
+   * The dictionary key for a failed request.
+   *
+   * A key rather than rendered text, so the message follows the language switch
+   * instead of freezing in whichever language was showing when the request
+   * failed. It is also the reason a plain "try again" is no longer the catch-all:
+   * a 5xx or a 404 from the API means the service is unreachable, and inviting a
+   * retry for that just produces a loop that cannot succeed.
+   */
+  function errorKey(err: unknown): string {
+    if (!(err instanceof ApiError)) return "auth.error.network";
+    if ((ERROR_CODES as readonly string[]).includes(err.code)) return `auth.error.${err.code}`;
+    if (err.status >= 500 || err.status === 404) return "auth.error.unavailable";
+    return "auth.error.generic";
   }
 
   async function requestCode(target: string) {
@@ -79,7 +88,7 @@ export default function Login() {
       setCode("");
       setStep("code");
     } catch (err) {
-      setError(message(err));
+      setError(errorKey(err));
     } finally {
       setBusy(false);
     }
@@ -90,7 +99,7 @@ export default function Login() {
     // Validate locally for instant feedback; the server normalizes again.
     const normalized = normalizePhone(typed);
     if (!normalized.ok) {
-      setError(t("auth.error.invalid_phone"));
+      setError("auth.error.invalid_phone");
       return;
     }
     void requestCode(normalized.phone);
@@ -105,7 +114,7 @@ export default function Login() {
       setSignedIn(true);
       nav(isNewUser ? "/dashboard?welcome=1" : "/dashboard", { replace: true });
     } catch (err) {
-      setError(message(err));
+      setError(errorKey(err));
       // A code that expired or was burned cannot be retried: let the user ask
       // for a new one straight away instead of waiting out the cooldown.
       if (err instanceof ApiError && (err.code === "code_expired" || err.code === "too_many_attempts")) {
@@ -213,7 +222,7 @@ export default function Login() {
 
         {error && (
           <p className="mt-4 text-center text-sm text-rose-300" role="alert">
-            {error}
+            {t(error)}
           </p>
         )}
 

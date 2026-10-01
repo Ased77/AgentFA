@@ -97,6 +97,7 @@ const fa: Dict = {
 
   "auth.error.generic": "ورود انجام نشد. دوباره تلاش کن.",
   "auth.error.network": "ارتباط با سرور برقرار نشد.",
+  "auth.error.unavailable": "سرویس ورود الان در دسترس نیست. کمی بعد دوباره تلاش کن.",
   "auth.error.phone_required": "شماره موبایل را وارد کن.",
 
   "auth.error.invalid_phone": "شماره موبایل معتبر نیست. نمونه: ۰۹۱۲۱۲۳۴۵۶۷",
@@ -465,6 +466,7 @@ const en: Dict = {
 
   "auth.error.generic": "We could not sign you in. Please try again.",
   "auth.error.network": "We could not reach the server.",
+  "auth.error.unavailable": "Sign-in is unavailable right now. Please try again in a few minutes.",
   "auth.error.phone_required": "Enter your mobile number.",
 
   "auth.error.invalid_phone": "That is not a valid mobile number. Example: 09121234567",
@@ -792,6 +794,16 @@ export type LocalizableAgent = {
   welcome: string;
 };
 
+/**
+ * Persian starter prompt for an agent whose Persian copy lists none.
+ *
+ * The generated catalog is English, so a Persian reader cannot fall back to it
+ * the way an English reader can — without this they would get English prompts on
+ * a Persian page. It is the same line every agent showed before the catalog
+ * gained English prompts, kept here so Persian copy stays in one place.
+ */
+const FA_STARTER_PROMPT = "برای شروع یک درخواست بنویس";
+
 const I18nContext = createContext<I18nValue | null>(null);
 
 function detectLang(): Lang {
@@ -852,7 +864,8 @@ export function I18nProvider({ children }: { children: ReactNode }) {
       agentLongDescription: (a) =>
         faCopy(a)?.longDescription ?? a.longDescription,
       agentFeatures: (a) => faCopy(a)?.features ?? a.features,
-      agentPrompts: (a) => faCopy(a)?.prompts ?? a.prompts,
+      agentPrompts: (a) =>
+        lang === "fa" ? (faCopy(a)?.prompts ?? [FA_STARTER_PROMPT]) : a.prompts,
       // The catalog greeting is "سلام! من <English name> هستم. <English tagline>";
       // rebuild it from the localized name and blurb.
       agentWelcome: (a) => {

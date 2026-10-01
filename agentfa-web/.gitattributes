@@ -155,8 +155,18 @@
 #
 # This repository is a fork of a public upstream, so an LFS-tracked asset here
 # cannot be pushed at all — the `og.png` social card and the touch icon were the
-# first two, and adding them failed the push outright. Last rule wins, so this
-# one takes the app out of LFS. Revisit if the fork relationship is ever removed
-# and large binaries belong in this app.
-# Patterns here are relative to this directory, so `**` is the whole app.
-**                   -filter -diff -merge -text
+# first two, and adding them failed the push outright.
+#
+# Only the LFS filter is disabled, and only for the asset types this app ships:
+# `-diff`/`-text` here would also tell Git to treat source files as binary, which
+# is how a first attempt at this rule made every `.ts`/`.tsx` change show up as
+# "Bin … -> … bytes" instead of a reviewable diff. Patterns are relative to this
+# directory and match at any depth. Revisit if the fork relationship is removed.
+*.png                -filter -diff -merge -text
+*.jpg                -filter -diff -merge -text
+*.jpeg               -filter -diff -merge -text
+*.gif                -filter -diff -merge -text
+*.ico                -filter -diff -merge -text
+*.webp               -filter -diff -merge -text
+*.woff               -filter -diff -merge -text
+*.woff2              -filter -diff -merge -text

@@ -109,10 +109,12 @@ await check("nested /api/* paths reach the function", async () => {
     layer(res) !== "edge",
     `${describe(res)} — the Vercel edge answered, so /api/** is not routed to the function`,
   );
-  expect(
-    layer(res) === "app",
-    `${describe(res)} — reached the function but it crashed (${ENV_HINT})`,
-  );
+  // Deliberately not a health assertion. A function that boots and crashes for
+  // want of configuration still proves the routing works, and reporting that as
+  // a routing failure would send the next reader hunting in the wrong layer —
+  // which is exactly the confusion that hid this bug for a month. Health is
+  // checked on its own below.
+  if (layer(res) === "crash") return `${describe(res)} — routed, but ${ENV_HINT}`;
   expect(
     res.status === 401 || res.status === 200,
     `expected 401 from the session probe, got ${describe(res)}`,
@@ -123,7 +125,7 @@ await check("nested /api/* paths reach the function", async () => {
 await check("single-segment /api/* paths still reach the function", async () => {
   const res = await probe("/api/health");
   expect(layer(res) !== "edge", `${describe(res)} — the edge answered for /api/health`);
-  return "reached the function";
+  return layer(res) === "crash" ? `routed, but ${ENV_HINT}` : "reached the function";
 });
 
 await check("POST with a body reaches the function", async () => {
@@ -133,6 +135,7 @@ await check("POST with a body reaches the function", async () => {
     body: JSON.stringify({ phone: "not-a-number" }),
   });
   expect(layer(res) !== "edge", `${describe(res)} — the edge answered a POST`);
+  if (layer(res) === "crash") return `routed, but ${ENV_HINT}`;
   expect(
     [400, 422, 429].includes(res.status),
     `expected a validation error for an invalid phone, got ${describe(res)}`,

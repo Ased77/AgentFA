@@ -26,18 +26,20 @@ export default function Account() {
   const [notice, setNotice] = useState("");
   const [error, setError] = useState("");
 
+  /** Stores the dictionary key, not the message, so it re-translates on switch. */
   function fail(err: unknown) {
     const code = err instanceof ApiError ? err.code : "network";
     const key = `auth.error.${code}`;
-    const message = t(key);
-    setError(message === key ? t("auth.error.generic") : message);
+    // `t` returns the key itself when neither dictionary has it.
+    const known = t(key) !== key;
+    setError(known ? key : "auth.error.generic");
   }
 
   async function startChange(event: FormEvent) {
     event.preventDefault();
     const normalized = normalizePhone(typed);
     if (!normalized.ok) {
-      setError(t("auth.error.invalid_phone"));
+      setError("auth.error.invalid_phone");
       return;
     }
     setBusy(true);
@@ -63,7 +65,7 @@ export default function Account() {
       const { api } = await import("../lib/account");
       await api.verifyPhoneChange(pendingPhone, code);
       await refresh();
-      setNotice(t("account.changed"));
+      setNotice("account.changed");
       setStep("idle");
       setTyped("");
       setCode("");
@@ -141,10 +143,10 @@ export default function Account() {
           </form>
         )}
 
-        {notice && <p className="mt-4 text-sm text-emerald-300">✓ {notice}</p>}
+        {notice && <p className="mt-4 text-sm text-emerald-300">✓ {t(notice)}</p>}
         {error && (
           <p className="mt-4 text-sm text-rose-300" role="alert">
-            {error}
+            {t(error)}
           </p>
         )}
       </section>

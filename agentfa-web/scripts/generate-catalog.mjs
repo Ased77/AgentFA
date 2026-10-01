@@ -112,6 +112,27 @@ function bulletList(body, headingRe, limit) {
   return out;
 }
 
+/**
+ * A starter prompt for an agent whose markdown lists no example prompts.
+ *
+ * The fallback used to be the Persian line "برای شروع یک درخواست بنویس", and 246
+ * of the 264 agents fell back to it — so the English marketplace showed a Persian
+ * prompt under an English "Start here", and a chat greeting that opened in
+ * Persian. The catalog is generated from English sources, so its own fallback has
+ * to be English; Persian copy lives in `src/data/fa-agents.ts` and is chosen by
+ * language at render time.
+ *
+ * Derived from the agent's first capability so it names something real —
+ * "Ask Anthropologist about thick description (Geertz)" — with a generic sentence
+ * as the last resort rather than a string that pretends to be a translation.
+ */
+function starterPrompt(name, features) {
+  const head = (features[0] ?? "").split(":")[0].split(/[,.—]/)[0].trim();
+  const topic = head.length >= 3 && head.length <= 60 ? head : "";
+  if (topic) return `Ask ${name} about ${topic.charAt(0).toLowerCase()}${topic.slice(1)}`;
+  return `Tell ${name} what you are working on`;
+}
+
 // Persona bodies are intentionally NOT part of this bundle: they are private
 // content gated server-side. `scripts/export-personas.mjs` writes the full
 // bodies to `server/content/seed.json` for Postgres, and the API serves them
@@ -154,8 +175,11 @@ for (const [slug, meta] of Object.entries(divisions)) {
       description: data.description || firstParagraph(body),
       longDescription: data.vibe || firstParagraph(body),
       features: features.length ? features : [data.description || name],
-      prompts: prompts.length ? prompts : ["برای شروع یک درخواست بنویس"],
-      welcome: `سلام! من ${name} هستم. ${data.vibe || "چطور می‌توانم کمکت کنم؟"}`,
+      prompts: prompts.length ? prompts : [starterPrompt(name, features)],
+      // English greeting, with no Persian scaffolding around it. The UI builds the
+      // Persian one from `fa-agents.ts` instead of stitching two languages
+      // together, which is what this line used to do.
+      welcome: `Hi! I'm ${name}. ${data.vibe || firstParagraph(body) || "Tell me what you are working on."}`,
       featured: seed % 7 === 0,
       color: data.color || null,
     });

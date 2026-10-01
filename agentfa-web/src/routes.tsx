@@ -496,12 +496,13 @@ function Detail() {
   const agentId = a.id
   const own = owns(agentId)
 
-  // An unknown error code falls back to a readable message instead of leaking a
-  // raw code into the UI.
-  const localizedError = (code: string) => {
+  // An unknown error code falls back to the generic message instead of leaking a
+  // raw code into the UI. The *key* is returned, not the message, so the notice
+  // re-translates when the language changes — storing rendered text froze it in
+  // whichever language was showing at the time of the failure.
+  const errorKey = (code: string) => {
     const key = `purchase.error.${code}`
-    const message = t(key)
-    return message === key ? t("purchase.error.generic") : message
+    return t(key) === key ? "purchase.error.generic" : key
   }
 
   async function purchase() {
@@ -513,10 +514,10 @@ function Detail() {
       const { redirectUrl } = await api.buyAgent(agentId)
       // Hand off to the gateway's hosted checkout; the agent unlocks only after
       // the gateway's verified callback settles the transaction.
-      if (!goToGateway(redirectUrl)) setNotice(t("payment.pending"))
+      if (!goToGateway(redirectUrl)) setNotice("payment.pending")
       await refresh()
     } catch (err) {
-      setError(localizedError(err instanceof ApiError ? err.code : "network"))
+      setError(errorKey(err instanceof ApiError ? err.code : "network"))
     } finally {
       setBuying(false)
     }
@@ -529,10 +530,10 @@ function Detail() {
     setError("")
     try {
       await api.refundAgent(agentId)
-      setNotice(t("refund.requested"))
+      setNotice("refund.requested")
       await refresh()
     } catch (err) {
-      setError(localizedError(err instanceof ApiError ? err.code : "network"))
+      setError(errorKey(err instanceof ApiError ? err.code : "network"))
     } finally {
       setRefunding(false)
     }
@@ -602,10 +603,10 @@ function Detail() {
           >
             {t("detail.preview")}
           </button>
-          {notice && <p className="mt-4 text-sm text-emerald-300">✓ {notice}</p>}
+          {notice && <p className="mt-4 text-sm text-emerald-300">✓ {t(notice)}</p>}
           {error && (
             <p className="mt-4 text-sm text-rose-300" role="alert">
-              {error}
+              {t(error)}
             </p>
           )}
           {own && (

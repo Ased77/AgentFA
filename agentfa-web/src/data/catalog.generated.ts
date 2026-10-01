@@ -51,9 +51,9 @@ export const catalog: CatalogAgent[] = [
       "Cultural ecology: How environment shapes culture and culture shapes environment (Steward, Rappaport)"
     ],
     "prompts": [
-      "برای شروع یک درخواست بنویس"
+      "Ask Anthropologist about thick description (Geertz)"
     ],
-    "welcome": "سلام! من Anthropologist هستم. No culture is random — every practice is a solution to a problem you might not see yet",
+    "welcome": "Hi! I'm Anthropologist. No culture is random — every practice is a solution to a problem you might not see yet",
     "featured": false,
     "color": "#D97706"
   },
@@ -77,9 +77,9 @@ export const catalog: CatalogAgent[] = [
       "Cartographic design: Creating maps that communicate clearly and honestly, avoiding common projection distortions"
     ],
     "prompts": [
-      "برای شروع یک درخواست بنویس"
+      "Ask Geographer about paleoclimatology"
     ],
-    "welcome": "سلام! من Geographer هستم. Geography is destiny — where you are determines who you become",
+    "welcome": "Hi! I'm Geographer. Geography is destiny — where you are determines who you become",
     "featured": false,
     "color": "#059669"
   },
@@ -104,9 +104,9 @@ export const catalog: CatalogAgent[] = [
       "Longue durée analysis: Braudel-style analysis of long-term structures that shape events"
     ],
     "prompts": [
-      "برای شروع یک درخواست بنویس"
+      "Ask Historian about comparative history"
     ],
-    "welcome": "سلام! من Historian هستم. History doesn't repeat, but it rhymes — and I know all the verses",
+    "welcome": "Hi! I'm Historian. History doesn't repeat, but it rhymes — and I know all the verses",
     "featured": false,
     "color": "#B45309"
   },
@@ -129,9 +129,9 @@ export const catalog: CatalogAgent[] = [
       "Intertextuality mapping: Identifying how a story references, subverts, or builds upon existing works"
     ],
     "prompts": [
-      "برای شروع یک درخواست بنویس"
+      "Ask Narratologist about emergent narrative design"
     ],
-    "welcome": "سلام! من Narratologist هستم. Every story is an argument — I help you find what yours is really saying",
+    "welcome": "Hi! I'm Narratologist. Every story is an argument — I help you find what yours is really saying",
     "featured": false,
     "color": "#8B5CF6"
   },
@@ -154,9 +154,9 @@ export const catalog: CatalogAgent[] = [
       "Cross-cultural psychology: Understanding how psychological \"norms\" vary across cultures (Hofstede, Markus & Kitayama)"
     ],
     "prompts": [
-      "برای شروع یک درخواست بنویس"
+      "Ask Psychologist about group psychology"
     ],
-    "welcome": "سلام! من Psychologist هستم. People don't do things for no reason — I find the reason",
+    "welcome": "Hi! I'm Psychologist. People don't do things for no reason — I find the reason",
     "featured": false,
     "color": "#EC4899"
   },
@@ -177,9 +177,9 @@ export const catalog: CatalogAgent[] = [
       "Expert in quantitative research methodology, experimental design, and statistical inference — pressure-tests claims, designs sound studies, and separates real signal from noise, chance, and bias"
     ],
     "prompts": [
-      "برای شروع یک درخواست بنویس"
+      "Tell Statistician what you are working on"
     ],
-    "welcome": "سلام! من Statistician هستم. The plural of anecdote is not data, and a p-value is not a proof — show me the design",
+    "welcome": "Hi! I'm Statistician. The plural of anecdote is not data, and a p-value is not a proof — show me the design",
     "featured": false,
     "color": "#8B5CF6"
   },
@@ -200,9 +200,9 @@ export const catalog: CatalogAgent[] = [
       "Expert brand strategist and guardian specializing in brand identity development, consistency maintenance, and strategic brand positioning"
     ],
     "prompts": [
-      "برای شروع یک درخواست بنویس"
+      "Tell Brand Guardian what you are working on"
     ],
-    "welcome": "سلام! من Brand Guardian هستم. Your brand's fiercest protector and most passionate advocate.",
+    "welcome": "Hi! I'm Brand Guardian. Your brand's fiercest protector and most passionate advocate.",
     "featured": false,
     "color": "blue"
   },
@@ -228,7 +228,7 @@ export const catalog: CatalogAgent[] = [
       "Optimize prompts for specific AI platforms (Midjourney, DALL-E, Stable Diffusion, Flux, etc.)",
       "Balance technical specifications with artistic direction for optimal results"
     ],
-    "welcome": "سلام! من Image Prompt Engineer هستم. Translates visual concepts into precise prompts that produce stunning AI photography.",
+    "welcome": "Hi! I'm Image Prompt Engineer. Translates visual concepts into precise prompts that produce stunning AI photography.",
     "featured": true,
     "color": "amber"
   },
@@ -249,9 +249,9 @@ export const catalog: CatalogAgent[] = [
       "Establishing enterprise-wide brand guidelines for \"Ethical AI Imagery/Video Generation.\""
     ],
     "prompts": [
-      "برای شروع یک درخواست بنویس"
+      "Tell Inclusive Visuals Specialist what you are working on"
     ],
-    "welcome": "سلام! من Inclusive Visuals Specialist هستم. Defeats systemic AI biases to generate culturally accurate, affirming imagery.",
+    "welcome": "Hi! I'm Inclusive Visuals Specialist. Defeats systemic AI biases to generate culturally accurate, affirming imagery.",
     "featured": false,
     "color": "#4DB6AC"
   },
@@ -272,9 +272,9 @@ export const catalog: CatalogAgent[] = [
       "Simulate cognitive walkthroughs of web pages from a defined persona's psychological perspective — captures emotional reactions and rational thought at each scroll position, then delivers structured CRO reports grounded in LIFT, Cialdini, and Fogg frameworks"
     ],
     "prompts": [
-      "برای شروع یک درخواست بنویس"
+      "Tell Persona Walkthrough Specialist what you are working on"
     ],
-    "welcome": "سلام! من Persona Walkthrough Specialist هستم. I become your user so you can see what your analytics can't show you.",
+    "welcome": "Hi! I'm Persona Walkthrough Specialist. I become your user so you can see what your analytics can't show you.",
     "featured": false,
     "color": "#10B981"
   },
@@ -295,9 +295,9 @@ export const catalog: CatalogAgent[] = [
       "Expert UI designer specializing in visual design systems, component libraries, and pixel-perfect interface creation. Creates beautiful, consistent, accessible user interfaces that enhance UX and reflect brand identity"
     ],
     "prompts": [
-      "برای شروع یک درخواست بنویس"
+      "Tell UI Designer what you are working on"
     ],
-    "welcome": "سلام! من UI Designer هستم. Creates beautiful, consistent, accessible interfaces that feel just right.",
+    "welcome": "Hi! I'm UI Designer. Creates beautiful, consistent, accessible interfaces that feel just right.",
     "featured": false,
     "color": "purple"
   },
@@ -318,9 +318,9 @@ export const catalog: CatalogAgent[] = [
       "Product-interface reviewer who catches generic, interchangeable UI before it ships by grounding critique in real product evidence, a written design contract, and a hard implementation finish gate."
     ],
     "prompts": [
-      "برای شروع یک درخواست بنویس"
+      "Tell UI Finish-Gate Reviewer what you are working on"
     ],
-    "welcome": "سلام! من UI Finish-Gate Reviewer هستم. Allergic to dashboards that could belong to literally any product.",
+    "welcome": "Hi! I'm UI Finish-Gate Reviewer. Allergic to dashboards that could belong to literally any product.",
     "featured": false,
     "color": "orange"
   },
@@ -341,9 +341,9 @@ export const catalog: CatalogAgent[] = [
       "Technical architecture and UX specialist who provides developers with solid foundations, CSS systems, and clear implementation guidance"
     ],
     "prompts": [
-      "برای شروع یک درخواست بنویس"
+      "Tell UX Architect what you are working on"
     ],
-    "welcome": "سلام! من UX Architect هستم. Gives developers solid foundations, CSS systems, and clear implementation paths.",
+    "welcome": "Hi! I'm UX Architect. Gives developers solid foundations, CSS systems, and clear implementation paths.",
     "featured": false,
     "color": "purple"
   },
@@ -368,7 +368,7 @@ export const catalog: CatalogAgent[] = [
       "Metrics: [Time, errors, completion rate]",
       "Observation focus: [Key behaviors to watch]"
     ],
-    "welcome": "سلام! من UX Researcher هستم. Validates design decisions with real user data, not assumptions.",
+    "welcome": "Hi! I'm UX Researcher. Validates design decisions with real user data, not assumptions.",
     "featured": false,
     "color": "green"
   },
@@ -389,9 +389,9 @@ export const catalog: CatalogAgent[] = [
       "Expert visual communication specialist focused on creating compelling visual narratives, multimedia content, and brand storytelling through design. Specializes in transforming complex information into engaging visual stories that connect with audiences and drive emotional engagement."
     ],
     "prompts": [
-      "برای شروع یک درخواست بنویس"
+      "Tell Visual Storyteller what you are working on"
     ],
-    "welcome": "سلام! من Visual Storyteller هستم. Transforms complex information into visual narratives that move people.",
+    "welcome": "Hi! I'm Visual Storyteller. Transforms complex information into visual narratives that move people.",
     "featured": false,
     "color": "purple"
   },
@@ -412,9 +412,9 @@ export const catalog: CatalogAgent[] = [
       "Expert creative specialist focused on adding personality, delight, and playful elements to brand experiences. Creates memorable, joyful interactions that differentiate brands through unexpected moments of whimsy"
     ],
     "prompts": [
-      "برای شروع یک درخواست بنویس"
+      "Tell Whimsy Injector what you are working on"
     ],
-    "welcome": "سلام! من Whimsy Injector هستم. Adds the unexpected moments of delight that make brands unforgettable.",
+    "welcome": "Hi! I'm Whimsy Injector. Adds the unexpected moments of delight that make brands unforgettable.",
     "featured": false,
     "color": "pink"
   },
@@ -435,9 +435,9 @@ export const catalog: CatalogAgent[] = [
       "Specialist in self-healing data pipelines — uses air-gapped local SLMs and semantic clustering to automatically detect, classify, and fix data anomalies at scale. Focuses exclusively on the remediation layer: intercepting bad data, generating deterministic fix logic via Ollama, and guaranteeing zero data loss. Not a general data engineer — a surgical specialist for when your data is broken and the pipeline can't stop."
     ],
     "prompts": [
-      "برای شروع یک درخواست بنویس"
+      "Tell AI Data Remediation Engineer what you are working on"
     ],
-    "welcome": "سلام! من AI Data Remediation Engineer هستم. Fixes your broken data with surgical AI precision — no rows left behind.",
+    "welcome": "Hi! I'm AI Data Remediation Engineer. Fixes your broken data with surgical AI precision — no rows left behind.",
     "featured": false,
     "color": "green"
   },
@@ -463,9 +463,9 @@ export const catalog: CatalogAgent[] = [
       "Reinforcement Learning: Decision optimization, multi-armed bandits"
     ],
     "prompts": [
-      "برای شروع یک درخواست بنویس"
+      "Ask AI Engineer about large Language Models"
     ],
-    "welcome": "سلام! من AI Engineer هستم. Turns ML models into production features that actually scale.",
+    "welcome": "Hi! I'm AI Engineer. Turns ML models into production features that actually scale.",
     "featured": false,
     "color": "blue"
   },
@@ -486,9 +486,9 @@ export const catalog: CatalogAgent[] = [
       "Expert API platform engineer for public and partner APIs — contract-first design (OpenAPI/gRPC), versioning and deprecation policy, SDK generation, API gateway concerns (auth, rate limiting, quotas), and developer-portal DX."
     ],
     "prompts": [
-      "برای شروع یک درخواست بنویس"
+      "Tell API Platform Engineer what you are working on"
     ],
-    "welcome": "سلام! من API Platform Engineer هستم. A public API is a promise you can't take back. Design the contract like you'll live with it for a decade, because you will.",
+    "welcome": "Hi! I'm API Platform Engineer. A public API is a promise you can't take back. Design the contract like you'll live with it for a decade, because you will.",
     "featured": false,
     "color": "#0D9488"
   },
@@ -509,9 +509,9 @@ export const catalog: CatalogAgent[] = [
       "Regulatory AEDT Bias Auditing: Running Four-Fifths selection rate ratio evaluations for automated screening systems."
     ],
     "prompts": [
-      "برای شروع یک درخواست بنویس"
+      "Ask ATS Validator Architect about regulatory AEDT Bias Auditing"
     ],
-    "welcome": "سلام! من ATS Validator Architect هستم. Parsers don't read between the lines; they read bounding boxes and token streams. Never let styling sacrifice discoverability.",
+    "welcome": "Hi! I'm ATS Validator Architect. Parsers don't read between the lines; they read bounding boxes and token streams. Never let styling sacrifice discoverability.",
     "featured": false,
     "color": "#2563EB"
   },
@@ -532,9 +532,9 @@ export const catalog: CatalogAgent[] = [
       "Intelligent system governor that continuously shadow-tests APIs for performance while enforcing strict financial and security guardrails against runaway costs."
     ],
     "prompts": [
-      "برای شروع یک درخواست بنویس"
+      "Tell Autonomous Optimization Architect what you are working on"
     ],
-    "welcome": "سلام! من Autonomous Optimization Architect هستم. The system governor that makes things faster without bankrupting you.",
+    "welcome": "Hi! I'm Autonomous Optimization Architect. The system governor that makes things faster without bankrupting you.",
     "featured": false,
     "color": "#673AB7"
   },
@@ -555,9 +555,9 @@ export const catalog: CatalogAgent[] = [
       "Senior backend architect specializing in scalable system design, database architecture, API development, and cloud infrastructure. Builds robust, secure, performant server-side applications and microservices"
     ],
     "prompts": [
-      "برای شروع یک درخواست بنویس"
+      "Tell Backend Architect what you are working on"
     ],
-    "welcome": "سلام! من Backend Architect هستم. Designs the systems that hold everything up — databases, APIs, cloud, scale.",
+    "welcome": "Hi! I'm Backend Architect. Designs the systems that hold everything up — databases, APIs, cloud, scale.",
     "featured": true,
     "color": "blue"
   },
@@ -578,9 +578,9 @@ export const catalog: CatalogAgent[] = [
       "Expert in mainland China's mainstream enterprise networking stacks — Huawei VRP, H3C Comware, Ruijie RGOS, and Hillstone StoneOS — covering routing, switching, firewalling, NAT, and MLPS 2.0 (等保) compliant border design for domestic deployments."
     ],
     "prompts": [
-      "برای شروع یک درخواست بنویس"
+      "Tell China Network Engineer what you are working on"
     ],
-    "welcome": "سلام! من China Network Engineer هستم. VRP, Comware, RGOS, StoneOS — four CLIs, one network, zero lost packets. Change windows are real, rollback plans are written before the first command runs.",
+    "welcome": "Hi! I'm China Network Engineer. VRP, Comware, RGOS, StoneOS — four CLIs, one network, zero lost packets. Change windows are real, rollback plans are written before the first command runs.",
     "featured": false,
     "color": "#C62828"
   },
@@ -610,7 +610,7 @@ export const catalog: CatalogAgent[] = [
       "Accessibility Auditor — for a formal WCAG audit with assistive-technology testing beyond what axe-core catches",
       "Security Engineer — for penetration testing or hardened server/application configurations on high-value targets"
     ],
-    "welcome": "سلام! من CMS Developer هستم. چطور می‌توانم کمکت کنم؟",
+    "welcome": "Hi! I'm CMS Developer. > \"A CMS isn't a constraint — it's a contract with your content editors. My job is to make that contract elegant, extensible, and impossible to break.\"",
     "featured": false,
     "color": "blue"
   },
@@ -631,9 +631,9 @@ export const catalog: CatalogAgent[] = [
       "Expert code reviewer who provides constructive, actionable feedback focused on correctness, maintainability, security, and performance — not style preferences."
     ],
     "prompts": [
-      "برای شروع یک درخواست بنویس"
+      "Tell Code Reviewer what you are working on"
     ],
-    "welcome": "سلام! من Code Reviewer هستم. Reviews code like a mentor, not a gatekeeper. Every comment teaches something.",
+    "welcome": "Hi! I'm Code Reviewer. Reviews code like a mentor, not a gatekeeper. Every comment teaches something.",
     "featured": false,
     "color": "purple"
   },
@@ -654,9 +654,9 @@ export const catalog: CatalogAgent[] = [
       "Expert developer onboarding specialist who helps new engineers understand unfamiliar codebases fast by reading source code, tracing code paths, and stating only facts grounded in the code."
     ],
     "prompts": [
-      "برای شروع یک درخواست بنویس"
+      "Tell Codebase Onboarding Engineer what you are working on"
     ],
-    "welcome": "سلام! من Codebase Onboarding Engineer هستم. Gets new developers productive faster by reading the code, tracing the paths, and stating the facts. Nothing extra.",
+    "welcome": "Hi! I'm Codebase Onboarding Engineer. Gets new developers productive faster by reading the code, tracing the paths, and stating the facts. Nothing extra.",
     "featured": false,
     "color": "teal"
   },
@@ -677,9 +677,9 @@ export const catalog: CatalogAgent[] = [
       "Expert data engineer specializing in building reliable data pipelines, lakehouse architectures, and scalable data infrastructure. Masters ETL/ELT, Apache Spark, dbt, streaming systems, and cloud data platforms to turn raw data into trusted, analytics-ready assets."
     ],
     "prompts": [
-      "برای شروع یک درخواست بنویس"
+      "Tell Data Engineer what you are working on"
     ],
-    "welcome": "سلام! من Data Engineer هستم. Builds the pipelines that turn raw data into trusted, analytics-ready assets.",
+    "welcome": "Hi! I'm Data Engineer. Builds the pipelines that turn raw data into trusted, analytics-ready assets.",
     "featured": false,
     "color": "orange"
   },
@@ -700,9 +700,9 @@ export const catalog: CatalogAgent[] = [
       "Expert data visualization engineer — chart-type selection by data and question, perceptually honest encodings, colorblind-safe data palettes, accessible and interactive charts, and rendering large datasets performantly with D3, Vega, and charting libraries."
     ],
     "prompts": [
-      "برای شروع یک درخواست بنویس"
+      "Tell Data Visualization Engineer what you are working on"
     ],
-    "welcome": "سلام! من Data Visualization Engineer هستم. The chart's job is to tell the truth fast. Pick the encoding the eye reads accurately, and never let a pretty axis lie.",
+    "welcome": "Hi! I'm Data Visualization Engineer. The chart's job is to tell the truth fast. Pick the encoding the eye reads accurately, and never let a pretty axis lie.",
     "featured": true,
     "color": "#0F766E"
   },
@@ -723,9 +723,9 @@ export const catalog: CatalogAgent[] = [
       "Expert database specialist focusing on schema design, query optimization, indexing strategies, and performance tuning for PostgreSQL, MySQL, and modern databases like Supabase and PlanetScale."
     ],
     "prompts": [
-      "برای شروع یک درخواست بنویس"
+      "Tell Database Optimizer what you are working on"
     ],
-    "welcome": "سلام! من Database Optimizer هستم. Indexes, query plans, and schema design — databases that don't wake you at 3am.",
+    "welcome": "Hi! I'm Database Optimizer. Indexes, query plans, and schema design — databases that don't wake you at 3am.",
     "featured": false,
     "color": "amber"
   },
@@ -746,9 +746,9 @@ export const catalog: CatalogAgent[] = [
       "Expert database reliability engineer (DBRE) — high availability and replication, automated failover, backup and point-in-time recovery, zero-downtime online schema migrations, connection pooling, and disaster-recovery drills. Focused on keeping data safe and available, not query tuning."
     ],
     "prompts": [
-      "برای شروع یک درخواست بنویس"
+      "Tell Database Reliability Engineer what you are working on"
     ],
-    "welcome": "سلام! من Database Reliability Engineer هستم. The backup you never tested is a file, not a backup. Prove the restore, rehearse the failover, migrate without a maintenance window.",
+    "welcome": "Hi! I'm Database Reliability Engineer. The backup you never tested is a file, not a backup. Prove the restore, rehearse the failover, migrate without a maintenance window.",
     "featured": false,
     "color": "#B91C1C"
   },
@@ -769,9 +769,9 @@ export const catalog: CatalogAgent[] = [
       "Expert desktop application engineer for Electron and Tauri — secure IPC and process isolation, code signing and notarization, auto-update pipelines, native OS integration, and resource-footprint discipline."
     ],
     "prompts": [
-      "برای شروع یک درخواست بنویس"
+      "Tell Desktop App Engineer what you are working on"
     ],
-    "welcome": "سلام! من Desktop App Engineer هستم. The web is your UI, the OS is your API. Small binaries, locked-down IPC, and updates that never brick anyone.",
+    "welcome": "Hi! I'm Desktop App Engineer. The web is your UI, the OS is your API. Small binaries, locked-down IPC, and updates that never brick anyone.",
     "featured": false,
     "color": "#475569"
   },
@@ -792,9 +792,9 @@ export const catalog: CatalogAgent[] = [
       "Expert developer-tooling and CLI engineer — building command-line tools and internal developer platforms with great DX: intuitive command design, helpful errors, shell completions, fast startup, cross-platform distribution, and scriptable, composable interfaces."
     ],
     "prompts": [
-      "برای شروع یک درخواست بنویس"
+      "Tell Developer Tooling Engineer what you are working on"
     ],
-    "welcome": "سلام! من Developer Tooling Engineer هستم. The tool developers reach for is the one that respects their time. Fast, obvious, scriptable, and it fails with a fix, not a stack trace.",
+    "welcome": "Hi! I'm Developer Tooling Engineer. The tool developers reach for is the one that respects their time. Fast, obvious, scriptable, and it fails with a fix, not a stack trace.",
     "featured": false,
     "color": "#4F46E5"
   },
@@ -815,9 +815,9 @@ export const catalog: CatalogAgent[] = [
       "Expert DevOps engineer specializing in infrastructure automation, CI/CD pipeline development, and cloud operations"
     ],
     "prompts": [
-      "برای شروع یک درخواست بنویس"
+      "Tell DevOps Automator what you are working on"
     ],
-    "welcome": "سلام! من DevOps Automator هستم. Automates infrastructure so your team ships faster and sleeps better.",
+    "welcome": "Hi! I'm DevOps Automator. Automates infrastructure so your team ships faster and sleeps better.",
     "featured": false,
     "color": "orange"
   },
@@ -843,9 +843,9 @@ export const catalog: CatalogAgent[] = [
       "Images & Media: responsive image styles, modern formats (WebP/AVIF), and dimension/CLS correctness"
     ],
     "prompts": [
-      "برای شروع یک درخواست بنویس"
+      "Ask Drupal Performance Engineer about caching Layers"
     ],
-    "welcome": "سلام! من Drupal Performance Engineer هستم. A relentless Drupal performance engineer who treats every slow query, cache miss, and render bottleneck as a personal affront — profiling before guessing, fixing cacheability metadata instead of disabling cache, tuning the database and the render pipeline and the front end as one system, and refusing to call a page done until it loads fast on a real phone and passes Core Web Vitals, because a beautiful site that takes six seconds to paint has already lost the visitor.",
+    "welcome": "Hi! I'm Drupal Performance Engineer. A relentless Drupal performance engineer who treats every slow query, cache miss, and render bottleneck as a personal affront — profiling before guessing, fixing cacheability metadata instead of disabling cache, tuning the database and the render pipeline and the front end as one system, and refusing to call a page done until it loads fast on a real phone and passes Core Web Vitals, because a beautiful site that takes six seconds to paint has already lost the visitor.",
     "featured": false,
     "color": "blue"
   },
@@ -871,9 +871,9 @@ export const catalog: CatalogAgent[] = [
       "Promotions: promotions, coupons, offers, conditions, and the promotion priority/compatibility model"
     ],
     "prompts": [
-      "برای شروع یک درخواست بنویس"
+      "Ask Drupal Shopping Cart Engineer about product Architecture"
     ],
-    "welcome": "سلام! من Drupal Shopping Cart Engineer هستم. A meticulous Drupal commerce engineer who treats every storefront as a system of record for someone's revenue — building reliable, scalable shopping experiences on Drupal Commerce where prices are always correct, orders never disappear, payments reconcile to the cent, and the checkout works on the worst phone on the slowest network, because in commerce the cart isn't a feature, it's a promise.",
+    "welcome": "Hi! I'm Drupal Shopping Cart Engineer. A meticulous Drupal commerce engineer who treats every storefront as a system of record for someone's revenue — building reliable, scalable shopping experiences on Drupal Commerce where prices are always correct, orders never disappear, payments reconcile to the cent, and the checkout works on the worst phone on the slowest network, because in commerce the cart isn't a feature, it's a promise.",
     "featured": false,
     "color": "blue"
   },
@@ -894,9 +894,9 @@ export const catalog: CatalogAgent[] = [
       "Expert in extracting structured, reasoning-ready data from raw email threads for AI agents and automation systems"
     ],
     "prompts": [
-      "برای شروع یک درخواست بنویس"
+      "Tell Email Intelligence Engineer what you are working on"
     ],
-    "welcome": "سلام! من Email Intelligence Engineer هستم. Turns messy MIME into reasoning-ready context because raw email is noise and your agent deserves signal",
+    "welcome": "Hi! I'm Email Intelligence Engineer. Turns messy MIME into reasoning-ready context because raw email is noise and your agent deserves signal",
     "featured": false,
     "color": "indigo"
   },
@@ -920,9 +920,9 @@ export const catalog: CatalogAgent[] = [
       "Default requirement: Every peripheral driver must handle error cases and never block indefinitely"
     ],
     "prompts": [
-      "برای شروع یک درخواست بنویس"
+      "Ask Embedded Firmware Engineer about write correct"
     ],
-    "welcome": "سلام! من Embedded Firmware Engineer هستم. Writes production-grade firmware for hardware that can't afford to crash.",
+    "welcome": "Hi! I'm Embedded Firmware Engineer. Writes production-grade firmware for hardware that can't afford to crash.",
     "featured": false,
     "color": "orange"
   },
@@ -946,9 +946,9 @@ export const catalog: CatalogAgent[] = [
       "Connect with enterprise internal systems to complete the data flow loop"
     ],
     "prompts": [
-      "برای شروع یک درخواست بنویس"
+      "Tell Feishu Integration Developer what you are working on"
     ],
-    "welcome": "سلام! من Feishu Integration Developer هستم. Builds enterprise integrations on the Feishu (Lark) platform — bots, approvals, data sync, and SSO — so your team's workflows run on autopilot.",
+    "welcome": "Hi! I'm Feishu Integration Developer. Builds enterprise integrations on the Feishu (Lark) platform — bots, approvals, data sync, and SSO — so your team's workflows run on autopilot.",
     "featured": false,
     "color": "blue"
   },
@@ -974,9 +974,9 @@ export const catalog: CatalogAgent[] = [
       "Never add decorative icons to every section by default; use icons only where they improve scanability in dense forms"
     ],
     "prompts": [
-      "برای شروع یک درخواست بنویس"
+      "Ask Filament Optimization Specialist about never consider adding icons"
     ],
-    "welcome": "سلام! من Filament Optimization Specialist هستم. Pragmatic perfectionist — streamlines complex admin environments.",
+    "welcome": "Hi! I'm Filament Optimization Specialist. Pragmatic perfectionist — streamlines complex admin environments.",
     "featured": false,
     "color": "indigo"
   },
@@ -997,9 +997,9 @@ export const catalog: CatalogAgent[] = [
       "Expert cloud cost engineer for AWS/GCP/Azure — cost allocation and tagging, rightsizing, commitment planning (reserved instances/savings plans), egress and storage optimization, and unit-economics dashboards that tie spend to business value."
     ],
     "prompts": [
-      "برای شروع یک درخواست بنویس"
+      "Tell FinOps Engineer what you are working on"
     ],
-    "welcome": "سلام! من FinOps Engineer هستم. Every idle resource is a subscription nobody canceled. Allocate first, optimize second, and never trade a reliability incident for a rounding error.",
+    "welcome": "Hi! I'm FinOps Engineer. Every idle resource is a subscription nobody canceled. Allocate first, optimize second, and never trade a reliability incident for a rounding error.",
     "featured": false,
     "color": "#0891B2"
   },
@@ -1020,9 +1020,9 @@ export const catalog: CatalogAgent[] = [
       "Expert frontend developer specializing in modern web technologies, React/Vue/Angular frameworks, UI implementation, and performance optimization"
     ],
     "prompts": [
-      "برای شروع یک درخواست بنویس"
+      "Tell Frontend Developer what you are working on"
     ],
-    "welcome": "سلام! من Frontend Developer هستم. Builds responsive, accessible web apps with pixel-perfect precision.",
+    "welcome": "Hi! I'm Frontend Developer. Builds responsive, accessible web apps with pixel-perfect precision.",
     "featured": false,
     "color": "cyan"
   },
@@ -1043,9 +1043,9 @@ export const catalog: CatalogAgent[] = [
       "Expert database specialist focusing on GaussDB OLTP — Huawei's self-developed enterprise-grade relational database (NOT GaussDB(DWS) OLAP, NOT GaussDB(for openGauss) cloud service, NOT GaussDB(for MySQL)). Covers schema design, distributed table design, query optimization, indexing, Ustore engine, and performance tuning for both distributed and centralized deployments."
     ],
     "prompts": [
-      "برای شروع یک درخواست بنویس"
+      "Tell GaussDB Expert Engineer what you are working on"
     ],
-    "welcome": "سلام! من GaussDB Expert Engineer هستم. Distribution keys, CN/DN query plans, Ustore engine — GaussDB databases that don't wake you at 3am.",
+    "welcome": "Hi! I'm GaussDB Expert Engineer. Distribution keys, CN/DN query plans, Ustore engine — GaussDB databases that don't wake you at 3am.",
     "featured": false,
     "color": "amber"
   },
@@ -1066,9 +1066,9 @@ export const catalog: CatalogAgent[] = [
       "Expert in Git workflows, branching strategies, and version control best practices including conventional commits, rebasing, worktrees, and CI-friendly branch management."
     ],
     "prompts": [
-      "برای شروع یک درخواست بنویس"
+      "Tell Git Workflow Master what you are working on"
     ],
-    "welcome": "سلام! من Git Workflow Master هستم. Clean history, atomic commits, and branches that tell a story.",
+    "welcome": "Hi! I'm Git Workflow Master. Clean history, atomic commits, and branches that tell a story.",
     "featured": true,
     "color": "orange"
   },
@@ -1089,9 +1089,9 @@ export const catalog: CatalogAgent[] = [
       "Wire pseudo-localization into CI so untranslatable UI fails the build, not the launch"
     ],
     "prompts": [
-      "برای شروع یک درخواست بنویس"
+      "Tell Internationalization Engineer what you are working on"
     ],
-    "welcome": "سلام! من Internationalization Engineer هستم. Hardcoded strings are bugs. If it only works in English, it only almost works.",
+    "welcome": "Hi! I'm Internationalization Engineer. Hardcoded strings are bugs. If it only works in English, it only almost works.",
     "featured": false,
     "color": "#0EA5E9"
   },
@@ -1112,9 +1112,9 @@ export const catalog: CatalogAgent[] = [
       "Expert identity engineer for OAuth 2.0/OIDC flows, enterprise SSO (SAML/OIDC) and SCIM provisioning, passkeys/WebAuthn, session architecture, and multi-tenant authorization with RBAC/ABAC."
     ],
     "prompts": [
-      "برای شروع یک درخواست بنویس"
+      "Tell Identity & Access Engineer what you are working on"
     ],
-    "welcome": "سلام! من Identity & Access Engineer هستم. Nobody praises login until it breaks, leaks, or locks out the CEO during the board demo. Standards over cleverness, always.",
+    "welcome": "Hi! I'm Identity & Access Engineer. Nobody praises login until it breaks, leaks, or locks out the CEO during the board demo. Standards over cleverness, always.",
     "featured": false,
     "color": "#7C3AED"
   },
@@ -1135,9 +1135,9 @@ export const catalog: CatalogAgent[] = [
       "Expert incident commander specializing in production incident management, structured response coordination, post-mortem facilitation, SLO/SLI tracking, and on-call process design for reliable engineering organizations."
     ],
     "prompts": [
-      "برای شروع یک درخواست بنویس"
+      "Tell Incident Response Commander what you are working on"
     ],
-    "welcome": "سلام! من Incident Response Commander هستم. Turns production chaos into structured resolution.",
+    "welcome": "Hi! I'm Incident Response Commander. Turns production chaos into structured resolution.",
     "featured": false,
     "color": "#e63946"
   },
@@ -1158,9 +1158,9 @@ export const catalog: CatalogAgent[] = [
       "Expert IoT and edge fleet engineer — device provisioning and identity, MQTT/telemetry pipelines, staged over-the-air (OTA) firmware updates with rollback, edge compute, and observability across fleets of unreliable, intermittently-connected devices."
     ],
     "prompts": [
-      "برای شروع یک درخواست بنویس"
+      "Tell IoT Fleet Engineer what you are working on"
     ],
-    "welcome": "سلام! من IoT Fleet Engineer هستم. A field device is a computer you can't reboot, on a network that isn't there, that you shipped a year ago. Update it carefully or brick a thousand at once.",
+    "welcome": "Hi! I'm IoT Fleet Engineer. A field device is a computer you can't reboot, on a network that isn't there, that you shipped a year ago. Update it carefully or brick a thousand at once.",
     "featured": false,
     "color": "#0284C7"
   },
@@ -1186,9 +1186,9 @@ export const catalog: CatalogAgent[] = [
       "Configuration Management: CMDB design, CI population, relationship mapping, audit"
     ],
     "prompts": [
-      "برای شروع یک درخواست بنویس"
+      "Ask IT Service Manager about service Catalog"
     ],
-    "welcome": "سلام! من IT Service Manager هستم. IT exists to serve the business — not the other way around. Every ticket, every SLA, every change window is a promise made to the people who depend on technology to do their jobs. Keep the promises. Measure everything. Improve continuously.",
+    "welcome": "Hi! I'm IT Service Manager. IT exists to serve the business — not the other way around. Every ticket, every SLA, every change window is a promise made to the people who depend on technology to do their jobs. Keep the promises. Measure everything. Improve continuously.",
     "featured": false,
     "color": "blue"
   },
@@ -1209,9 +1209,9 @@ export const catalog: CatalogAgent[] = [
       "Structures information and capabilities into interconnected nodes (entities) and edges (relationships) — enabling dynamic context navigation, modular competency chaining, lower token costs, and hallucination reduction."
     ],
     "prompts": [
-      "برای شروع یک درخواست بنویس"
+      "Tell Knowledge Graph Engineer what you are working on"
     ],
-    "welcome": "سلام! من Knowledge Graph Engineer هستم. Flat files are dead. Every piece of information is a node; every relationship is an edge. Navigate the graph, not the noise.",
+    "welcome": "Hi! I'm Knowledge Graph Engineer. Flat files are dead. Every piece of information is a node; every relationship is an edge. Navigate the graph, not the noise.",
     "featured": true,
     "color": "violet"
   },
@@ -1232,9 +1232,9 @@ export const catalog: CatalogAgent[] = [
       "Evidence-driven owner for SFT, preference optimization, RLHF/RLVR, MoE post-training, and the release gates that turn a checkpoint into a defensible model change."
     ],
     "prompts": [
-      "برای شروع یک درخواست بنویس"
+      "Tell LLM Post-Training Engineer what you are working on"
     ],
-    "welcome": "سلام! من LLM Post-Training Engineer هستم. Treats every run as a controlled behavioral change; loss, reward, throughput, an exit code, or a checkpoint directory is never sufficient evidence by itself.",
+    "welcome": "Hi! I'm LLM Post-Training Engineer. Treats every run as a controlled behavioral change; loss, reward, throughput, an exit code, or a checkpoint directory is never sufficient evidence by itself.",
     "featured": false,
     "color": "#0F766E"
   },
@@ -1260,7 +1260,7 @@ export const catalog: CatalogAgent[] = [
       "@param pageNumber - The 1-indexed page number",
       "@returns A slice of posts for the requested page"
     ],
-    "welcome": "سلام! من Minimal Change Engineer هستم. The smallest diff that solves the problem — every extra line is a liability.",
+    "welcome": "Hi! I'm Minimal Change Engineer. The smallest diff that solves the problem — every extra line is a liability.",
     "featured": false,
     "color": "slate"
   },
@@ -1285,9 +1285,9 @@ export const catalog: CatalogAgent[] = [
       "Implement in-app purchases and subscription management"
     ],
     "prompts": [
-      "برای شروع یک درخواست بنویس"
+      "Ask Mobile App Builder about implement biometric authentication (Face ID"
     ],
-    "welcome": "سلام! من Mobile App Builder هستم. Ships native-quality apps on iOS and Android, fast.",
+    "welcome": "Hi! I'm Mobile App Builder. Ships native-quality apps on iOS and Android, fast.",
     "featured": false,
     "color": "purple"
   },
@@ -1308,9 +1308,9 @@ export const catalog: CatalogAgent[] = [
       "Expert mobile release and distribution engineer for iOS and Android — code signing, provisioning, fastlane pipelines, App Store Connect and Play Console submission, phased rollouts, and crash-triaged release health."
     ],
     "prompts": [
-      "برای شروع یک درخواست بنویس"
+      "Tell Mobile Release Engineer what you are working on"
     ],
-    "welcome": "سلام! من Mobile Release Engineer هستم. Building the app is half the job. Shipping it — signed, reviewed, rolled out, and rollback-ready — is the half that pages you at midnight.",
+    "welcome": "Hi! I'm Mobile Release Engineer. Building the app is half the job. Shipping it — signed, reviewed, rolled out, and rollback-ready — is the half that pages you at midnight.",
     "featured": false,
     "color": "#16A34A"
   },
@@ -1336,7 +1336,7 @@ export const catalog: CatalogAgent[] = [
       "Researching AND evaluating AND writing → three agents",
       "Generating code AND testing it → two agents (generator + tester)"
     ],
-    "welcome": "سلام! من Multi-Agent Systems Architect هستم. Treats a team of AI agents like a distributed system — if it only survives the demo and not production load, ambiguous inputs, and cascading failures, it isn't architecture yet.",
+    "welcome": "Hi! I'm Multi-Agent Systems Architect. Treats a team of AI agents like a distributed system — if it only survives the demo and not production load, ambiguous inputs, and cascading failures, it isn't architecture yet.",
     "featured": false,
     "color": "cyan"
   },
@@ -1359,9 +1359,9 @@ export const catalog: CatalogAgent[] = [
       "Default requirement: Every network change must include impact analysis, verification commands, and a rollback path"
     ],
     "prompts": [
-      "برای شروع یک درخواست بنویس"
+      "Ask Network Engineer about interpret `show`"
     ],
-    "welcome": "سلام! من Network Engineer هستم. Packets do not care about intent. Verify the path, prove the state, then change the config.",
+    "welcome": "Hi! I'm Network Engineer. Packets do not care about intent. Verify the path, prove the state, then change the config.",
     "featured": false,
     "color": "#008c95"
   },
@@ -1382,9 +1382,9 @@ export const catalog: CatalogAgent[] = [
       "Expert in designing, parsing, and implementing OrgScript grammar, AST validation, and business logic definitions."
     ],
     "prompts": [
-      "برای شروع یک درخواست بنویس"
+      "Tell OrgScript Engineer what you are working on"
     ],
-    "welcome": "سلام! من OrgScript Engineer هستم. Process-oriented, strict on semantics, focused on turning human processes into AI-friendly logic.",
+    "welcome": "Hi! I'm OrgScript Engineer. Process-oriented, strict on semantics, focused on turning human processes into AI-friendly logic.",
     "featured": false,
     "color": "green"
   },
@@ -1407,9 +1407,9 @@ export const catalog: CatalogAgent[] = [
       "Reconcile internal ledgers against processor payouts so every cent is accounted for, every day"
     ],
     "prompts": [
-      "برای شروع یک درخواست بنویس"
+      "Tell Payments & Billing Engineer what you are working on"
     ],
-    "welcome": "سلام! من Payments & Billing Engineer هستم. Money moves exactly once, or not at all. Idempotency first, webhooks as truth, reconciliation always.",
+    "welcome": "Hi! I'm Payments & Billing Engineer. Money moves exactly once, or not at all. Idempotency first, webhooks as truth, reconciliation always.",
     "featured": true,
     "color": "#2E7D32"
   },
@@ -1430,9 +1430,9 @@ export const catalog: CatalogAgent[] = [
       "Architect and specialist in deterministic HTML-to-PDF document compilation, Playwright browser context pools, dynamic Euclidean page sizing, LayoutNG subpixel budgeting, tagged PDF (PDF/UA-1 & PDF/A-2b), and 1:1 sheet canvas editors."
     ],
     "prompts": [
-      "برای شروع یک درخواست بنویس"
+      "Tell PDF Engine Architect what you are working on"
     ],
-    "welcome": "سلام! من PDF Engine Architect هستم. The web viewport is infinite; the physical page is unyielding. Never let dynamic content break the geometry of print.",
+    "welcome": "Hi! I'm PDF Engine Architect. The web viewport is infinite; the physical page is unyielding. Never let dynamic content break the geometry of print.",
     "featured": false,
     "color": "#DC2626"
   },
@@ -1455,9 +1455,9 @@ export const catalog: CatalogAgent[] = [
       "If adoption < 30% after 90 days, kill or rebuild the feature"
     ],
     "prompts": [
-      "برای شروع یک درخواست بنویس"
+      "Ask Platform Engineer about a platform feature nobody uses is worse than no feature"
     ],
-    "welcome": "سلام! من Platform Engineer هستم. The platform is the product. If developers can't self-serve it, you haven't finished building it.",
+    "welcome": "Hi! I'm Platform Engineer. The platform is the product. If developers can't self-serve it, you haven't finished building it.",
     "featured": true,
     "color": "#0EA5E9"
   },
@@ -1478,9 +1478,9 @@ export const catalog: CatalogAgent[] = [
       "Expert privacy engineer who implements privacy in code — PII discovery and classification, data minimization, consent enforcement at the API layer, automated DSAR and deletion across services, pseudonymization/tokenization, and retention automation. Builds the technical controls a privacy policy only promises."
     ],
     "prompts": [
-      "برای شروع یک درخواست بنویس"
+      "Tell Privacy Engineer what you are working on"
     ],
-    "welcome": "سلام! من Privacy Engineer هستم. A privacy policy is a promise; the code is whether you kept it. Delete means deleted, everywhere, provably.",
+    "welcome": "Hi! I'm Privacy Engineer. A privacy policy is a promise; the code is whether you kept it. Delete means deleted, everywhere, provably.",
     "featured": false,
     "color": "#7E22CE"
   },
@@ -1507,7 +1507,7 @@ export const catalog: CatalogAgent[] = [
       "Maintains a compatibility matrix: which structural patterns work across which models",
       "Benchmarks cross-model output consistency for prompts that must run on multiple backends"
     ],
-    "welcome": "سلام! من Prompt Engineer هستم. I don't write prompts, I write contracts between humans and models.",
+    "welcome": "Hi! I'm Prompt Engineer. I don't write prompts, I write contracts between humans and models.",
     "featured": false,
     "color": "violet"
   },
@@ -1528,9 +1528,9 @@ export const catalog: CatalogAgent[] = [
       "Production RAG specialist focused on chunking strategy, retrieval quality, hybrid search, re-ranking, and eval-driven iteration. Builds pipelines that actually retrieve the right context — not just pipelines that run."
     ],
     "prompts": [
-      "برای شروع یک درخواست بنویس"
+      "Tell RAG Pipeline Engineer what you are working on"
     ],
-    "welcome": "سلام! من RAG Pipeline Engineer هستم. The LLM gets the blame. The retrieval is the crime scene. I have the evals to prove otherwise.",
+    "welcome": "Hi! I'm RAG Pipeline Engineer. The LLM gets the blame. The retrieval is the crime scene. I have the evals to prove otherwise.",
     "featured": false,
     "color": "#F97316"
   },
@@ -1556,9 +1556,9 @@ export const catalog: CatalogAgent[] = [
       "Implement data models and API endpoints"
     ],
     "prompts": [
-      "برای شروع یک درخواست بنویس"
+      "Ask Rapid Prototyper about build only features necessary to test core hypotheses"
     ],
-    "welcome": "سلام! من Rapid Prototyper هستم. Turns an idea into a working prototype before the meeting's over.",
+    "welcome": "Hi! I'm Rapid Prototyper. Turns an idea into a working prototype before the meeting's over.",
     "featured": false,
     "color": "green"
   },
@@ -1579,9 +1579,9 @@ export const catalog: CatalogAgent[] = [
       "Expert realtime systems engineer for WebSocket/SSE infrastructure, presence, CRDT and OT-based collaborative editing, offline-first sync engines, and fan-out scaling with reconnect-safe protocols."
     ],
     "prompts": [
-      "برای شروع یک درخواست بنویس"
+      "Tell Realtime Collaboration Engineer what you are working on"
     ],
-    "welcome": "سلام! من Realtime Collaboration Engineer هستم. Every keystroke is a distributed system. Converge, don't collide — and assume the network just dropped.",
+    "welcome": "Hi! I'm Realtime Collaboration Engineer. Every keystroke is a distributed system. Converge, don't collide — and assume the network just dropped.",
     "featured": true,
     "color": "#E11D48"
   },
@@ -1607,9 +1607,9 @@ export const catalog: CatalogAgent[] = [
       "Module extraction, consolidation, and dependency-direction repair"
     ],
     "prompts": [
-      "برای شروع یک درخواست بنویس"
+      "Ask Rust Refactoring Specialist about workspace-scale call and re-export graph analysis"
     ],
-    "welcome": "سلام! من Rust Refactoring Specialist هستم. Complete the coherent refactor, prove its safety, and leave no half-migration behind.",
+    "welcome": "Hi! I'm Rust Refactoring Specialist. Complete the coherent refactor, prove its safety, and leave no half-migration behind.",
     "featured": false,
     "color": "#991B1B"
   },
@@ -1630,9 +1630,9 @@ export const catalog: CatalogAgent[] = [
       "Expert search engineer for Elasticsearch and OpenSearch — index and analyzer design, BM25 query tuning, hybrid lexical+vector retrieval, and judgment-based relevance evaluation with nDCG and online experiments."
     ],
     "prompts": [
-      "برای شروع یک درخواست بنویس"
+      "Tell Search Relevance Engineer what you are working on"
     ],
-    "welcome": "سلام! من Search Relevance Engineer هستم. Recall finds it, precision ranks it, evaluation proves it. Untested relevance changes are just vibes with a deploy button.",
+    "welcome": "Hi! I'm Search Relevance Engineer. Recall finds it, precision ranks it, evaluation proves it. Untested relevance changes are just vibes with a deploy button.",
     "featured": false,
     "color": "#00BFB3"
   },
@@ -1658,9 +1658,9 @@ export const catalog: CatalogAgent[] = [
       "Auditing & Reporting: automated scans, manual evaluation, and VPAT/ACR (Accessibility Conformance Report) authoring"
     ],
     "prompts": [
-      "برای شروع یک درخواست بنویس"
+      "Ask Section 508 Accessibility Specialist about keyboard Operability"
     ],
-    "welcome": "سلام! من Section 508 Accessibility Specialist هستم. A meticulous accessibility engineer who makes sure every user — regardless of ability — can perceive, navigate, understand, and operate a site, holding the line on the Section 508 legal baseline of WCAG 2.0 Level AA while targeting WCAG 2.1/2.2 AA as best practice (and WCAG 2.1 AA where ADA Title II applies to state and local government), testing with real assistive technology instead of trusting a green automated score, because the 30% of barriers a scanner can't catch are exactly the ones that lock a screen reader user out of a government service they have a legal right to use.",
+    "welcome": "Hi! I'm Section 508 Accessibility Specialist. A meticulous accessibility engineer who makes sure every user — regardless of ability — can perceive, navigate, understand, and operate a site, holding the line on the Section 508 legal baseline of WCAG 2.0 Level AA while targeting WCAG 2.1/2.2 AA as best practice (and WCAG 2.1 AA where ADA Title II applies to state and local government), testing with real assistive technology instead of trusting a green automated score, because the 30% of barriers a scanner can't catch are exactly the ones that lock a screen reader user out of a government service they have a legal right to use.",
     "featured": true,
     "color": "blue"
   },
@@ -1686,7 +1686,7 @@ export const catalog: CatalogAgent[] = [
       "Plan premium enhancement opportunities",
       "Identify Three.js or advanced technology integration points"
     ],
-    "welcome": "سلام! من Senior Developer هستم. Premium full-stack craftsperson — Laravel, Livewire, Three.js, advanced CSS.",
+    "welcome": "Hi! I'm Senior Developer. Premium full-stack craftsperson — Laravel, Livewire, Three.js, advanced CSS.",
     "featured": true,
     "color": "green"
   },
@@ -1707,9 +1707,9 @@ export const catalog: CatalogAgent[] = [
       "Expert software architect specializing in system design, domain-driven design, architectural patterns, and technical decision-making for scalable, maintainable systems."
     ],
     "prompts": [
-      "برای شروع یک درخواست بنویس"
+      "Tell Software Architect what you are working on"
     ],
-    "welcome": "سلام! من Software Architect هستم. Designs systems that survive the team that built them. Every decision has a trade-off — name it.",
+    "welcome": "Hi! I'm Software Architect. Designs systems that survive the team that built them. Every decision has a trade-off — name it.",
     "featured": false,
     "color": "indigo"
   },
@@ -1730,9 +1730,9 @@ export const catalog: CatalogAgent[] = [
       "Expert Solidity developer specializing in EVM smart contract architecture, gas optimization, upgradeable proxy patterns, DeFi protocol development, and security-first contract design across Ethereum and L2 chains."
     ],
     "prompts": [
-      "برای شروع یک درخواست بنویس"
+      "Tell Solidity Smart Contract Engineer what you are working on"
     ],
-    "welcome": "سلام! من Solidity Smart Contract Engineer هستم. Battle-hardened Solidity developer who lives and breathes the EVM.",
+    "welcome": "Hi! I'm Solidity Smart Contract Engineer. Battle-hardened Solidity developer who lives and breathes the EVM.",
     "featured": true,
     "color": "orange"
   },
@@ -1753,9 +1753,9 @@ export const catalog: CatalogAgent[] = [
       "Expert site reliability engineer specializing in SLOs, error budgets, observability, chaos engineering, and toil reduction for production systems at scale."
     ],
     "prompts": [
-      "برای شروع یک درخواست بنویس"
+      "Tell SRE (Site Reliability Engineer) what you are working on"
     ],
-    "welcome": "سلام! من SRE (Site Reliability Engineer) هستم. Reliability is a feature. Error budgets fund velocity — spend them wisely.",
+    "welcome": "Hi! I'm SRE (Site Reliability Engineer). Reliability is a feature. Error budgets fund velocity — spend them wisely.",
     "featured": false,
     "color": "#e63946"
   },
@@ -1779,7 +1779,7 @@ export const catalog: CatalogAgent[] = [
     "prompts": [
       "product_id: \"prod_xyz\""
     ],
-    "welcome": "سلام! من Technical Writer هستم. Writes the docs that developers actually read and use.",
+    "welcome": "Hi! I'm Technical Writer. Writes the docs that developers actually read and use.",
     "featured": false,
     "color": "teal"
   },
@@ -1803,9 +1803,9 @@ export const catalog: CatalogAgent[] = [
       "Clinical / Diagnostic Report (Patient metrics, laboratory tables, observations)."
     ],
     "prompts": [
-      "برای شروع یک درخواست بنویس"
+      "Ask Universal Document Compiler about executive CV / Resume (ATS-optimized keyword hierarchies)"
     ],
-    "welcome": "سلام! من Universal Document Compiler هستم. The shape of the data dictates the architecture of the page; no human thought should ever be constrained by static schemas.",
+    "welcome": "Hi! I'm Universal Document Compiler. The shape of the data dictates the architecture of the page; no human thought should ever be constrained by static schemas.",
     "featured": true,
     "color": "#3B82F6"
   },
@@ -1831,9 +1831,9 @@ export const catalog: CatalogAgent[] = [
       "Forms & Patterns: USWDS form components, validation/error states, and multi-step page patterns"
     ],
     "prompts": [
-      "برای شروع یک درخواست بنویس"
+      "Ask USWDS Developer about design Tokens"
     ],
-    "welcome": "سلام! من USWDS Developer هستم. A government-focused frontend developer who builds trustworthy, accessible, consistent federal interfaces with the U.S. Web Design System — theming through design tokens and Sass settings instead of overriding the framework, reaching for the maintained USWDS component before hand-rolling a custom one, and treating accessibility and 21st Century IDEA conformance as the baseline rather than a later phase, because a federal site that looks official but locks users out has failed the public it exists to serve.",
+    "welcome": "Hi! I'm USWDS Developer. A government-focused frontend developer who builds trustworthy, accessible, consistent federal interfaces with the U.S. Web Design System — theming through design tokens and Sass settings instead of overriding the framework, reaching for the maintained USWDS component before hand-rolling a custom one, and treating accessibility and 21st Century IDEA conformance as the baseline rather than a later phase, because a federal site that looks official but locks users out has failed the public it exists to serve.",
     "featured": false,
     "color": "blue"
   },
@@ -1854,9 +1854,9 @@ export const catalog: CatalogAgent[] = [
       "Expert video streaming engineer for adaptive bitrate delivery — HLS/DASH packaging, ffmpeg transcode ladders, CMAF low-latency, DRM, CDN delivery, and QoE-driven player tuning."
     ],
     "prompts": [
-      "برای شروع یک درخواست بنویس"
+      "Tell Video Streaming Engineer what you are working on"
     ],
-    "welcome": "سلام! من Video Streaming Engineer هستم. Every buffering spinner is a user leaving. Encode once, adapt to every network, measure the rebuffer.",
+    "welcome": "Hi! I'm Video Streaming Engineer. Every buffering spinner is a user leaving. Encode once, adapt to every network, measure the rebuffer.",
     "featured": true,
     "color": "#DC2626"
   },
@@ -1877,9 +1877,9 @@ export const catalog: CatalogAgent[] = [
       "Expert in building end-to-end speech transcription pipelines using Whisper-style models and cloud ASR services — from raw audio ingestion through preprocessing, transcript cleanup, subtitle generation, speaker diarization, and structured downstream integration into apps, APIs, and CMS platforms."
     ],
     "prompts": [
-      "برای شروع یک درخواست بنویس"
+      "Tell Voice AI Integration Engineer what you are working on"
     ],
-    "welcome": "سلام! من Voice AI Integration Engineer هستم. Turns raw audio into structured, production-ready text that machines and humans can actually use.",
+    "welcome": "Hi! I'm Voice AI Integration Engineer. Turns raw audio into structured, production-ready text that machines and humans can actually use.",
     "featured": false,
     "color": "violet"
   },
@@ -1900,9 +1900,9 @@ export const catalog: CatalogAgent[] = [
       "Expert WebAssembly engineer — compiling Rust/C++/Go to Wasm, JS interop and the boundary marshalling cost, WASI and server-side runtimes (Wasmtime/Wasmer), the component model, and near-native performance tuning."
     ],
     "prompts": [
-      "برای شروع یک درخواست بنویس"
+      "Tell WebAssembly Engineer what you are working on"
     ],
-    "welcome": "سلام! من WebAssembly Engineer هستم. The boundary is where performance goes to die. Keep the hot loop inside the module and stop copying strings across it.",
+    "welcome": "Hi! I'm WebAssembly Engineer. The boundary is where performance goes to die. Keep the hot loop inside the module and stop copying strings across it.",
     "featured": false,
     "color": "#6D28D9"
   },
@@ -1923,9 +1923,9 @@ export const catalog: CatalogAgent[] = [
       "Expert WeChat Mini Program developer specializing in 小程序 development with WXML/WXSS/WXS, WeChat API integration, payment systems, subscription messaging, and the full WeChat ecosystem."
     ],
     "prompts": [
-      "برای شروع یک درخواست بنویس"
+      "Tell WeChat Mini Program Developer what you are working on"
     ],
-    "welcome": "سلام! من WeChat Mini Program Developer هستم. Builds performant Mini Programs that thrive in the WeChat ecosystem.",
+    "welcome": "Hi! I'm WeChat Mini Program Developer. Builds performant Mini Programs that thrive in the WeChat ecosystem.",
     "featured": false,
     "color": "green"
   },
@@ -1951,9 +1951,9 @@ export const catalog: CatalogAgent[] = [
       "Infrastructure: opcache, PHP-FPM, host caching, and CDN integration"
     ],
     "prompts": [
-      "برای شروع یک درخواست بنویس"
+      "Ask WordPress Performance Engineer about caching Layers"
     ],
-    "welcome": "سلام! من WordPress Performance Engineer هستم. A pragmatic WordPress performance engineer who turns sluggish sites into fast, Core-Web-Vitals-passing storefronts through smart caching and query discipline — profiling with Query Monitor before touching anything, killing the autoloaded-options bloat and the plugin that fires forty queries per request, layering object cache and page cache and CDN so they reinforce instead of fight, and refusing to call a page done until it loads fast on a real phone, because a plugin-heavy site that looks fine on the developer's fiber connection is still losing the customer on 4G.",
+    "welcome": "Hi! I'm WordPress Performance Engineer. A pragmatic WordPress performance engineer who turns sluggish sites into fast, Core-Web-Vitals-passing storefronts through smart caching and query discipline — profiling with Query Monitor before touching anything, killing the autoloaded-options bloat and the plugin that fires forty queries per request, layering object cache and page cache and CDN so they reinforce instead of fight, and refusing to call a page done until it loads fast on a real phone, because a plugin-heavy site that looks fine on the developer's fiber connection is still losing the customer on 4G.",
     "featured": false,
     "color": "purple"
   },
@@ -1979,9 +1979,9 @@ export const catalog: CatalogAgent[] = [
       "Coupons & Discounts: coupon types, restrictions, usage limits, and stacking rules"
     ],
     "prompts": [
-      "برای شروع یک درخواست بنویس"
+      "Ask WordPress Shopping Cart Engineer about product Architecture"
     ],
-    "welcome": "سلام! من WordPress Shopping Cart Engineer هستم. A pragmatic WordPress commerce engineer who turns WooCommerce into powerful, conversion-optimized storefronts — shipping fast without shipping fragile, customizing through hooks instead of hacking core, keeping the checkout fast and frictionless on real phones, and treating every order, payment, and tax line as money that has to reconcile, because a storefront that converts but miscounts is worse than one that never launched.",
+    "welcome": "Hi! I'm WordPress Shopping Cart Engineer. A pragmatic WordPress commerce engineer who turns WooCommerce into powerful, conversion-optimized storefronts — shipping fast without shipping fragile, customizing through hooks instead of hacking core, keeping the checkout fast and frictionless on real phones, and treating every order, payment, and tax line as money that has to reconcile, because a storefront that converts but miscounts is worse than one that never launched.",
     "featured": false,
     "color": "purple"
   },
@@ -2007,7 +2007,7 @@ export const catalog: CatalogAgent[] = [
       "Review and approve time-sensitive journal entries",
       "Follow up on outstanding intercompany balances"
     ],
-    "welcome": "سلام! من Bookkeeper & Controller هستم. Every penny accounted for, every close on time — the backbone of financial trust.",
+    "welcome": "Hi! I'm Bookkeeper & Controller. Every penny accounted for, every close on time — the backbone of financial trust.",
     "featured": false,
     "color": "green"
   },
@@ -2028,9 +2028,9 @@ export const catalog: CatalogAgent[] = [
       "Expert financial analyst specializing in financial modeling, forecasting, scenario analysis, and data-driven decision support. Transforms raw financial data into actionable business intelligence that drives strategic planning, investment decisions, and operational optimization."
     ],
     "prompts": [
-      "برای شروع یک درخواست بنویس"
+      "Tell Financial Analyst what you are working on"
     ],
-    "welcome": "سلام! من Financial Analyst هستم. Turns spreadsheets into strategy — every number tells a story, every model drives a decision.",
+    "welcome": "Hi! I'm Financial Analyst. Turns spreadsheets into strategy — every number tells a story, every model drives a decision.",
     "featured": false,
     "color": "green"
   },
@@ -2051,9 +2051,9 @@ export const catalog: CatalogAgent[] = [
       "Expert Financial Planning & Analysis (FP&A) analyst specializing in budgeting, variance analysis, financial planning, rolling forecasts, and strategic decision support. Bridges the gap between the numbers and the business narrative to drive operational performance and strategic resource allocation."
     ],
     "prompts": [
-      "برای شروع یک درخواست بنویس"
+      "Tell FP&A Analyst what you are working on"
     ],
-    "welcome": "سلام! من FP&A Analyst هستم. The budget whisperer — turns plans into numbers and numbers into action.",
+    "welcome": "Hi! I'm FP&A Analyst. The budget whisperer — turns plans into numbers and numbers into action.",
     "featured": false,
     "color": "green"
   },
@@ -2074,9 +2074,9 @@ export const catalog: CatalogAgent[] = [
       "Expert investment researcher specializing in market research, due diligence, portfolio analysis, and asset valuation. Conducts rigorous fundamental and quantitative analysis to identify investment opportunities, assess risks, and support data-driven portfolio decisions across public equities, private markets, and alternative assets."
     ],
     "prompts": [
-      "برای شروع یک درخواست بنویس"
+      "Tell Investment Researcher what you are working on"
     ],
-    "welcome": "سلام! من Investment Researcher هستم. Digs deeper than the consensus — finds alpha in the footnotes and risks in the narratives.",
+    "welcome": "Hi! I'm Investment Researcher. Digs deeper than the consensus — finds alpha in the footnotes and risks in the narratives.",
     "featured": false,
     "color": "green"
   },
@@ -2097,9 +2097,9 @@ export const catalog: CatalogAgent[] = [
       "Expert tax strategist specializing in tax optimization, multi-jurisdictional compliance, transfer pricing, and strategic tax planning. Navigates complex tax codes to minimize liability while ensuring full regulatory compliance across local, state, federal, and international tax regimes."
     ],
     "prompts": [
-      "برای شروع یک درخواست بنویس"
+      "Tell Tax Strategist what you are working on"
     ],
-    "welcome": "سلام! من Tax Strategist هستم. Finds every legal dollar of savings in the tax code — compliance is the floor, optimization is the mission.",
+    "welcome": "Hi! I'm Tax Strategist. Finds every legal dollar of savings in the tax code — compliance is the floor, optimization is the mission.",
     "featured": false,
     "color": "green"
   },
@@ -2120,9 +2120,9 @@ export const catalog: CatalogAgent[] = [
       "Virtual economy architect - Masters currency systems, sources and sinks, monetization modeling, inflation control, and data-driven economic balancing for live games"
     ],
     "prompts": [
-      "برای شروع یک درخواست بنویس"
+      "Tell Economy Designer what you are working on"
     ],
-    "welcome": "سلام! من Economy Designer هستم. Sees every game as a flow of currencies, and every player decision as a transaction.",
+    "welcome": "Hi! I'm Economy Designer. Sees every game as a flow of currencies, and every player decision as a transaction.",
     "featured": false,
     "color": "green"
   },
@@ -2143,9 +2143,9 @@ export const catalog: CatalogAgent[] = [
       "Interactive audio specialist - Masters FMOD/Wwise integration, adaptive music systems, spatial audio, and audio performance budgeting across all game engines"
     ],
     "prompts": [
-      "برای شروع یک درخواست بنویس"
+      "Tell Game Audio Engineer what you are working on"
     ],
-    "welcome": "سلام! من Game Audio Engineer هستم. Makes every gunshot, footstep, and musical cue feel alive in the game world.",
+    "welcome": "Hi! I'm Game Audio Engineer. Makes every gunshot, footstep, and musical cue feel alive in the game world.",
     "featured": false,
     "color": "indigo"
   },
@@ -2166,9 +2166,9 @@ export const catalog: CatalogAgent[] = [
       "Systems and mechanics architect - Masters GDD authorship, player psychology, economy balancing, and gameplay loop design across all engines and genres"
     ],
     "prompts": [
-      "برای شروع یک درخواست بنویس"
+      "Tell Game Designer what you are working on"
     ],
-    "welcome": "سلام! من Game Designer هستم. Thinks in loops, levers, and player motivations to architect compelling gameplay.",
+    "welcome": "Hi! I'm Game Designer. Thinks in loops, levers, and player motivations to architect compelling gameplay.",
     "featured": true,
     "color": "yellow"
   },
@@ -2189,9 +2189,9 @@ export const catalog: CatalogAgent[] = [
       "Spatial storytelling and flow specialist - Masters layout theory, pacing architecture, encounter design, and environmental narrative across all game engines"
     ],
     "prompts": [
-      "برای شروع یک درخواست بنویس"
+      "Tell Level Designer what you are working on"
     ],
-    "welcome": "سلام! من Level Designer هستم. Treats every level as an authored experience where space tells the story.",
+    "welcome": "Hi! I'm Level Designer. Treats every level as an authored experience where space tells the story.",
     "featured": false,
     "color": "teal"
   },
@@ -2212,9 +2212,9 @@ export const catalog: CatalogAgent[] = [
       "Story systems and dialogue architect - Masters GDD-aligned narrative design, branching dialogue, lore architecture, and environmental storytelling across all game engines"
     ],
     "prompts": [
-      "برای شروع یک درخواست بنویس"
+      "Tell Narrative Designer what you are working on"
     ],
-    "welcome": "سلام! من Narrative Designer هستم. Architects story systems where narrative and gameplay are inseparable.",
+    "welcome": "Hi! I'm Narrative Designer. Architects story systems where narrative and gameplay are inseparable.",
     "featured": false,
     "color": "red"
   },
@@ -2235,9 +2235,9 @@ export const catalog: CatalogAgent[] = [
       "Art-to-engine pipeline specialist - Masters shaders, VFX systems, LOD pipelines, performance budgeting, and cross-engine asset optimization"
     ],
     "prompts": [
-      "برای شروع یک درخواست بنویس"
+      "Tell Technical Artist what you are working on"
     ],
-    "welcome": "سلام! من Technical Artist هستم. The bridge between artistic vision and engine reality.",
+    "welcome": "Hi! I'm Technical Artist. The bridge between artistic vision and engine reality.",
     "featured": false,
     "color": "pink"
   },
@@ -2258,9 +2258,9 @@ export const catalog: CatalogAgent[] = [
       "Web 3D visualization specialist who creates immersive 3D scenes, terrain models, point cloud visualizations, and interactive web experiences using Cesium, ArcGIS Scene Viewer, and modern 3D web frameworks."
     ],
     "prompts": [
-      "برای شروع یک درخواست بنویس"
+      "Tell 3D & Scene Developer what you are working on"
     ],
-    "welcome": "سلام! من 3D & Scene Developer هستم. Bringing the third dimension to the web — one scene at a time.",
+    "welcome": "Hi! I'm 3D & Scene Developer. Bringing the third dimension to the web — one scene at a time.",
     "featured": true,
     "color": "cyan"
   },
@@ -2281,9 +2281,9 @@ export const catalog: CatalogAgent[] = [
       "Day-to-day GIS operator who creates maps, manages layers, performs spatial queries, and maintains geospatial data integrity across desktop and web environments."
     ],
     "prompts": [
-      "برای شروع یک درخواست بنویس"
+      "Tell GIS Analyst what you are working on"
     ],
-    "welcome": "سلام! من GIS Analyst هستم. The reliable hands-on operator who keeps the GIS running day to day.",
+    "welcome": "Hi! I'm GIS Analyst. The reliable hands-on operator who keeps the GIS running day to day.",
     "featured": false,
     "color": "teal"
   },
@@ -2304,9 +2304,9 @@ export const catalog: CatalogAgent[] = [
       "Integration specialist who bridges Building Information Modeling and Geographic Information Systems — Revit/IFC data conversion, indoor mapping, digital twin architecture, and facility management data models."
     ],
     "prompts": [
-      "برای شروع یک درخواست بنویس"
+      "Tell BIM/GIS Specialist what you are working on"
     ],
-    "welcome": "سلام! من BIM/GIS Specialist هستم. Where buildings meet geography — the spatial side of the built world.",
+    "welcome": "Hi! I'm BIM/GIS Specialist. Where buildings meet geography — the spatial side of the built world.",
     "featured": false,
     "color": "gold"
   },
@@ -2327,9 +2327,9 @@ export const catalog: CatalogAgent[] = [
       "Map aesthetics specialist who designs beautiful, readable, and effective maps — color theory, typography, label placement, basemap selection, and visual hierarchy for both print and web."
     ],
     "prompts": [
-      "برای شروع یک درخواست بنویس"
+      "Tell Cartography Designer what you are working on"
     ],
-    "welcome": "سلام! من Cartography Designer هستم. A map that communicates beautifully is a map that gets used.",
+    "welcome": "Hi! I'm Cartography Designer. A map that communicates beautifully is a map that gets used.",
     "featured": true,
     "color": "pink"
   },
@@ -2350,9 +2350,9 @@ export const catalog: CatalogAgent[] = [
       "Photogrammetry and reality capture expert who processes drone imagery into orthomosaics, digital terrain models, point clouds, and 3D meshes — bridging field capture and GIS-ready products."
     ],
     "prompts": [
-      "برای شروع یک درخواست بنویس"
+      "Tell Drone/Reality Mapping Specialist what you are working on"
     ],
-    "welcome": "سلام! من Drone/Reality Mapping Specialist هستم. From raw drone footage to production-ready GIS data — seamless.",
+    "welcome": "Hi! I'm Drone/Reality Mapping Specialist. From raw drone footage to production-ready GIS data — seamless.",
     "featured": false,
     "color": "amber"
   },
@@ -2377,9 +2377,9 @@ export const catalog: CatalogAgent[] = [
       "Tree canopy / vegetation extraction"
     ],
     "prompts": [
-      "برای شروع یک درخواست بنویس"
+      "Tell GeoAI/ML Engineer what you are working on"
     ],
-    "welcome": "سلام! من GeoAI/ML Engineer هستم. Teaching machines to see the Earth — one pixel at a time.",
+    "welcome": "Hi! I'm GeoAI/ML Engineer. Teaching machines to see the Earth — one pixel at a time.",
     "featured": false,
     "color": "green"
   },
@@ -2400,9 +2400,9 @@ export const catalog: CatalogAgent[] = [
       "ArcPy and Python toolbox expert who automates spatial workflows — builds .pyt toolboxes, Model Builder processes, batch geoprocessing automation, and custom analysis scripts for ArcGIS Pro."
     ],
     "prompts": [
-      "برای شروع یک درخواست بنویس"
+      "Tell Geoprocessing Specialist what you are working on"
     ],
-    "welcome": "سلام! من Geoprocessing Specialist هستم. If you've done it manually more than twice, this agent will automate it.",
+    "welcome": "Hi! I'm Geoprocessing Specialist. If you've done it manually more than twice, this agent will automate it.",
     "featured": false,
     "color": "red"
   },
@@ -2423,9 +2423,9 @@ export const catalog: CatalogAgent[] = [
       "Quality assurance specialist who validates geospatial data integrity — topology checks, metadata audits, CRS consistency, accuracy assessment, and compliance verification."
     ],
     "prompts": [
-      "برای شروع یک درخواست بنویس"
+      "Tell GIS QA Engineer what you are working on"
     ],
-    "welcome": "سلام! من GIS QA Engineer هستم. Data doesn't ship until QA says it ships.",
+    "welcome": "Hi! I'm GIS QA Engineer. Data doesn't ship until QA says it ships.",
     "featured": false,
     "color": "purple"
   },
@@ -2446,9 +2446,9 @@ export const catalog: CatalogAgent[] = [
       "Hands-on GIS prototype builder who takes strategy from Technical Consultant and turns it into working demos, proof-of-concepts, and technical validations across the full Esri and open-source stack."
     ],
     "prompts": [
-      "برای شروع یک درخواست بنویس"
+      "Tell Solution Engineer what you are working on"
     ],
-    "welcome": "سلام! من Solution Engineer هستم. The builder who makes strategy real — one working demo at a time.",
+    "welcome": "Hi! I'm Solution Engineer. The builder who makes strategy real — one working demo at a time.",
     "featured": false,
     "color": "blue"
   },
@@ -2469,9 +2469,9 @@ export const catalog: CatalogAgent[] = [
       "ETL specialist who transforms messy geospatial data from any source into clean, standardized, production-ready datasets — format conversion, CRS reprojection, attribute normalization, and automated pipelines."
     ],
     "prompts": [
-      "برای شروع یک درخواست بنویس"
+      "Tell Spatial Data Engineer what you are working on"
     ],
-    "welcome": "سلام! من Spatial Data Engineer هستم. Data comes in dirty. It leaves clean, documented, and ready to publish.",
+    "welcome": "Hi! I'm Spatial Data Engineer. Data comes in dirty. It leaves clean, documented, and ready to publish.",
     "featured": true,
     "color": "orange"
   },
@@ -2492,9 +2492,9 @@ export const catalog: CatalogAgent[] = [
       "Advanced spatial analytics specialist who applies statistical modeling, spatial econometrics, clustering, and predictive analytics to geospatial data — finding patterns that aren't visible on a map."
     ],
     "prompts": [
-      "برای شروع یک درخواست بنویس"
+      "Tell Spatial Data Scientist what you are working on"
     ],
-    "welcome": "سلام! من Spatial Data Scientist هستم. Finding the patterns in space that even experienced analysts miss.",
+    "welcome": "Hi! I'm Spatial Data Scientist. Finding the patterns in space that even experienced analysts miss.",
     "featured": false,
     "color": "indigo"
   },
@@ -2515,9 +2515,9 @@ export const catalog: CatalogAgent[] = [
       "Strategic GIS advisor who translates business problems into geospatial solutions — gap analysis, technology roadmaps, RFP responses, and digital transformation strategy across Esri and open-source ecosystems."
     ],
     "prompts": [
-      "برای شروع یک درخواست بنویس"
+      "Tell Technical Consultant what you are working on"
     ],
-    "welcome": "سلام! من Technical Consultant هستم. The strategist who connects business pain points with geospatial solutions that actually deliver ROI.",
+    "welcome": "Hi! I'm Technical Consultant. The strategist who connects business pain points with geospatial solutions that actually deliver ROI.",
     "featured": false,
     "color": "navy"
   },
@@ -2538,9 +2538,9 @@ export const catalog: CatalogAgent[] = [
       "Full-stack web GIS engineer who builds interactive mapping applications — MapLibre GL JS, ArcGIS JS API, Leaflet, real-time dashboards, REST API integration, and geospatial web services."
     ],
     "prompts": [
-      "برای شروع یک درخواست بنویس"
+      "Tell Web GIS Developer what you are working on"
     ],
-    "welcome": "سلام! من Web GIS Developer هستم. Maps on the web that actually work — fast, responsive, and beautiful.",
+    "welcome": "Hi! I'm Web GIS Developer. Maps on the web that actually work — fast, responsive, and beautiful.",
     "featured": false,
     "color": "blue"
   },
@@ -2561,9 +2561,9 @@ export const catalog: CatalogAgent[] = [
       "Evidence standards and clinical credibility framework for AI agents"
     ],
     "prompts": [
-      "برای شروع یک درخواست بنویس"
+      "Tell Clinical Evidence Agent what you are working on"
     ],
-    "welcome": "سلام! من Clinical Evidence Agent هستم. Clinical credibility is earned through evidence standards, not confidence.",
+    "welcome": "Hi! I'm Clinical Evidence Agent. Clinical credibility is earned through evidence standards, not confidence.",
     "featured": false,
     "color": "#1A5276"
   },
@@ -2584,9 +2584,9 @@ export const catalog: CatalogAgent[] = [
       "Strategic narrative architect for healthcare founders operating at"
     ],
     "prompts": [
-      "برای شروع یک درخواست بنویس"
+      "Tell Healthcare Innovation Strategist what you are working on"
     ],
-    "welcome": "سلام! من Healthcare Innovation Strategist هستم. Holds the narrative together when the team is heads-down building.",
+    "welcome": "Hi! I'm Healthcare Innovation Strategist. Holds the narrative together when the team is heads-down building.",
     "featured": false,
     "color": "#1B4F72"
   },
@@ -2607,9 +2607,9 @@ export const catalog: CatalogAgent[] = [
       "Government health mandate engagement framework for AI agents"
     ],
     "prompts": [
-      "برای شروع یک درخواست بنویس"
+      "Tell Sovereign Health Systems Agent what you are working on"
     ],
-    "welcome": "سلام! من Sovereign Health Systems Agent هستم. Global health infrastructure is the largest underserved market in health tech.",
+    "welcome": "Hi! I'm Sovereign Health Systems Agent. Global health infrastructure is the largest underserved market in health tech.",
     "featured": false,
     "color": "#1B4F72"
   },
@@ -2636,7 +2636,7 @@ export const catalog: CatalogAgent[] = [
       "[ ] Key task flows use native HTML forms (not JS-only widgets)",
       "[ ] Guest flows available (no mandatory auth for first interaction)"
     ],
-    "welcome": "سلام! من AEO Foundations Architect هستم. The foundation layer everyone skips — making sure AI systems can actually discover, read, and use your content before you worry about rankings, citations, or task completion",
+    "welcome": "Hi! I'm AEO Foundations Architect. The foundation layer everyone skips — making sure AI systems can actually discover, read, and use your content before you worry about rankings, citations, or task completion",
     "featured": false,
     "color": "#059669"
   },
@@ -2661,9 +2661,9 @@ export const catalog: CatalogAgent[] = [
       "Cross-agent compatibility testing: Chrome AI agent, Claude in Chrome, Perplexity, Edge Copilot"
     ],
     "prompts": [
-      "برای شروع یک درخواست بنویس"
+      "Ask Agentic Search Optimizer about webMCP readiness audits"
     ],
-    "welcome": "سلام! من Agentic Search Optimizer هستم. While everyone else is optimizing to get cited by AI, this agent makes sure AI can actually do the thing on your site",
+    "welcome": "Hi! I'm Agentic Search Optimizer. While everyone else is optimizing to get cited by AI, this agent makes sure AI can actually do the thing on your site",
     "featured": false,
     "color": "#0891B2"
   },
@@ -2694,7 +2694,7 @@ export const catalog: CatalogAgent[] = [
       "\"How to choose X\" — requires buyer's guide content with decision frameworks",
       "\"What is the difference between X and Y\" — requires clear definitional content"
     ],
-    "welcome": "سلام! من AI Citation Strategist هستم. Figures out why the AI recommends your competitor and rewires the signals so it recommends you instead",
+    "welcome": "Hi! I'm AI Citation Strategist. Figures out why the AI recommends your competitor and rewires the signals so it recommends you instead",
     "featured": false,
     "color": "#6D28D9"
   },
@@ -2717,9 +2717,9 @@ export const catalog: CatalogAgent[] = [
       "Clear benefit communication for each feature shown"
     ],
     "prompts": [
-      "برای شروع یک درخواست بنویس"
+      "Ask App Store Optimizer about core functionality showcase with real user scenarios"
     ],
-    "welcome": "سلام! من App Store Optimizer هستم. Gets your app found, downloaded, and loved in the store.",
+    "welcome": "Hi! I'm App Store Optimizer. Gets your app found, downloaded, and loved in the store.",
     "featured": false,
     "color": "blue"
   },
@@ -2740,9 +2740,9 @@ export const catalog: CatalogAgent[] = [
       "Expert Baidu search optimization specialist focused on Chinese search engine ranking, Baidu ecosystem integration, ICP compliance, Chinese keyword research, and mobile-first indexing for the China market."
     ],
     "prompts": [
-      "برای شروع یک درخواست بنویس"
+      "Tell Baidu SEO Specialist what you are working on"
     ],
-    "welcome": "سلام! من Baidu SEO Specialist هستم. Masters Baidu's algorithm so your brand ranks in China's search ecosystem.",
+    "welcome": "Hi! I'm Baidu SEO Specialist. Masters Baidu's algorithm so your brand ranks in China's search ecosystem.",
     "featured": false,
     "color": "blue"
   },
@@ -2763,9 +2763,9 @@ export const catalog: CatalogAgent[] = [
       "Expert Bilibili marketing specialist focused on UP主 growth, danmaku culture mastery, B站 algorithm optimization, community building, and branded content strategy for China's leading video community platform."
     ],
     "prompts": [
-      "برای شروع یک درخواست بنویس"
+      "Tell Bilibili Content Strategist what you are working on"
     ],
-    "welcome": "سلام! من Bilibili Content Strategist هستم. Speaks fluent danmaku and grows your brand on B站.",
+    "welcome": "Hi! I'm Bilibili Content Strategist. Speaks fluent danmaku and grows your brand on B站.",
     "featured": false,
     "color": "pink"
   },
@@ -2786,9 +2786,9 @@ export const catalog: CatalogAgent[] = [
       "Default requirement: The book must strengthen category positioning, not just explain ideas competently"
     ],
     "prompts": [
-      "برای شروع یک درخواست بنویس"
+      "Ask Book Co-Author about default requirement"
     ],
-    "welcome": "سلام! من Book Co-Author هستم. Turns rough expertise into a recognizable book people can quote, remember, and buy into.",
+    "welcome": "Hi! I'm Book Co-Author. Turns rough expertise into a recognizable book people can quote, remember, and buy into.",
     "featured": true,
     "color": "#8B5E3C"
   },
@@ -2809,9 +2809,9 @@ export const catalog: CatalogAgent[] = [
       "Autonomous TikTok and Instagram carousel generation specialist. Analyzes any website URL with Playwright, generates viral 6-slide carousels via Gemini image generation, publishes directly to feed via Upload-Post API with auto trending music, fetches analytics, and iteratively improves through a data-driven learning loop."
     ],
     "prompts": [
-      "برای شروع یک درخواست بنویس"
+      "Tell Carousel Growth Engine what you are working on"
     ],
-    "welcome": "سلام! من Carousel Growth Engine هستم. Autonomously generates viral carousels from any URL and publishes them to feed.",
+    "welcome": "Hi! I'm Carousel Growth Engine. Autonomously generates viral carousels from any URL and publishes them to feed.",
     "featured": true,
     "color": "#FF0050"
   },
@@ -2832,9 +2832,9 @@ export const catalog: CatalogAgent[] = [
       "Expert China e-commerce operations specialist covering Taobao, Tmall, Pinduoduo, and JD ecosystems with deep expertise in product listing optimization, live commerce, store operations, 618/Double 11 campaigns, and cross-platform strategy."
     ],
     "prompts": [
-      "برای شروع یک درخواست بنویس"
+      "Tell China E-Commerce Operator what you are working on"
     ],
-    "welcome": "سلام! من China E-Commerce Operator هستم. Runs your Taobao, Tmall, Pinduoduo, and JD storefronts like a native operator.",
+    "welcome": "Hi! I'm China E-Commerce Operator. Runs your Taobao, Tmall, Pinduoduo, and JD storefronts like a native operator.",
     "featured": false,
     "color": "red"
   },
@@ -2855,9 +2855,9 @@ export const catalog: CatalogAgent[] = [
       "Full-stack China market localization expert who transforms real-time trend signals into executable go-to-market strategies across Douyin, Xiaohongshu, WeChat, Bilibili, and beyond"
     ],
     "prompts": [
-      "برای شروع یک درخواست بنویس"
+      "Tell China Market Localization Strategist what you are working on"
     ],
-    "welcome": "سلام! من China Market Localization Strategist هستم. Turns China's chaotic trend landscape into a precision-guided marketing machine — data in, revenue out.",
+    "welcome": "Hi! I'm China Market Localization Strategist. Turns China's chaotic trend landscape into a precision-guided marketing machine — data in, revenue out.",
     "featured": false,
     "color": "#E60012"
   },
@@ -2883,9 +2883,9 @@ export const catalog: CatalogAgent[] = [
       "Copy Writing: Persuasive copy, conversion-focused messaging, A/B testing content variations"
     ],
     "prompts": [
-      "برای شروع یک درخواست بنویس"
+      "Ask Content Creator about content Strategy"
     ],
-    "welcome": "سلام! من Content Creator هستم. Crafts compelling stories across every platform your audience lives on.",
+    "welcome": "Hi! I'm Content Creator. Crafts compelling stories across every platform your audience lives on.",
     "featured": true,
     "color": "teal"
   },
@@ -2906,9 +2906,9 @@ export const catalog: CatalogAgent[] = [
       "Full-funnel cross-border e-commerce strategist covering Amazon, Shopee, Lazada, AliExpress, Temu, and TikTok Shop operations, international logistics and overseas warehousing, compliance and taxation, multilingual listing optimization, brand globalization, and DTC independent site development."
     ],
     "prompts": [
-      "برای شروع یک درخواست بنویس"
+      "Tell Cross-Border E-Commerce Specialist what you are working on"
     ],
-    "welcome": "سلام! من Cross-Border E-Commerce Specialist هستم. Takes your products from Chinese factories to global bestseller lists.",
+    "welcome": "Hi! I'm Cross-Border E-Commerce Specialist. Takes your products from Chinese factories to global bestseller lists.",
     "featured": true,
     "color": "blue"
   },
@@ -2929,9 +2929,9 @@ export const catalog: CatalogAgent[] = [
       "Short-video marketing expert specializing in the Douyin platform, with deep expertise in recommendation algorithm mechanics, viral video planning, livestream commerce workflows, and full-funnel brand growth through content matrix strategies."
     ],
     "prompts": [
-      "برای شروع یک درخواست بنویس"
+      "Tell Douyin Strategist what you are working on"
     ],
-    "welcome": "سلام! من Douyin Strategist هستم. Masters the Douyin algorithm so your short videos actually get seen.",
+    "welcome": "Hi! I'm Douyin Strategist. Masters the Douyin algorithm so your short videos actually get seen.",
     "featured": false,
     "color": "#000000"
   },
@@ -2952,9 +2952,9 @@ export const catalog: CatalogAgent[] = [
       "Expert email marketing strategist for CRM-driven campaigns, lifecycle automation, segmentation architecture, and deliverability. Designs sequences (welcome, nurture, reactivation, win-back, review, referral) grounded in 2025-2026 benchmarks, AI-driven personalization, and post-Apple MPP measurement."
     ],
     "prompts": [
-      "برای شروع یک درخواست بنویس"
+      "Tell Email Marketing Strategist what you are working on"
     ],
-    "welcome": "سلام! من Email Marketing Strategist هستم. Turns a messy contact list into a segmented, automated revenue engine that sends the right message at the right time.",
+    "welcome": "Hi! I'm Email Marketing Strategist. Turns a messy contact list into a segmented, automated revenue engine that sends the right message at the right time.",
     "featured": false,
     "color": "green"
   },
@@ -2975,9 +2975,9 @@ export const catalog: CatalogAgent[] = [
       "Community & Monetization: Converting listeners into engaged communities and sustainable revenue streams"
     ],
     "prompts": [
-      "برای شروع یک درخواست بنویس"
+      "Ask Global Podcast Strategist about community & Monetization"
     ],
-    "welcome": "سلام! من Global Podcast Strategist هستم. Turns conversations into communities and episodes into growth engines.",
+    "welcome": "Hi! I'm Global Podcast Strategist. Turns conversations into communities and episodes into growth engines.",
     "featured": false,
     "color": "purple"
   },
@@ -3003,9 +3003,9 @@ export const catalog: CatalogAgent[] = [
       "Product-Led Growth: Onboarding optimization, feature adoption, product stickiness, user activation"
     ],
     "prompts": [
-      "برای شروع یک درخواست بنویس"
+      "Ask Growth Hacker about growth Strategy"
     ],
-    "welcome": "سلام! من Growth Hacker هستم. Finds the growth channel nobody's exploited yet — then scales it.",
+    "welcome": "Hi! I'm Growth Hacker. Finds the growth channel nobody's exploited yet — then scales it.",
     "featured": false,
     "color": "green"
   },
@@ -3029,9 +3029,9 @@ export const catalog: CatalogAgent[] = [
       "Social Commerce Excellence: Converting Instagram engagement into measurable business results"
     ],
     "prompts": [
-      "برای شروع یک درخواست بنویس"
+      "Ask Instagram Curator about visual Brand Development"
     ],
-    "welcome": "سلام! من Instagram Curator هستم. Masters the grid aesthetic and turns scrollers into an engaged community.",
+    "welcome": "Hi! I'm Instagram Curator. Masters the grid aesthetic and turns scrollers into an engaged community.",
     "featured": false,
     "color": "#E4405F"
   },
@@ -3052,9 +3052,9 @@ export const catalog: CatalogAgent[] = [
       "Expert Kuaishou marketing strategist specializing in short-video content for China's lower-tier city markets, live commerce operations, community trust building, and grassroots audience growth on 快手."
     ],
     "prompts": [
-      "برای شروع یک درخواست بنویس"
+      "Tell Kuaishou Strategist what you are working on"
     ],
-    "welcome": "سلام! من Kuaishou Strategist هستم. Grows grassroots audiences and drives live commerce on 快手.",
+    "welcome": "Hi! I'm Kuaishou Strategist. Grows grassroots audiences and drives live commerce on 快手.",
     "featured": false,
     "color": "orange"
   },
@@ -3080,9 +3080,9 @@ export const catalog: CatalogAgent[] = [
       "The reveal slide (second to last): the payoff — the insight the whole carousel was building toward"
     ],
     "prompts": [
-      "برای شروع یک درخواست بنویس"
+      "Ask LinkedIn Content Creator about default requirement"
     ],
-    "welcome": "سلام! من LinkedIn Content Creator هستم. Turns professional expertise into scroll-stopping content that makes the right people find you.",
+    "welcome": "Hi! I'm LinkedIn Content Creator. Turns professional expertise into scroll-stopping content that makes the right people find you.",
     "featured": false,
     "color": "#0A66C2"
   },
@@ -3103,9 +3103,9 @@ export const catalog: CatalogAgent[] = [
       "Veteran livestream e-commerce coach specializing in host training and live room operations across Douyin, Kuaishou, Taobao Live, and Channels, covering script design, product sequencing, paid-vs-organic traffic balancing, conversion closing techniques, and real-time data-driven optimization."
     ],
     "prompts": [
-      "برای شروع یک درخواست بنویس"
+      "Tell Livestream Commerce Coach what you are working on"
     ],
-    "welcome": "سلام! من Livestream Commerce Coach هستم. Coaches your livestream hosts from awkward beginners to million-yuan sellers.",
+    "welcome": "Hi! I'm Livestream Commerce Coach. Coaches your livestream hosts from awkward beginners to million-yuan sellers.",
     "featured": false,
     "color": "#E63946"
   },
@@ -3126,9 +3126,9 @@ export const catalog: CatalogAgent[] = [
       "Expert orchestrator for one-click Chinese blog publishing. Routes a single article to 知乎 / 小红书 / CSDN / B站 / 公众号 / 掘金 via Wechatsync (main channel) with xhs-mcp and biliup as specialized fallbacks. Handles per-platform content adaptation, draft-first publishing, rate control, and risk-avoidance. Does NOT auto-publish — always stops at draft for human review."
     ],
     "prompts": [
-      "برای شروع یک درخواست بنویس"
+      "Tell Multi-Platform Publisher what you are working on"
     ],
-    "welcome": "سلام! من Multi-Platform Publisher هستم. One article, all platforms, safely — the traffic conductor for Chinese content creators.",
+    "welcome": "Hi! I'm Multi-Platform Publisher. One article, all platforms, safely — the traffic conductor for Chinese content creators.",
     "featured": false,
     "color": "#FF6B35"
   },
@@ -3149,9 +3149,9 @@ export const catalog: CatalogAgent[] = [
       "Content strategy and operations expert for the Chinese podcast market, with deep expertise in Xiaoyuzhou, Ximalaya, and other major audio platforms, covering show positioning, audio production, audience growth, multi-platform distribution, and monetization to help podcast creators build sticky audio content brands."
     ],
     "prompts": [
-      "برای شروع یک درخواست بنویس"
+      "Tell Podcast Strategist what you are working on"
     ],
-    "welcome": "سلام! من Podcast Strategist هستم. Guides your podcast from concept to loyal audience in China's booming audio scene.",
+    "welcome": "Hi! I'm Podcast Strategist. Guides your podcast from concept to loyal audience in China's booming audio scene.",
     "featured": false,
     "color": "purple"
   },
@@ -3177,9 +3177,9 @@ export const catalog: CatalogAgent[] = [
       "Analyst Relations: briefing preparation, analyst outreach, positioning narratives"
     ],
     "prompts": [
-      "برای شروع یک درخواست بنویس"
+      "Ask PR & Communications Manager about media Relations"
     ],
-    "welcome": "سلام! من PR & Communications Manager هستم. Reputation is built in years and lost in minutes. Every message, every statement, every interview is either protecting or eroding the brand — there is no neutral.",
+    "welcome": "Hi! I'm PR & Communications Manager. Reputation is built in years and lost in minutes. Every message, every statement, every interview is either protecting or eroding the brand — there is no neutral.",
     "featured": false,
     "color": "blue"
   },
@@ -3200,9 +3200,9 @@ export const catalog: CatalogAgent[] = [
       "Expert in building enterprise WeChat (WeCom) private domain ecosystems, with deep expertise in SCRM systems, segmented community operations, Mini Program commerce integration, user lifecycle management, and full-funnel conversion optimization."
     ],
     "prompts": [
-      "برای شروع یک درخواست بنویس"
+      "Tell Private Domain Operator what you are working on"
     ],
-    "welcome": "سلام! من Private Domain Operator هستم. Builds your WeChat private traffic empire from first contact to lifetime value.",
+    "welcome": "Hi! I'm Private Domain Operator. Builds your WeChat private traffic empire from first contact to lifetime value.",
     "featured": false,
     "color": "#1A73E8"
   },
@@ -3226,9 +3226,9 @@ export const catalog: CatalogAgent[] = [
       "Reputation Management: Monitoring brand mentions and responding authentically to community discussions"
     ],
     "prompts": [
-      "برای شروع یک درخواست بنویس"
+      "Ask Reddit Community Builder about value-First Engagement"
     ],
-    "welcome": "سلام! من Reddit Community Builder هستم. Speaks fluent Reddit and builds community trust the authentic way.",
+    "welcome": "Hi! I'm Reddit Community Builder. Speaks fluent Reddit and builds community trust the authentic way.",
     "featured": false,
     "color": "#FF4500"
   },
@@ -3249,9 +3249,9 @@ export const catalog: CatalogAgent[] = [
       "Expert search engine optimization strategist specializing in technical SEO, content optimization, link authority building, and organic search growth. Drives sustainable traffic through data-driven search strategies."
     ],
     "prompts": [
-      "برای شروع یک درخواست بنویس"
+      "Tell SEO Specialist what you are working on"
     ],
-    "welcome": "سلام! من SEO Specialist هستم. Drives sustainable organic traffic through technical SEO and content strategy.",
+    "welcome": "Hi! I'm SEO Specialist. Drives sustainable organic traffic through technical SEO and content strategy.",
     "featured": false,
     "color": "#4285F4"
   },
@@ -3273,9 +3273,9 @@ export const catalog: CatalogAgent[] = [
       "Every cut needs a reason: Why cut here? Why this shot scale? Why this transition?"
     ],
     "prompts": [
-      "برای شروع یک درخواست بنویس"
+      "Tell Short-Video Editing Coach what you are working on"
     ],
-    "welcome": "سلام! من Short-Video Editing Coach هستم. Turns raw footage into scroll-stopping short videos with professional polish.",
+    "welcome": "Hi! I'm Short-Video Editing Coach. Turns raw footage into scroll-stopping short videos with professional polish.",
     "featured": false,
     "color": "#7B2D8E"
   },
@@ -3306,7 +3306,7 @@ export const catalog: CatalogAgent[] = [
       "\"Create a B2B social selling playbook for the sales team\"",
       "\"Design an employee advocacy program to amplify brand reach\""
     ],
-    "welcome": "سلام! من Social Media Strategist هستم. Orchestrates cross-platform campaigns that build community and drive engagement.",
+    "welcome": "Hi! I'm Social Media Strategist. Orchestrates cross-platform campaigns that build community and drive engagement.",
     "featured": false,
     "color": "blue"
   },
@@ -3330,9 +3330,9 @@ export const catalog: CatalogAgent[] = [
       "Cross-Platform Integration: Adapting TikTok-first content for Instagram Reels, YouTube Shorts, and other platforms"
     ],
     "prompts": [
-      "برای شروع یک درخواست بنویس"
+      "Ask TikTok Strategist about viral Content Creation"
     ],
-    "welcome": "سلام! من TikTok Strategist هستم. Rides the algorithm and builds community through authentic TikTok culture.",
+    "welcome": "Hi! I'm TikTok Strategist. Rides the algorithm and builds community through authentic TikTok culture.",
     "featured": true,
     "color": "#000000"
   },
@@ -3356,9 +3356,9 @@ export const catalog: CatalogAgent[] = [
       "Crisis Management: Real-time reputation management and transparent communication during challenging situations"
     ],
     "prompts": [
-      "برای شروع یک درخواست بنویس"
+      "Ask Twitter Engager about real-Time Engagement"
     ],
-    "welcome": "سلام! من Twitter Engager هستم. Builds thought leadership and brand authority 280 characters at a time.",
+    "welcome": "Hi! I'm Twitter Engager. Builds thought leadership and brand authority 280 characters at a time.",
     "featured": false,
     "color": "#1DA1F2"
   },
@@ -3379,9 +3379,9 @@ export const catalog: CatalogAgent[] = [
       "Video marketing strategist specializing in YouTube algorithm optimization, audience retention, chaptering, thumbnail concepts, and cross-platform video syndication."
     ],
     "prompts": [
-      "برای شروع یک درخواست بنویس"
+      "Tell Video Optimization Specialist what you are working on"
     ],
-    "welcome": "سلام! من Video Optimization Specialist هستم. Energetic, data-driven, strategic, and hyper-focused on audience retention",
+    "welcome": "Hi! I'm Video Optimization Specialist. Energetic, data-driven, strategic, and hyper-focused on audience retention",
     "featured": false,
     "color": "red"
   },
@@ -3405,9 +3405,9 @@ export const catalog: CatalogAgent[] = [
       "Automation & Efficiency: Leveraging WeChat's automation features for scalable engagement and conversion"
     ],
     "prompts": [
-      "برای شروع یک درخواست بنویس"
+      "Ask WeChat Official Account Manager about content Value Strategy"
     ],
-    "welcome": "سلام! من WeChat Official Account Manager هستم. Grows loyal WeChat subscriber communities through consistent value delivery.",
+    "welcome": "Hi! I'm WeChat Official Account Manager. Grows loyal WeChat subscriber communities through consistent value delivery.",
     "featured": false,
     "color": "#09B83E"
   },
@@ -3428,9 +3428,9 @@ export const catalog: CatalogAgent[] = [
       "Full-spectrum operations expert for Sina Weibo, with deep expertise in trending topic mechanics, Super Topic community management, public sentiment monitoring, fan economy strategies, and Weibo advertising, helping brands achieve viral reach and sustained growth on China's leading public discourse platform."
     ],
     "prompts": [
-      "برای شروع یک درخواست بنویس"
+      "Tell Weibo Strategist what you are working on"
     ],
-    "welcome": "سلام! من Weibo Strategist هستم. Makes your brand trend on Weibo and keeps the conversation going.",
+    "welcome": "Hi! I'm Weibo Strategist. Makes your brand trend on Weibo and keeps the conversation going.",
     "featured": false,
     "color": "#FF8200"
   },
@@ -3453,9 +3453,9 @@ export const catalog: CatalogAgent[] = [
       "Evidence Packaging: Deliver cited briefs, query sets, timelines, watchlists, and alert thresholds that teams can act on"
     ],
     "prompts": [
-      "برای شروع یک درخواست بنویس"
+      "Ask X/Twitter Intelligence Analyst about competitor Intelligence"
     ],
-    "welcome": "سلام! من X/Twitter Intelligence Analyst هستم. Turns noisy X conversations into sourced market, audience, and risk intelligence.",
+    "welcome": "Hi! I'm X/Twitter Intelligence Analyst. Turns noisy X conversations into sourced market, audience, and risk intelligence.",
     "featured": false,
     "color": "#111111"
   },
@@ -3478,9 +3478,9 @@ export const catalog: CatalogAgent[] = [
       "Micro-Content Mastery: Optimizing short-form content (Notes, Stories) for maximum algorithm visibility and shareability"
     ],
     "prompts": [
-      "برای شروع یک درخواست بنویس"
+      "Ask Xiaohongshu Specialist about lifestyle Brand Development"
     ],
-    "welcome": "سلام! من Xiaohongshu Specialist هستم. Masters lifestyle content and aesthetic storytelling on 小红书.",
+    "welcome": "Hi! I'm Xiaohongshu Specialist. Masters lifestyle content and aesthetic storytelling on 小红书.",
     "featured": false,
     "color": "#FF1B6D"
   },
@@ -3503,9 +3503,9 @@ export const catalog: CatalogAgent[] = [
       "Lead Generation Excellence: Converting engaged readers into qualified leads through strategic positioning and CTAs"
     ],
     "prompts": [
-      "برای شروع یک درخواست بنویس"
+      "Ask Zhihu Strategist about thought Leadership Development"
     ],
-    "welcome": "سلام! من Zhihu Strategist هستم. Builds brand authority through expert knowledge-sharing on 知乎.",
+    "welcome": "Hi! I'm Zhihu Strategist. Builds brand authority through expert knowledge-sharing on 知乎.",
     "featured": false,
     "color": "#0084FF"
   },
@@ -3531,9 +3531,9 @@ export const catalog: CatalogAgent[] = [
       "Change history forensics — reviewing what changed and whether it caused downstream impact"
     ],
     "prompts": [
-      "برای شروع یک درخواست بنویس"
+      "Tell Paid Media Auditor what you are working on"
     ],
-    "welcome": "سلام! من Paid Media Auditor هستم. Finds the waste in your ad spend before your CFO does.",
+    "welcome": "Hi! I'm Paid Media Auditor. Finds the waste in your ad spend before your CFO does.",
     "featured": true,
     "color": "orange"
   },
@@ -3559,9 +3559,9 @@ export const catalog: CatalogAgent[] = [
       "Ad copy localization and geo-specific messaging"
     ],
     "prompts": [
-      "برای شروع یک درخواست بنویس"
+      "Ask Ad Creative Strategist about landing Page Alignment"
     ],
-    "welcome": "سلام! من Ad Creative Strategist هستم. Turns ad creative from guesswork into a repeatable science.",
+    "welcome": "Hi! I'm Ad Creative Strategist. Turns ad creative from guesswork into a repeatable science.",
     "featured": true,
     "color": "orange"
   },
@@ -3587,9 +3587,9 @@ export const catalog: CatalogAgent[] = [
       "Conversions API / server-side event implementation across platforms"
     ],
     "prompts": [
-      "برای شروع یک درخواست بنویس"
+      "Ask Paid Social Strategist about meta Advantage+ Shopping and app campaign optimization"
     ],
-    "welcome": "سلام! من Paid Social Strategist هستم. Makes every dollar on Meta, LinkedIn, and TikTok ads work harder.",
+    "welcome": "Hi! I'm Paid Social Strategist. Makes every dollar on Meta, LinkedIn, and TikTok ads work harder.",
     "featured": true,
     "color": "orange"
   },
@@ -3615,9 +3615,9 @@ export const catalog: CatalogAgent[] = [
       "Google Ads API and Scripts for automation at scale"
     ],
     "prompts": [
-      "برای شروع یک درخواست بنویس"
+      "Ask PPC Campaign Strategist about tiered campaign architecture (brand"
     ],
-    "welcome": "سلام! من PPC Campaign Strategist هستم. Architects PPC campaigns that scale from $10K to $10M+ monthly.",
+    "welcome": "Hi! I'm PPC Campaign Strategist. Architects PPC campaigns that scale from $10K to $10M+ monthly.",
     "featured": false,
     "color": "orange"
   },
@@ -3643,9 +3643,9 @@ export const catalog: CatalogAgent[] = [
       "Account list hygiene for ABM platforms (deduplication, enrichment, scoring)"
     ],
     "prompts": [
-      "برای شروع یک درخواست بنویس"
+      "Tell Programmatic & Display Buyer what you are working on"
     ],
-    "welcome": "سلام! من Programmatic & Display Buyer هستم. Buys display and video inventory at scale with surgical precision.",
+    "welcome": "Hi! I'm Programmatic & Display Buyer. Buys display and video inventory at scale with surgical precision.",
     "featured": false,
     "color": "orange"
   },
@@ -3671,9 +3671,9 @@ export const catalog: CatalogAgent[] = [
       "Search Query Optimization System (SQOS) scoring — rating query-to-ad-to-landing-page alignment on a multi-factor scale"
     ],
     "prompts": [
-      "برای شروع یک درخواست بنویس"
+      "Ask Search Query Analyst about reporting & Visualization"
     ],
-    "welcome": "سلام! من Search Query Analyst هستم. Mines search queries to find the gold your competitors are missing.",
+    "welcome": "Hi! I'm Search Query Analyst. Mines search queries to find the gold your competitors are missing.",
     "featured": false,
     "color": "orange"
   },
@@ -3699,9 +3699,9 @@ export const catalog: CatalogAgent[] = [
       "Cross-domain and cross-device measurement gap analysis"
     ],
     "prompts": [
-      "برای شروع یک درخواست بنویس"
+      "Tell Tracking & Measurement Specialist what you are working on"
     ],
-    "welcome": "سلام! من Tracking & Measurement Specialist هستم. If it's not tracked correctly, it didn't happen.",
+    "welcome": "Hi! I'm Tracking & Measurement Specialist. If it's not tracked correctly, it didn't happen.",
     "featured": false,
     "color": "orange"
   },
@@ -3723,9 +3723,9 @@ export const catalog: CatalogAgent[] = [
       "Building variable-reward engagement loops."
     ],
     "prompts": [
-      "برای شروع یک درخواست بنویس"
+      "Ask Behavioral Nudge Engine about cognitive Load Reduction"
     ],
-    "welcome": "سلام! من Behavioral Nudge Engine هستم. Adapts software interactions to maximize user motivation through behavioral psychology.",
+    "welcome": "Hi! I'm Behavioral Nudge Engine. Adapts software interactions to maximize user motivation through behavioral psychology.",
     "featured": false,
     "color": "#FF8A65"
   },
@@ -3751,9 +3751,9 @@ export const catalog: CatalogAgent[] = [
       "Statistical Analysis: Correlation analysis, significance testing, confidence intervals"
     ],
     "prompts": [
-      "برای شروع یک درخواست بنویس"
+      "Ask Feedback Synthesizer about multi-Channel Collection"
     ],
-    "welcome": "سلام! من Feedback Synthesizer هستم. Distills a thousand user voices into the five things you need to build next.",
+    "welcome": "Hi! I'm Feedback Synthesizer. Distills a thousand user voices into the five things you need to build next.",
     "featured": false,
     "color": "blue"
   },
@@ -3774,9 +3774,9 @@ export const catalog: CatalogAgent[] = [
       "Holistic product leader who owns the full product lifecycle — from discovery and strategy through roadmap, stakeholder alignment, go-to-market, and outcome measurement. Bridges business goals, user needs, and technical reality to ship the right thing at the right time."
     ],
     "prompts": [
-      "برای شروع یک درخواست بنویس"
+      "Tell Product Manager what you are working on"
     ],
-    "welcome": "سلام! من Product Manager هستم. Ships the right thing, not just the next thing — outcome-obsessed, user-grounded, and diplomatically ruthless about focus.",
+    "welcome": "Hi! I'm Product Manager. Ships the right thing, not just the next thing — outcome-obsessed, user-grounded, and diplomatically ruthless about focus.",
     "featured": false,
     "color": "blue"
   },
@@ -3802,9 +3802,9 @@ export const catalog: CatalogAgent[] = [
       "User Story Creation: Acceptance criteria, story mapping, epic decomposition, user journey alignment"
     ],
     "prompts": [
-      "برای شروع یک درخواست بنویس"
+      "Ask Sprint Prioritizer about prioritization Frameworks"
     ],
-    "welcome": "سلام! من Sprint Prioritizer هستم. Maximizes sprint value through data-driven prioritization and ruthless focus.",
+    "welcome": "Hi! I'm Sprint Prioritizer. Maximizes sprint value through data-driven prioritization and ruthless focus.",
     "featured": false,
     "color": "green"
   },
@@ -3830,9 +3830,9 @@ export const catalog: CatalogAgent[] = [
       "Consumer Insights: User behavior analysis, demographic studies, psychographics, buying patterns"
     ],
     "prompts": [
-      "برای شروع یک درخواست بنویس"
+      "Ask Trend Researcher about market Research"
     ],
-    "welcome": "سلام! من Trend Researcher هستم. Spots emerging trends before they hit the mainstream.",
+    "welcome": "Hi! I'm Trend Researcher. Spots emerging trends before they hit the mainstream.",
     "featured": false,
     "color": "purple"
   },
@@ -3853,9 +3853,9 @@ export const catalog: CatalogAgent[] = [
       "Expert project manager specializing in experiment design, execution tracking, and data-driven decision making. Focused on managing A/B tests, feature experiments, and hypothesis validation through systematic experimentation and rigorous analysis."
     ],
     "prompts": [
-      "برای شروع یک درخواست بنویس"
+      "Tell Experiment Tracker what you are working on"
     ],
-    "welcome": "سلام! من Experiment Tracker هستم. Designs experiments, tracks results, and lets the data decide.",
+    "welcome": "Hi! I'm Experiment Tracker. Designs experiments, tracks results, and lets the data decide.",
     "featured": false,
     "color": "purple"
   },
@@ -3876,9 +3876,9 @@ export const catalog: CatalogAgent[] = [
       "Expert delivery operations specialist who enforces Jira-linked Git workflows, traceable commits, structured pull requests, and release-safe branch strategy across software teams."
     ],
     "prompts": [
-      "برای شروع یک درخواست بنویس"
+      "Tell Jira Workflow Steward what you are working on"
     ],
-    "welcome": "سلام! من Jira Workflow Steward هستم. Enforces traceable commits, structured PRs, and release-safe branch strategy.",
+    "welcome": "Hi! I'm Jira Workflow Steward. Enforces traceable commits, structured PRs, and release-safe branch strategy.",
     "featured": false,
     "color": "orange"
   },
@@ -3899,9 +3899,9 @@ export const catalog: CatalogAgent[] = [
       "Extract structured decisions, action items, and open questions from meeting transcripts or rough notes into a clean 4-section summary."
     ],
     "prompts": [
-      "برای شروع یک درخواست بنویس"
+      "Tell Meeting Notes Specialist what you are working on"
     ],
-    "welcome": "سلام! من Meeting Notes Specialist هستم. Precise extractor — finds the signal in the noise, never invents what isn't there.",
+    "welcome": "Hi! I'm Meeting Notes Specialist. Precise extractor — finds the signal in the noise, never invents what isn't there.",
     "featured": false,
     "color": "blue"
   },
@@ -3922,9 +3922,9 @@ export const catalog: CatalogAgent[] = [
       "Expert project manager specializing in cross-functional project coordination, timeline management, and stakeholder alignment. Focused on shepherding projects from conception to completion while managing resources, risks, and communications across multiple teams and departments."
     ],
     "prompts": [
-      "برای شروع یک درخواست بنویس"
+      "Tell Project Shepherd what you are working on"
     ],
-    "welcome": "سلام! من Project Shepherd هستم. Herds cross-functional chaos into on-time, on-scope delivery.",
+    "welcome": "Hi! I'm Project Shepherd. Herds cross-functional chaos into on-time, on-scope delivery.",
     "featured": false,
     "color": "blue"
   },
@@ -3945,9 +3945,9 @@ export const catalog: CatalogAgent[] = [
       "Expert operations manager specializing in day-to-day studio efficiency, process optimization, and resource coordination. Focused on ensuring smooth operations, maintaining productivity standards, and supporting all teams with the tools and processes needed for success."
     ],
     "prompts": [
-      "برای شروع یک درخواست بنویس"
+      "Tell Studio Operations what you are working on"
     ],
-    "welcome": "سلام! من Studio Operations هستم. Keeps the studio running smoothly — processes, tools, and people in sync.",
+    "welcome": "Hi! I'm Studio Operations. Keeps the studio running smoothly — processes, tools, and people in sync.",
     "featured": false,
     "color": "green"
   },
@@ -3968,9 +3968,9 @@ export const catalog: CatalogAgent[] = [
       "Senior strategic leader specializing in high-level creative and technical project orchestration, resource allocation, and multi-project portfolio management. Focused on aligning creative vision with business objectives while managing complex cross-functional initiatives and ensuring optimal studio operations."
     ],
     "prompts": [
-      "برای شروع یک درخواست بنویس"
+      "Tell Studio Producer what you are working on"
     ],
-    "welcome": "سلام! من Studio Producer هستم. Aligns creative vision with business objectives across complex initiatives.",
+    "welcome": "Hi! I'm Studio Producer. Aligns creative vision with business objectives across complex initiatives.",
     "featured": false,
     "color": "gold"
   },
@@ -3996,7 +3996,7 @@ export const catalog: CatalogAgent[] = [
       "Each task should be implementable by a developer in 30-60 minutes",
       "Include acceptance criteria for each task"
     ],
-    "welcome": "سلام! من Senior Project Manager هستم. Converts specs to tasks with realistic scope — no gold-plating, no fantasy.",
+    "welcome": "Hi! I'm Senior Project Manager. Converts specs to tasks with realistic scope — no gold-plating, no fantasy.",
     "featured": true,
     "color": "blue"
   },
@@ -4017,9 +4017,9 @@ export const catalog: CatalogAgent[] = [
       "Expert in literature review, source evaluation, and evidence synthesis — turns a scattered pile of sources into a structured, honestly-weighted map of what the evidence actually supports"
     ],
     "prompts": [
-      "برای شروع یک درخواست بنویس"
+      "Tell Research Synthesist what you are working on"
     ],
-    "welcome": "سلام! من Research Synthesist هستم. A hundred citations pointing the same direction is still one piece of evidence if they all trace back to the same study",
+    "welcome": "Hi! I'm Research Synthesist. A hundred citations pointing the same direction is still one piece of evidence if they all trace back to the same study",
     "featured": false,
     "color": "#9333EA"
   },
@@ -4040,9 +4040,9 @@ export const catalog: CatalogAgent[] = [
       "Expert post-sale account strategist specializing in land-and-expand execution, stakeholder mapping, QBR facilitation, and net revenue retention. Turns closed deals into long-term platform relationships through systematic expansion planning and multi-threaded account development."
     ],
     "prompts": [
-      "برای شروع یک درخواست بنویس"
+      "Tell Account Strategist what you are working on"
     ],
-    "welcome": "سلام! من Account Strategist هستم. Maps the org, finds the whitespace, and turns customers into platforms.",
+    "welcome": "Hi! I'm Account Strategist. Maps the org, finds the whitespace, and turns customers into platforms.",
     "featured": false,
     "color": "#2E7D32"
   },
@@ -4068,9 +4068,9 @@ export const catalog: CatalogAgent[] = [
       "This connects to: [Which focus area in the coaching plan]"
     ],
     "prompts": [
-      "برای شروع یک درخواست بنویس"
+      "Ask Sales Coach about current behavior"
     ],
-    "welcome": "سلام! من Sales Coach هستم. Asks the question that makes the rep rethink the entire deal.",
+    "welcome": "Hi! I'm Sales Coach. Asks the question that makes the rep rethink the entire deal.",
     "featured": false,
     "color": "#E65100"
   },
@@ -4091,9 +4091,9 @@ export const catalog: CatalogAgent[] = [
       "Senior deal strategist specializing in MEDDPICC qualification, competitive positioning, and win planning for complex B2B sales cycles. Scores opportunities, exposes pipeline risk, and builds deal strategies that survive forecast review."
     ],
     "prompts": [
-      "برای شروع یک درخواست بنویس"
+      "Tell Deal Strategist what you are working on"
     ],
-    "welcome": "سلام! من Deal Strategist هستم. Qualifies deals like a surgeon and kills happy ears on contact.",
+    "welcome": "Hi! I'm Deal Strategist. Qualifies deals like a surgeon and kills happy ears on contact.",
     "featured": false,
     "color": "#1B4D3E"
   },
@@ -4114,9 +4114,9 @@ export const catalog: CatalogAgent[] = [
       "Coaches sales teams on elite discovery methodology — question design, current-state mapping, gap quantification, and call structure that surfaces real buying motivation."
     ],
     "prompts": [
-      "برای شروع یک درخواست بنویس"
+      "Tell Discovery Coach what you are working on"
     ],
-    "welcome": "سلام! من Discovery Coach هستم. Asks one more question than everyone else — and that's the one that closes the deal.",
+    "welcome": "Hi! I'm Discovery Coach. Asks one more question than everyone else — and that's the one that closes the deal.",
     "featured": true,
     "color": "#5C7CFA"
   },
@@ -4137,9 +4137,9 @@ export const catalog: CatalogAgent[] = [
       "Senior pre-sales engineer specializing in technical discovery, demo engineering, POC scoping, competitive battlecards, and bridging product capabilities to business outcomes. Wins the technical decision so the deal can close."
     ],
     "prompts": [
-      "برای شروع یک درخواست بنویس"
+      "Tell Sales Engineer what you are working on"
     ],
-    "welcome": "سلام! من Sales Engineer هستم. Wins the technical decision before the deal even hits procurement.",
+    "welcome": "Hi! I'm Sales Engineer. Wins the technical decision before the deal even hits procurement.",
     "featured": false,
     "color": "#2E5090"
   },
@@ -4160,9 +4160,9 @@ export const catalog: CatalogAgent[] = [
       "Top-of-funnel architect who designs irresistible offers and lead magnets that attract qualified buyers at scale. Specializes in value-equation offer construction, lead magnet typology, multi-channel lead generation, and compounding reach through customers, employees, agencies, and affiliates."
     ],
     "prompts": [
-      "برای شروع یک درخواست بنویس"
+      "Tell Offer & Lead Gen Strategist what you are working on"
     ],
-    "welcome": "سلام! من Offer & Lead Gen Strategist هستم. Builds the thing buyers can't ignore — then multiplies the channels that deliver it.",
+    "welcome": "Hi! I'm Offer & Lead Gen Strategist. Builds the thing buyers can't ignore — then multiplies the channels that deliver it.",
     "featured": false,
     "color": "#F59E0B"
   },
@@ -4183,9 +4183,9 @@ export const catalog: CatalogAgent[] = [
       "Signal-based outbound specialist who designs multi-channel prospecting sequences, defines ICPs, and builds pipeline through research-driven personalization — not volume."
     ],
     "prompts": [
-      "برای شروع یک درخواست بنویس"
+      "Tell Outbound Strategist what you are working on"
     ],
-    "welcome": "سلام! من Outbound Strategist هستم. Turns buying signals into booked meetings before the competition even notices.",
+    "welcome": "Hi! I'm Outbound Strategist. Turns buying signals into booked meetings before the competition even notices.",
     "featured": false,
     "color": "#E8590C"
   },
@@ -4206,9 +4206,9 @@ export const catalog: CatalogAgent[] = [
       "Revenue operations analyst specializing in pipeline health diagnostics, deal velocity analysis, forecast accuracy, and data-driven sales coaching. Turns CRM data into actionable pipeline intelligence that surfaces risks before they become missed quarters."
     ],
     "prompts": [
-      "برای شروع یک درخواست بنویس"
+      "Tell Pipeline Analyst what you are working on"
     ],
-    "welcome": "سلام! من Pipeline Analyst هستم. Tells you your forecast is wrong before you realize it yourself.",
+    "welcome": "Hi! I'm Pipeline Analyst. Tells you your forecast is wrong before you realize it yourself.",
     "featured": false,
     "color": "#059669"
   },
@@ -4229,9 +4229,9 @@ export const catalog: CatalogAgent[] = [
       "Strategic proposal architect who transforms RFPs and sales opportunities into compelling win narratives. Specializes in win theme development, competitive positioning, executive summary craft, and building proposals that persuade rather than merely comply."
     ],
     "prompts": [
-      "برای شروع یک درخواست بنویس"
+      "Tell Proposal Strategist what you are working on"
     ],
-    "welcome": "سلام! من Proposal Strategist هستم. Turns RFP responses into stories buyers can't put down.",
+    "welcome": "Hi! I'm Proposal Strategist. Turns RFP responses into stories buyers can't put down.",
     "featured": false,
     "color": "#2563EB"
   },
@@ -4252,9 +4252,9 @@ export const catalog: CatalogAgent[] = [
       "Security reviewer for AI-generated and vibe-coded apps — hunts the hardcoded secrets, broken row-level security, and prompt-injection sinks that coding assistants ship by default, then drives a scan, fix, and rescan loop with honest, CWE-mapped findings."
     ],
     "prompts": [
-      "برای شروع یک درخواست بنویس"
+      "Tell AI-Generated Code Security Auditor what you are working on"
     ],
-    "welcome": "سلام! من AI-Generated Code Security Auditor هستم. Assumes the assistant optimized for the demo, not production, and finds exactly where it cut the corner.",
+    "welcome": "Hi! I'm AI-Generated Code Security Auditor. Assumes the assistant optimized for the demo, not production, and finds exactly where it cut the corner.",
     "featured": false,
     "color": "#4F46E5"
   },
@@ -4275,9 +4275,9 @@ export const catalog: CatalogAgent[] = [
       "AppSec specialist who secures the software development lifecycle through threat modeling, secure code review, SAST/DAST integration, and developer security education that makes secure code the default."
     ],
     "prompts": [
-      "برای شروع یک درخواست بنویس"
+      "Tell Application Security Engineer what you are working on"
     ],
-    "welcome": "سلام! من Application Security Engineer هستم. Makes developers write secure code without even realizing it.",
+    "welcome": "Hi! I'm Application Security Engineer. Makes developers write secure code without even realizing it.",
     "featured": false,
     "color": "#059669"
   },
@@ -4298,9 +4298,9 @@ export const catalog: CatalogAgent[] = [
       "Expert security architect specializing in threat modeling, secure-by-design architecture, trust-boundary analysis, defense-in-depth, and risk-based security reviews across web, API, cloud-native, and distributed systems. Designs the security model; hands code-level SAST/DAST and SDLC work to the AppSec Engineer."
     ],
     "prompts": [
-      "برای شروع یک درخواست بنویس"
+      "Tell Security Architect what you are working on"
     ],
-    "welcome": "سلام! من Security Architect هستم. Designs the security architecture and threat models that hold under adversarial pressure — the blueprint, not the bug-fix.",
+    "welcome": "Hi! I'm Security Architect. Designs the security architecture and threat models that hold under adversarial pressure — the blueprint, not the bug-fix.",
     "featured": false,
     "color": "red"
   },
@@ -4321,9 +4321,9 @@ export const catalog: CatalogAgent[] = [
       "Expert smart contract security auditor specializing in vulnerability detection, formal verification, exploit analysis, and comprehensive audit report writing for DeFi protocols and blockchain applications."
     ],
     "prompts": [
-      "برای شروع یک درخواست بنویس"
+      "Tell Blockchain Security Auditor what you are working on"
     ],
-    "welcome": "سلام! من Blockchain Security Auditor هستم. Finds the exploit in your smart contract before the attacker does.",
+    "welcome": "Hi! I'm Blockchain Security Auditor. Finds the exploit in your smart contract before the attacker does.",
     "featured": false,
     "color": "red"
   },
@@ -4344,9 +4344,9 @@ export const catalog: CatalogAgent[] = [
       "Cloud-native security specialist designing zero trust architectures, implementing defense-in-depth across AWS, Azure, and GCP, and securing infrastructure-as-code pipelines from day one."
     ],
     "prompts": [
-      "برای شروع یک درخواست بنویس"
+      "Tell Cloud Security Architect what you are working on"
     ],
-    "welcome": "سلام! من Cloud Security Architect هستم. Builds cloud infrastructure where \"secure by default\" isn't just a slide title.",
+    "welcome": "Hi! I'm Cloud Security Architect. Builds cloud infrastructure where \"secure by default\" isn't just a slide title.",
     "featured": false,
     "color": "#3b82f6"
   },
@@ -4367,9 +4367,9 @@ export const catalog: CatalogAgent[] = [
       "Expert technical compliance auditor specializing in SOC 2, ISO 27001, HIPAA, and PCI-DSS audits — from readiness assessment through evidence collection to certification."
     ],
     "prompts": [
-      "برای شروع یک درخواست بنویس"
+      "Tell Compliance Auditor what you are working on"
     ],
-    "welcome": "سلام! من Compliance Auditor هستم. Walks you from readiness assessment through evidence collection to SOC 2 certification.",
+    "welcome": "Hi! I'm Compliance Auditor. Walks you from readiness assessment through evidence collection to SOC 2 certification.",
     "featured": true,
     "color": "orange"
   },
@@ -4390,9 +4390,9 @@ export const catalog: CatalogAgent[] = [
       "Digital forensics and incident response specialist who leads breach investigations, contains active threats, coordinates crisis response, and writes post-mortems that prevent recurrence."
     ],
     "prompts": [
-      "برای شروع یک درخواست بنویس"
+      "Tell Incident Responder what you are working on"
     ],
-    "welcome": "سلام! من Incident Responder هستم. Runs toward the breach while everyone else runs away.",
+    "welcome": "Hi! I'm Incident Responder. Runs toward the breach while everyone else runs away.",
     "featured": false,
     "color": "#f59e0b"
   },
@@ -4413,9 +4413,9 @@ export const catalog: CatalogAgent[] = [
       "Offensive security specialist conducting authorized penetration tests, red team operations, and vulnerability assessments across networks, web applications, and cloud infrastructure."
     ],
     "prompts": [
-      "برای شروع یک درخواست بنویس"
+      "Tell Penetration Tester what you are working on"
     ],
-    "welcome": "سلام! من Penetration Tester هستم. Breaks into your systems so the real attackers can't.",
+    "welcome": "Hi! I'm Penetration Tester. Breaks into your systems so the real attackers can't.",
     "featured": false,
     "color": "#dc2626"
   },
@@ -4436,9 +4436,9 @@ export const catalog: CatalogAgent[] = [
       "Owns the full lifecycle of secrets and credentials — detection, prevention, vaulting, rotation, and leak response — so an application runs on short-lived, least-privilege credentials that are never in the code and are already rotated by the time a leak is found."
     ],
     "prompts": [
-      "برای شروع یک درخواست بنویس"
+      "Tell Secrets & Credential Hygiene Engineer what you are working on"
     ],
-    "welcome": "سلام! من Secrets & Credential Hygiene Engineer هستم. Treats every committed secret as already compromised, and every long-lived key as a leak that has not happened yet.",
+    "welcome": "Hi! I'm Secrets & Credential Hygiene Engineer. Treats every committed secret as already compromised, and every long-lived key as a leak that has not happened yet.",
     "featured": false,
     "color": "#B45309"
   },
@@ -4461,9 +4461,9 @@ export const catalog: CatalogAgent[] = [
       "Flags any gap where the standard doesn't cover the new attack surface"
     ],
     "prompts": [
-      "برای شروع یک درخواست بنویس"
+      "Ask Senior SecOps Engineer about identifies trust boundaries introduced by the feature"
     ],
-    "welcome": "سلام! من Senior SecOps Engineer هستم. Before I read your request, I've already scanned your code for secrets. Security isn't a phase — it's line zero.",
+    "welcome": "Hi! I'm Senior SecOps Engineer. Before I read your request, I've already scanned your code for secrets. Security isn't a phase — it's line zero.",
     "featured": false,
     "color": "#E67E22"
   },
@@ -4484,9 +4484,9 @@ export const catalog: CatalogAgent[] = [
       "Expert detection engineer specializing in SIEM rule development, MITRE ATT&CK coverage mapping, threat hunting, alert tuning, and detection-as-code pipelines for security operations teams."
     ],
     "prompts": [
-      "برای شروع یک درخواست بنویس"
+      "Tell Threat Detection Engineer what you are working on"
     ],
-    "welcome": "سلام! من Threat Detection Engineer هستم. Builds the detection layer that catches attackers after they bypass prevention.",
+    "welcome": "Hi! I'm Threat Detection Engineer. Builds the detection layer that catches attackers after they bypass prevention.",
     "featured": false,
     "color": "#7b2d8e"
   },
@@ -4507,9 +4507,9 @@ export const catalog: CatalogAgent[] = [
       "Cyber threat intelligence specialist who tracks adversary groups, maps attack campaigns to MITRE ATT&CK, produces actionable intelligence reports, and builds detection rules that catch real threats."
     ],
     "prompts": [
-      "برای شروع یک درخواست بنویس"
+      "Tell Threat Intelligence Analyst what you are working on"
     ],
-    "welcome": "سلام! من Threat Intelligence Analyst هستم. Knows what the adversary will do before the adversary does.",
+    "welcome": "Hi! I'm Threat Intelligence Analyst. Knows what the adversary will do before the adversary does.",
     "featured": false,
     "color": "#7c3aed"
   },
@@ -4530,9 +4530,9 @@ export const catalog: CatalogAgent[] = [
       "Native Swift and Metal specialist building high-performance 3D rendering systems and spatial computing experiences for macOS and Vision Pro"
     ],
     "prompts": [
-      "برای شروع یک درخواست بنویس"
+      "Tell macOS Spatial/Metal Engineer what you are working on"
     ],
-    "welcome": "سلام! من macOS Spatial/Metal Engineer هستم. Pushes Metal to its limits for 3D rendering on macOS and Vision Pro.",
+    "welcome": "Hi! I'm macOS Spatial/Metal Engineer. Pushes Metal to its limits for 3D rendering on macOS and Vision Pro.",
     "featured": false,
     "color": "metallic-blue"
   },
@@ -4556,9 +4556,9 @@ export const catalog: CatalogAgent[] = [
       "Cross-Platform: iOS, macOS, and visionOS terminal rendering considerations"
     ],
     "prompts": [
-      "برای شروع یک درخواست بنویس"
+      "Ask Terminal Integration Specialist about swiftTerm API"
     ],
-    "welcome": "سلام! من Terminal Integration Specialist هستم. Masters terminal emulation and text rendering in modern Swift applications.",
+    "welcome": "Hi! I'm Terminal Integration Specialist. Masters terminal emulation and text rendering in modern Swift applications.",
     "featured": false,
     "color": "green"
   },
@@ -4584,9 +4584,9 @@ export const catalog: CatalogAgent[] = [
       "Multi-Window Architecture: WindowGroup management for spatial applications with glass background effects"
     ],
     "prompts": [
-      "برای شروع یک درخواست بنویس"
+      "Ask visionOS Spatial Engineer about liquid Glass Design System"
     ],
-    "welcome": "سلام! من visionOS Spatial Engineer هستم. Builds native volumetric interfaces and Liquid Glass experiences for visionOS.",
+    "welcome": "Hi! I'm visionOS Spatial Engineer. Builds native volumetric interfaces and Liquid Glass experiences for visionOS.",
     "featured": false,
     "color": "indigo"
   },
@@ -4610,9 +4610,9 @@ export const catalog: CatalogAgent[] = [
       "Implement constraint-driven control mechanics (no free-float motion)"
     ],
     "prompts": [
-      "برای شروع یک درخواست بنویس"
+      "Ask XR Cockpit Interaction Specialist about prototype cockpit layouts in A-Frame or Three"
     ],
-    "welcome": "سلام! من XR Cockpit Interaction Specialist هستم. Designs immersive cockpit control systems that feel natural in XR.",
+    "welcome": "Hi! I'm XR Cockpit Interaction Specialist. Designs immersive cockpit control systems that feel natural in XR.",
     "featured": false,
     "color": "orange"
   },
@@ -4636,9 +4636,9 @@ export const catalog: CatalogAgent[] = [
       "Provide fallback behavior and graceful degradation strategies"
     ],
     "prompts": [
-      "برای شروع یک درخواست بنویس"
+      "Tell XR Immersive Developer what you are working on"
     ],
-    "welcome": "سلام! من XR Immersive Developer هستم. Builds browser-based AR/VR/XR experiences that push WebXR to its limits.",
+    "welcome": "Hi! I'm XR Immersive Developer. Builds browser-based AR/VR/XR experiences that push WebXR to its limits.",
     "featured": false,
     "color": "neon-cyan"
   },
@@ -4662,9 +4662,9 @@ export const catalog: CatalogAgent[] = [
       "Run UX validation experiments focused on comfort and learnability"
     ],
     "prompts": [
-      "برای شروع یک درخواست بنویس"
+      "Ask XR Interface Architect about define UI flows for immersive applications"
     ],
-    "welcome": "سلام! من XR Interface Architect هستم. Designs spatial interfaces where interaction feels like instinct, not instruction.",
+    "welcome": "Hi! I'm XR Interface Architect. Designs spatial interfaces where interaction feels like instinct, not instruction.",
     "featured": true,
     "color": "neon-green"
   },
@@ -4685,9 +4685,9 @@ export const catalog: CatalogAgent[] = [
       "Autonomous payment processing specialist that executes vendor payments, contractor invoices, and recurring bills across any payment rail — crypto, fiat, stablecoins. Integrates with AI agent workflows via tool calls."
     ],
     "prompts": [
-      "برای شروع یک درخواست بنویس"
+      "Tell Accounts Payable Agent what you are working on"
     ],
-    "welcome": "سلام! من Accounts Payable Agent هستم. Moves money across any rail — crypto, fiat, stablecoins — so you don't have to.",
+    "welcome": "Hi! I'm Accounts Payable Agent. Moves money across any rail — crypto, fiat, stablecoins — so you don't have to.",
     "featured": false,
     "color": "green"
   },
@@ -4708,9 +4708,9 @@ export const catalog: CatalogAgent[] = [
       "Designs identity, authentication, and trust verification systems for autonomous AI agents operating in multi-agent environments. Ensures agents can prove who they are, what they're authorized to do, and what they actually did."
     ],
     "prompts": [
-      "برای شروع یک درخواست بنویس"
+      "Tell Agentic Identity & Trust Architect what you are working on"
     ],
-    "welcome": "سلام! من Agentic Identity & Trust Architect هستم. Ensures every AI agent can prove who it is, what it's allowed to do, and what it actually did.",
+    "welcome": "Hi! I'm Agentic Identity & Trust Architect. Ensures every AI agent can prove who it is, what it's allowed to do, and what it actually did.",
     "featured": false,
     "color": "#2d5a27"
   },
@@ -4736,7 +4736,7 @@ export const catalog: CatalogAgent[] = [
       "After 3 failures: Mark task as blocked, continue pipeline",
       "Final integration will catch remaining issues"
     ],
-    "welcome": "سلام! من Agents Orchestrator هستم. The conductor who runs the entire dev pipeline from spec to ship.",
+    "welcome": "Hi! I'm Agents Orchestrator. The conductor who runs the entire dev pipeline from spec to ship.",
     "featured": true,
     "color": "cyan"
   },
@@ -4757,9 +4757,9 @@ export const catalog: CatalogAgent[] = [
       "Governance-first architect for business automations (n8n-first) who audits value, risk, and maintainability before implementation."
     ],
     "prompts": [
-      "برای شروع یک درخواست بنویس"
+      "Tell Automation Governance Architect what you are working on"
     ],
-    "welcome": "سلام! من Automation Governance Architect هستم. Calm, skeptical, and operations-focused. Prefer reliable systems over automation hype.",
+    "welcome": "Hi! I'm Automation Governance Architect. Calm, skeptical, and operations-focused. Prefer reliable systems over automation hype.",
     "featured": false,
     "color": "cyan"
   },
@@ -4785,9 +4785,9 @@ export const catalog: CatalogAgent[] = [
       "Organizational Strategy: structure, capabilities, operating model alignment"
     ],
     "prompts": [
-      "برای شروع یک درخواست بنویس"
+      "Ask Business Strategist about competitive Analysis"
     ],
-    "welcome": "سلام! من Business Strategist هستم. Strategy without execution is hallucination. Execution without strategy is chaos. The best strategists build the bridge between where you are and where you need to be — and make sure it holds weight.",
+    "welcome": "Hi! I'm Business Strategist. Strategy without execution is hallucination. Execution without strategy is chaos. The best strategists build the bridge between where you are and where you need to be — and make sure it holds weight.",
     "featured": false,
     "color": "indigo"
   },
@@ -4813,9 +4813,9 @@ export const catalog: CatalogAgent[] = [
       "Training: training needs analysis, curriculum design, delivery coordination"
     ],
     "prompts": [
-      "برای شروع یک درخواست بنویس"
+      "Ask Change Management Consultant about change Assessment"
     ],
-    "welcome": "سلام! من Change Management Consultant هستم. Change doesn't fail because of bad technology or bad strategy — it fails because people don't adopt it. Every transformation is ultimately a human project. Win the hearts and minds, and the rest follows.",
+    "welcome": "Hi! I'm Change Management Consultant. Change doesn't fail because of bad technology or bad strategy — it fails because people don't adopt it. Every transformation is ultimately a human project. Win the hearts and minds, and the rest follows.",
     "featured": false,
     "color": "amber"
   },
@@ -4836,9 +4836,9 @@ export const catalog: CatalogAgent[] = [
       "Strategic finance executive who governs capital allocation, treasury operations, financial planning, M&A finance, investor relations, and board reporting — translating financial complexity into clear decisions that drive business performance and stakeholder confidence."
     ],
     "prompts": [
-      "برای شروع یک درخواست بنویس"
+      "Tell Chief Financial Officer what you are working on"
     ],
-    "welcome": "سلام! من Chief Financial Officer هستم. Thinks in trade-offs, risk-adjusted returns, and long-term value creation — turns financial complexity into a clear decision while protecting the balance sheet, the controls, and the credibility of every number presented.",
+    "welcome": "Hi! I'm Chief Financial Officer. Thinks in trade-offs, risk-adjusted returns, and long-term value creation — turns financial complexity into a clear decision while protecting the balance sheet, the controls, and the credibility of every number presented.",
     "featured": false,
     "color": "navy"
   },
@@ -4859,9 +4859,9 @@ export const catalog: CatalogAgent[] = [
       "Expert in enterprise training system design and curriculum development — proficient in training needs analysis, instructional design methodology, blended learning program design, internal trainer development, leadership programs, and training effectiveness evaluation and continuous optimization."
     ],
     "prompts": [
-      "برای شروع یک درخواست بنویس"
+      "Tell Corporate Training Designer what you are working on"
     ],
-    "welcome": "سلام! من Corporate Training Designer هستم. Designs training programs that drive real behavior change — from needs analysis to Kirkpatrick Level 3 evaluation — because good training is measured by what learners do, not what instructors say.",
+    "welcome": "Hi! I'm Corporate Training Designer. Designs training programs that drive real behavior change — from needs analysis to Kirkpatrick Level 3 evaluation — because good training is measured by what learners do, not what instructors say.",
     "featured": true,
     "color": "orange"
   },
@@ -4887,9 +4887,9 @@ export const catalog: CatalogAgent[] = [
       "Retention: handling cancellation requests, win-back conversations, loyalty support"
     ],
     "prompts": [
-      "برای شروع یک درخواست بنویس"
+      "Ask Customer Service about fAQs & General Inquiries"
     ],
-    "welcome": "سلام! من Customer Service هستم. Every customer interaction is a chance to turn a problem into loyalty — handle it with care, speed, and a human touch.",
+    "welcome": "Hi! I'm Customer Service. Every customer interaction is a chance to turn a problem into loyalty — handle it with care, speed, and a human touch.",
     "featured": false,
     "color": "teal"
   },
@@ -4915,9 +4915,9 @@ export const catalog: CatalogAgent[] = [
       "Renewal: renewal preparation, negotiation support, multi-year deal structuring"
     ],
     "prompts": [
-      "برای شروع یک درخواست بنویس"
+      "Ask Customer Success Manager about onboarding"
     ],
-    "welcome": "سلام! من Customer Success Manager هستم. Customer success isn't a department that reacts to problems — it's a discipline that prevents them. The best CSMs know their customers' goals better than the customers do, and show up with answers before questions are asked.",
+    "welcome": "Hi! I'm Customer Success Manager. Customer success isn't a department that reacts to problems — it's a discipline that prevents them. The best CSMs know their customers' goals better than the customers do, and show up with answers before questions are asked.",
     "featured": true,
     "color": "green"
   },
@@ -4938,9 +4938,9 @@ export const catalog: CatalogAgent[] = [
       "AI agent that consolidates extracted sales data into live reporting dashboards with territory, rep, and pipeline summaries"
     ],
     "prompts": [
-      "برای شروع یک درخواست بنویس"
+      "Tell Data Consolidation Agent what you are working on"
     ],
-    "welcome": "سلام! من Data Consolidation Agent هستم. Consolidates scattered sales data into live reporting dashboards.",
+    "welcome": "Hi! I'm Data Consolidation Agent. Consolidates scattered sales data into live reporting dashboards.",
     "featured": false,
     "color": "#38a169"
   },
@@ -4961,9 +4961,9 @@ export const catalog: CatalogAgent[] = [
       "Corporate data privacy specialist and DPO who builds GDPR, CCPA, and global privacy compliance programs — covering data mapping, privacy impact assessments, consent management, breach response, vendor due diligence, and regulatory engagement."
     ],
     "prompts": [
-      "برای شروع یک درخواست بنویس"
+      "Tell Data Privacy Officer what you are working on"
     ],
-    "welcome": "سلام! من Data Privacy Officer هستم. Treats personal data as a liability to be minimized rather than an asset to be hoarded — reads the regulation precisely, designs privacy in from the start, and assumes a regulator will one day ask to see the records.",
+    "welcome": "Hi! I'm Data Privacy Officer. Treats personal data as a liability to be minimized rather than an asset to be hoarded — reads the regulation precisely, designs privacy in from the start, and assumes a regulator will one day ask to see the records.",
     "featured": false,
     "color": "purple"
   },
@@ -4984,9 +4984,9 @@ export const catalog: CatalogAgent[] = [
       "Corporate sustainability strategist and ESG reporting specialist who builds environmental, social, and governance programs, manages disclosures, drives decarbonization initiatives, and aligns business strategy with stakeholder and regulatory expectations."
     ],
     "prompts": [
-      "برای شروع یک درخواست بنویس"
+      "Tell ESG & Sustainability Officer what you are working on"
     ],
-    "welcome": "سلام! من ESG & Sustainability Officer هستم. Builds sustainability programs that hold up to scrutiny — grounds every claim in audited data and recognized frameworks, because a target without a credible path or a disclosure without evidence is greenwashing waiting to be exposed.",
+    "welcome": "Hi! I'm ESG & Sustainability Officer. Builds sustainability programs that hold up to scrutiny — grounds every claim in audited data and recognized frameworks, because a target without a credible path or a disclosure without evidence is greenwashing waiting to be exposed.",
     "featured": true,
     "color": "green"
   },
@@ -5007,9 +5007,9 @@ export const catalog: CatalogAgent[] = [
       "Presales expert for China's government digital transformation market (ToG), proficient in policy interpretation, solution design, bid document preparation, POC validation, compliance requirements (classified protection/cryptographic assessment/Xinchuang domestic IT), and stakeholder management — helping technical teams efficiently win government IT projects."
     ],
     "prompts": [
-      "برای شروع یک درخواست بنویس"
+      "Tell Government Digital Presales Consultant what you are working on"
     ],
-    "welcome": "سلام! من Government Digital Presales Consultant هستم. Navigates the Chinese government IT procurement maze — from policy signals to winning bids — so your team lands digital transformation projects.",
+    "welcome": "Hi! I'm Government Digital Presales Consultant. Navigates the Chinese government IT procurement maze — from policy signals to winning bids — so your team lands digital transformation projects.",
     "featured": false,
     "color": "#8B0000"
   },
@@ -5035,9 +5035,9 @@ export const catalog: CatalogAgent[] = [
       "Budget Development: budget justification, cost allocation, indirect rates"
     ],
     "prompts": [
-      "برای شروع یک درخواست بنویس"
+      "Ask Grant Writer about prospect Research"
     ],
-    "welcome": "سلام! من Grant Writer هستم. Every grant is a conversation between your mission and a funder's priorities. The best grant writers don't beg — they build a compelling case that a funder's investment in your work is the highest-leverage use of their dollars.",
+    "welcome": "Hi! I'm Grant Writer. Every grant is a conversation between your mission and a funder's priorities. The best grant writers don't beg — they build a compelling case that a funder's investment in your work is the highest-leverage use of their dollars.",
     "featured": true,
     "color": "purple"
   },
@@ -5061,9 +5061,9 @@ export const catalog: CatalogAgent[] = [
       "Never replacing, overriding, or second-guessing the judgment of the care recipient's actual care team"
     ],
     "prompts": [
-      "برای شروع یک درخواست بنویس"
+      "Ask Aging Parent Care Companion about tracking medications"
     ],
-    "welcome": "سلام! من Aging Parent Care Companion هستم. Behind every medication list and appointment reminder is a parent who raised you, and a caregiver doing one of the hardest jobs there is. You deserve a steady partner, not another thing to manage.",
+    "welcome": "Hi! I'm Aging Parent Care Companion. Behind every medication list and appointment reminder is a parent who raised you, and a caregiver doing one of the hardest jobs there is. You deserve a steady partner, not another thing to manage.",
     "featured": false,
     "color": "#0D9488"
   },
@@ -5089,9 +5089,9 @@ export const catalog: CatalogAgent[] = [
       "Emergency Response: immediate identification and response to medical emergencies"
     ],
     "prompts": [
-      "برای شروع یک درخواست بنویس"
+      "Ask Healthcare Customer Service about appointment Support"
     ],
-    "welcome": "سلام! من Healthcare Customer Service هستم. Every patient deserves to feel heard, respected, and supported — especially when they're scared, confused, or frustrated.",
+    "welcome": "Hi! I'm Healthcare Customer Service. Every patient deserves to feel heard, respected, and supported — especially when they're scared, confused, or frustrated.",
     "featured": false,
     "color": "teal"
   },
@@ -5114,9 +5114,9 @@ export const catalog: CatalogAgent[] = [
       "Compliance case library updates: Continuously collect industry enforcement cases and internal violation incidents"
     ],
     "prompts": [
-      "برای شروع یک درخواست بنویس"
+      "Ask Healthcare Marketing Compliance Specialist about quarterly compliance training"
     ],
-    "welcome": "سلام! من Healthcare Marketing Compliance Specialist هستم. Keeps your healthcare marketing legal in China's tightly regulated landscape — reviewing content, flagging violations, and finding creative space within compliance boundaries.",
+    "welcome": "Hi! I'm Healthcare Marketing Compliance Specialist. Keeps your healthcare marketing legal in China's tightly regulated landscape — reviewing content, flagging violations, and finding creative space within compliance boundaries.",
     "featured": false,
     "color": "#2E8B57"
   },
@@ -5142,9 +5142,9 @@ export const catalog: CatalogAgent[] = [
       "Check-Out: billing review, loyalty points, departure experience"
     ],
     "prompts": [
-      "برای شروع یک درخواست بنویس"
+      "Ask Hospitality Guest Services about reservations"
     ],
-    "welcome": "سلام! من Hospitality Guest Services هستم. Hospitality is not a transaction — it's a feeling. Every guest interaction is an opportunity to create a memory, earn a return visit, and generate a five-star review.",
+    "welcome": "Hi! I'm Hospitality Guest Services. Hospitality is not a transaction — it's a feeling. Every guest interaction is an opportunity to create a memory, earn a return visit, and generate a five-star review.",
     "featured": false,
     "color": "teal"
   },
@@ -5170,9 +5170,9 @@ export const catalog: CatalogAgent[] = [
       "Benefits: health insurance, retirement, PTO, perks enrollment and education"
     ],
     "prompts": [
-      "برای شروع یک درخواست بنویس"
+      "Ask HR Onboarding about pre-boarding"
     ],
-    "welcome": "سلام! من HR Onboarding هستم. The first 90 days determine whether a new hire becomes a long-term contributor or a regrettable turnover. Get it right from day one.",
+    "welcome": "Hi! I'm HR Onboarding. The first 90 days determine whether a new hire becomes a long-term contributor or a regrettable turnover. Get it right from day one.",
     "featured": false,
     "color": "green"
   },
@@ -5193,9 +5193,9 @@ export const catalog: CatalogAgent[] = [
       "Operates a shared identity graph that multiple AI agents resolve against. Ensures every agent in a multi-agent system gets the same canonical answer for \"who is this entity?\" - deterministically, even under concurrent writes."
     ],
     "prompts": [
-      "برای شروع یک درخواست بنویس"
+      "Tell Identity Graph Operator what you are working on"
     ],
-    "welcome": "سلام! من Identity Graph Operator هستم. Ensures every agent in a multi-agent system gets the same canonical answer for \"who is this?\"",
+    "welcome": "Hi! I'm Identity Graph Operator. Ensures every agent in a multi-agent system gets the same canonical answer for \"who is this?\"",
     "featured": false,
     "color": "#C5A572"
   },
@@ -5221,9 +5221,9 @@ export const catalog: CatalogAgent[] = [
       "Written: emails, messages, signs, menus, documents"
     ],
     "prompts": [
-      "برای شروع یک درخواست بنویس"
+      "Ask Language Translator about travel"
     ],
-    "welcome": "سلام! من Language Translator هستم. Bridges languages with precision, cultural respect, and the fluency of a native speaker who's lived in both worlds.",
+    "welcome": "Hi! I'm Language Translator. Bridges languages with precision, cultural respect, and the fluency of a native speaker who's lived in both worlds.",
     "featured": false,
     "color": "teal"
   },
@@ -5249,9 +5249,9 @@ export const catalog: CatalogAgent[] = [
       "Billing Analysis: realization rates, collection rates, WIP aging, profitability by matter/client"
     ],
     "prompts": [
-      "برای شروع یک درخواست بنویس"
+      "Ask Legal Billing & Time Tracking about time Capture"
     ],
-    "welcome": "سلام! من Legal Billing & Time Tracking هستم. Every six minutes of unbilled time is money left on the table. Every unclear billing narrative is a client dispute waiting to happen. Capture it all. Describe it clearly. Collect it professionally.",
+    "welcome": "Hi! I'm Legal Billing & Time Tracking. Every six minutes of unbilled time is money left on the table. Every unclear billing narrative is a client dispute waiting to happen. Capture it all. Describe it clearly. Collect it professionally.",
     "featured": false,
     "color": "green"
   },
@@ -5277,9 +5277,9 @@ export const catalog: CatalogAgent[] = [
       "Intake Summary: attorney-ready case summary delivered before the consultation"
     ],
     "prompts": [
-      "برای شروع یک درخواست بنویس"
+      "Ask Legal Client Intake about initial Contact"
     ],
-    "welcome": "سلام! من Legal Client Intake هستم. The first conversation with a potential client sets the tone for the entire attorney-client relationship. Get it right — warm, professional, and thorough — from the very first touch.",
+    "welcome": "Hi! I'm Legal Client Intake. The first conversation with a potential client sets the tone for the entire attorney-client relationship. Get it right — warm, professional, and thorough — from the very first touch.",
     "featured": true,
     "color": "blue"
   },
@@ -5305,9 +5305,9 @@ export const catalog: CatalogAgent[] = [
       "Review government contracts for FAR/DFAR compliance — identifying flow-down clauses and compliance obligations"
     ],
     "prompts": [
-      "برای شروع یک درخواست بنویس"
+      "Ask Legal Document Review about compliance Review"
     ],
-    "welcome": "سلام! من Legal Document Review هستم. Every word in a legal document matters. Every missed clause is a liability. Every risk caught early is a client protected.",
+    "welcome": "Hi! I'm Legal Document Review. Every word in a legal document matters. Every missed clause is a liability. Every risk caught early is a client protected.",
     "featured": false,
     "color": "blue"
   },
@@ -5333,9 +5333,9 @@ export const catalog: CatalogAgent[] = [
       "Closing: closing disclosure review, closing coordination, final condition clearing"
     ],
     "prompts": [
-      "برای شروع یک درخواست بنویس"
+      "Ask Loan Officer Assistant about borrower Intake"
     ],
-    "welcome": "سلام! من Loan Officer Assistant هستم. Every loan is someone's dream — a home, a business, a fresh start. Move it through the pipeline with precision, compliance, and genuine care for the person behind the application.",
+    "welcome": "Hi! I'm Loan Officer Assistant. Every loan is someone's dream — a home, a business, a fresh start. Move it through the pipeline with precision, compliance, and genuine care for the person behind the application.",
     "featured": true,
     "color": "blue"
   },
@@ -5356,9 +5356,9 @@ export const catalog: CatalogAgent[] = [
       "Language Server Protocol specialist building unified code intelligence systems through LSP client orchestration and semantic indexing"
     ],
     "prompts": [
-      "برای شروع یک درخواست بنویس"
+      "Tell LSP/Index Engineer what you are working on"
     ],
-    "welcome": "سلام! من LSP/Index Engineer هستم. Builds unified code intelligence through LSP orchestration and semantic indexing.",
+    "welcome": "Hi! I'm LSP/Index Engineer. Builds unified code intelligence through LSP orchestration and semantic indexing.",
     "featured": false,
     "color": "orange"
   },
@@ -5379,9 +5379,9 @@ export const catalog: CatalogAgent[] = [
       "Mergers and acquisitions integration specialist who designs and executes post-merger integration programs — covering Day 1 readiness, 100-day planning, synergy tracking, cultural integration, functional workstream coordination, and transition service agreement management."
     ],
     "prompts": [
-      "برای شروع یک درخواست بنویس"
+      "Tell M&A Integration Manager what you are working on"
     ],
-    "welcome": "سلام! من M&A Integration Manager هستم. Treats the signed deal as the starting line, not the finish — runs post-merger integration like a program with a clock on it, because synergy value erodes every day Day 1 readiness slips and culture is left to chance.",
+    "welcome": "Hi! I'm M&A Integration Manager. Treats the signed deal as the starting line, not the finish — runs post-merger integration like a program with a clock on it, because synergy value erodes every day Day 1 readiness slips and culture is left to chance.",
     "featured": false,
     "color": "indigo"
   },
@@ -5407,9 +5407,9 @@ export const catalog: CatalogAgent[] = [
       "Payer Relations: contract analysis, credentialing support, prior authorization"
     ],
     "prompts": [
-      "برای شروع یک درخواست بنویس"
+      "Ask Medical Billing & Coding Specialist about medical Coding"
     ],
-    "welcome": "سلام! من Medical Billing & Coding Specialist هستم. Every unsubmitted claim is lost revenue. Every unchallenged denial is money left on the table. Every compliance gap is a liability waiting to surface. The revenue cycle never stops — and neither do we.",
+    "welcome": "Hi! I'm Medical Billing & Coding Specialist. Every unsubmitted claim is lost revenue. Every unchallenged denial is money left on the table. Every compliance gap is a liability waiting to surface. The revenue cycle never stops — and neither do we.",
     "featured": false,
     "color": "blue"
   },
@@ -5430,9 +5430,9 @@ export const catalog: CatalogAgent[] = [
       "Business operations specialist who applies Lean, Six Sigma, and systems thinking to process mapping, capacity planning, KPI governance, vendor management, and organizational efficiency — turning operational complexity into repeatable, measurable performance."
     ],
     "prompts": [
-      "برای شروع یک درخواست بنویس"
+      "Tell Operations Manager what you are working on"
     ],
-    "welcome": "سلام! من Operations Manager هستم. Sees every business as a system of processes and treats waste, variation, and undocumented dependencies as defects to be measured and removed — because what isn't standardized and measured can't be scaled reliably.",
+    "welcome": "Hi! I'm Operations Manager. Sees every business as a system of processes and treats waste, variation, and undocumented dependencies as defects to be measured and removed — because what isn't standardized and measured can't be scaled reliably.",
     "featured": false,
     "color": "slate"
   },
@@ -5453,9 +5453,9 @@ export const catalog: CatalogAgent[] = [
       "Applied organizational psychologist who diagnoses team dynamics, psychological safety, burnout risk, and culture health — using evidence-based frameworks to help leaders build high-performing, resilient, and psychologically safe organizations."
     ],
     "prompts": [
-      "برای شروع یک درخواست بنویس"
+      "Tell Organizational Psychologist what you are working on"
     ],
-    "welcome": "سلام! من Organizational Psychologist هستم. Treats team dysfunction like a clinician reads symptoms — grounds every diagnosis and intervention in peer-reviewed evidence, names the invisible pattern leaders can't see, and never mistakes pop psychology for the real thing.",
+    "welcome": "Hi! I'm Organizational Psychologist. Treats team dysfunction like a clinician reads symptoms — grounds every diagnosis and intervention in peer-reviewed evidence, names the invisible pattern leaders can't see, and never mistakes pop psychology for the real thing.",
     "featured": false,
     "color": "teal"
   },
@@ -5479,9 +5479,9 @@ export const catalog: CatalogAgent[] = [
       "Strategic simplification: Reduce a scattered life-improvement plan to the one constraint that matters this month."
     ],
     "prompts": [
-      "برای شروع یک درخواست بنویس"
+      "Ask Personal Growth Mentor about diagnose the real goal"
     ],
-    "welcome": "سلام! من Personal Growth Mentor هستم. Systems over slogans. Clarity before action. Execution over inspiration.",
+    "welcome": "Hi! I'm Personal Growth Mentor. Systems over slogans. Clarity before action. Execution over inspiration.",
     "featured": false,
     "color": "teal"
   },
@@ -5507,9 +5507,9 @@ export const catalog: CatalogAgent[] = [
       "Closing Support: final walkthrough, closing preparation, post-closing follow-up"
     ],
     "prompts": [
-      "برای شروع یک درخواست بنویس"
+      "Ask Real Estate Buyer & Seller about buyer Representation"
     ],
-    "welcome": "سلام! من Real Estate Buyer & Seller هستم. Every transaction is someone's biggest financial decision. Every client deserves an agent who is organized, responsive, and genuinely invested in their outcome — not just the commission check.",
+    "welcome": "Hi! I'm Real Estate Buyer & Seller. Every transaction is someone's biggest financial decision. Every client deserves an agent who is organized, responsive, and genuinely invested in their outcome — not just the commission check.",
     "featured": false,
     "color": "teal"
   },
@@ -5530,9 +5530,9 @@ export const catalog: CatalogAgent[] = [
       "Expert recruitment operations and talent acquisition specialist — skilled in China's major hiring platforms, talent assessment frameworks, and labor law compliance. Helps companies efficiently attract, screen, and retain top talent while building a competitive employer brand."
     ],
     "prompts": [
-      "برای شروع یک درخواست بنویس"
+      "Tell Recruitment Specialist what you are working on"
     ],
-    "welcome": "سلام! من Recruitment Specialist هستم. Builds your full-cycle recruiting engine across China's hiring platforms, from sourcing to onboarding to compliance.",
+    "welcome": "Hi! I'm Recruitment Specialist. Builds your full-cycle recruiting engine across China's hiring platforms, from sourcing to onboarding to compliance.",
     "featured": false,
     "color": "blue"
   },
@@ -5553,9 +5553,9 @@ export const catalog: CatalogAgent[] = [
       "AI agent that automates distribution of consolidated sales reports to representatives based on territorial parameters"
     ],
     "prompts": [
-      "برای شروع یک درخواست بنویس"
+      "Tell Report Distribution Agent what you are working on"
     ],
-    "welcome": "سلام! من Report Distribution Agent هستم. Automates delivery of consolidated sales reports to the right reps.",
+    "welcome": "Hi! I'm Report Distribution Agent. Automates delivery of consolidated sales reports to the right reps.",
     "featured": false,
     "color": "#d69e2e"
   },
@@ -5577,9 +5577,9 @@ export const catalog: CatalogAgent[] = [
       "Executive resume positioning: Emphasize scope, P&L, transformation, board-level communication, and strategic outcomes."
     ],
     "prompts": [
-      "برای شروع یک درخواست بنویس"
+      "Ask Resume Tailor about [Change] - [Keyword or competency supported]"
     ],
-    "welcome": "سلام! من Resume Tailor هستم. Tailors the resume to the role without tailoring the truth.",
+    "welcome": "Hi! I'm Resume Tailor. Tailors the resume to the role without tailoring the truth.",
     "featured": false,
     "color": "teal"
   },
@@ -5605,9 +5605,9 @@ export const catalog: CatalogAgent[] = [
       "Vendor Returns: defective merchandise claims, vendor RMA processing, credit tracking"
     ],
     "prompts": [
-      "برای شروع یک درخواست بنویس"
+      "Ask Retail Customer Returns about return Initiation"
     ],
-    "welcome": "سلام! من Retail Customer Returns هستم. A return is not a failure — it's an opportunity. Handle it with speed, fairness, and genuine care, and you'll turn a disappointed customer into a loyal one.",
+    "welcome": "Hi! I'm Retail Customer Returns. A return is not a failure — it's an opportunity. Handle it with speed, fairness, and genuine care, and you'll turn a disappointed customer into a loyal one.",
     "featured": false,
     "color": "amber"
   },
@@ -5628,9 +5628,9 @@ export const catalog: CatalogAgent[] = [
       "AI agent specialized in monitoring Excel files and extracting key sales metrics (MTD, YTD, Year End) for internal live reporting"
     ],
     "prompts": [
-      "برای شروع یک درخواست بنویس"
+      "Tell Sales Data Extraction Agent what you are working on"
     ],
-    "welcome": "سلام! من Sales Data Extraction Agent هستم. Watches your Excel files and extracts the metrics that matter.",
+    "welcome": "Hi! I'm Sales Data Extraction Agent. Watches your Excel files and extracts the metrics that matter.",
     "featured": false,
     "color": "#2b6cb0"
   },
@@ -5656,9 +5656,9 @@ export const catalog: CatalogAgent[] = [
       "Pipeline Management: stage progression, deal scoring, forecasting, next action discipline"
     ],
     "prompts": [
-      "برای شروع یک درخواست بنویس"
+      "Ask Sales Outreach about prospecting"
     ],
-    "welcome": "سلام! من Sales Outreach هستم. The best salespeople don't sell — they help people buy. Every outreach is a conversation starter, not a pitch.",
+    "welcome": "Hi! I'm Sales Outreach. The best salespeople don't sell — they help people buy. Every outreach is a conversation starter, not a pitch.",
     "featured": false,
     "color": "amber"
   },
@@ -5684,7 +5684,7 @@ export const catalog: CatalogAgent[] = [
       "You're managing multiple AI agents or tools and need someone maintaining the big picture",
       "You're approaching a major transition (launch, fundraise, relocation, pivot) and need operational discipline"
     ],
-    "welcome": "سلام! من Chief of Staff هستم. I don't own any function. I own the space between all of them.",
+    "welcome": "Hi! I'm Chief of Staff. I don't own any function. I own the space between all of them.",
     "featured": false,
     "color": "#6B7280"
   },
@@ -5705,9 +5705,9 @@ export const catalog: CatalogAgent[] = [
       "Expert civil and structural engineer with global standards coverage — Eurocode, DIN, ACI, AISC, ASCE, AS/NZS, CSA, GB, IS, AIJ, and more. Specializes in structural analysis, geotechnical design, construction documentation, building code compliance, and multi-standard international projects."
     ],
     "prompts": [
-      "برای شروع یک درخواست بنویس"
+      "Tell Civil Engineer what you are working on"
     ],
-    "welcome": "سلام! من Civil Engineer هستم. Designs structures that stand across borders — from seismic Tokyo to wind-swept Dubai, always code-compliant and constructible.",
+    "welcome": "Hi! I'm Civil Engineer. Designs structures that stand across borders — from seismic Tokyo to wind-swept Dubai, always code-compliant and constructible.",
     "featured": false,
     "color": "yellow"
   },
@@ -5728,9 +5728,9 @@ export const catalog: CatalogAgent[] = [
       "Multi-session, multi-tool drift detection specialist who audits codebases touched by several AI coding tools (Claude, Cursor, Copilot, Windsurf, etc.) over time, finding silent logic mismatches, dead code, and doc-vs-code divergence that no single session would ever notice on its own."
     ],
     "prompts": [
-      "برای شروع یک درخواست بنویس"
+      "Tell Codebase Archaeologist what you are working on"
     ],
-    "welcome": "سلام! من Codebase Archaeologist هستم. I read code like tree rings — I can tell you which layer was written by which hand, and what got left half-finished when the next one took over.",
+    "welcome": "Hi! I'm Codebase Archaeologist. I read code like tree rings — I can tell you which layer was written by which hand, and what got left half-finished when the next one took over.",
     "featured": true,
     "color": "amber"
   },
@@ -5752,9 +5752,9 @@ export const catalog: CatalogAgent[] = [
       "Auditing entire design systems for universal accessibility and global resonance."
     ],
     "prompts": [
-      "برای شروع یک درخواست بنویس"
+      "Ask Cultural Intelligence Strategist about building multi-cultural sentiment analysis pipelines"
     ],
-    "welcome": "سلام! من Cultural Intelligence Strategist هستم. Detects invisible exclusion and ensures your software resonates across cultures.",
+    "welcome": "Hi! I'm Cultural Intelligence Strategist. Detects invisible exclusion and ensures your software resonates across cultures.",
     "featured": false,
     "color": "#FFA000"
   },
@@ -5780,9 +5780,9 @@ export const catalog: CatalogAgent[] = [
       "→ [Add authentication to your dashboard](link)"
     ],
     "prompts": [
-      "برای شروع یک درخواست بنویس"
+      "Ask Developer Advocate about [Platform] account (free tier works"
     ],
-    "welcome": "سلام! من Developer Advocate هستم. Bridges your product team and the developer community through authentic engagement.",
+    "welcome": "Hi! I'm Developer Advocate. Bridges your product team and the developer community through authentic engagement.",
     "featured": true,
     "color": "purple"
   },
@@ -5803,9 +5803,9 @@ export const catalog: CatalogAgent[] = [
       "Expert document creation specialist who generates professional PDF, PPTX, DOCX, and XLSX files using code-based approaches with proper formatting, charts, and data visualization."
     ],
     "prompts": [
-      "برای شروع یک درخواست بنویس"
+      "Tell Document Generator what you are working on"
     ],
-    "welcome": "سلام! من Document Generator هستم. Professional documents from code — PDFs, slides, spreadsheets, and reports.",
+    "welcome": "Hi! I'm Document Generator. Professional documents from code — PDFs, slides, spreadsheets, and reports.",
     "featured": true,
     "color": "blue"
   },
@@ -5831,9 +5831,9 @@ export const catalog: CatalogAgent[] = [
       "Authorization: the ATO package, the risk-based decision, and the agency authorization path"
     ],
     "prompts": [
-      "برای شروع یک درخواست بنویس"
+      "Ask FedRAMP & RMF Compliance Engineer about categorization"
     ],
-    "welcome": "سلام! من FedRAMP & RMF Compliance Engineer هستم. A disciplined compliance engineer who guides systems through both FedRAMP authorization pathways — traditional Rev5 and the modernized, KSI-driven 20x — and the full NIST RMF lifecycle, turning abstract control requirements into concrete, auditable, ATO-ready evidence whether that evidence is a narrative implementation statement or a machine-validated Key Security Indicator, categorizing honestly, drawing the authorization boundary before writing a word of the SSP, treating every control as something that must be both implemented and provable, and refusing to paper over a gap with prose when a 3PAO — or an automated validation — is going to test the actual system, because in federal compliance an unproven control is an open finding waiting to happen.",
+    "welcome": "Hi! I'm FedRAMP & RMF Compliance Engineer. A disciplined compliance engineer who guides systems through both FedRAMP authorization pathways — traditional Rev5 and the modernized, KSI-driven 20x — and the full NIST RMF lifecycle, turning abstract control requirements into concrete, auditable, ATO-ready evidence whether that evidence is a narrative implementation statement or a machine-validated Key Security Indicator, categorizing honestly, drawing the authorization boundary before writing a word of the SSP, treating every control as something that must be both implemented and provable, and refusing to paper over a gap with prose when a 3PAO — or an automated validation — is going to test the actual system, because in federal compliance an unproven control is an open finding waiting to happen.",
     "featured": false,
     "color": "red"
   },
@@ -5857,7 +5857,7 @@ export const catalog: CatalogAgent[] = [
       "Map the user's immediate workload to the optimal neuroacoustic profile:",
       "Engineer comprehensive prompt recipes optimized for generative AI audio models (Suno, Udio, Stable Audio)."
     ],
-    "welcome": "سلام! من Focus Music Architect هستم. Transforms mental fatigue into deep cognitive flow state through tailored acoustic science and generative audio engineering.",
+    "welcome": "Hi! I'm Focus Music Architect. Transforms mental fatigue into deep cognitive flow state through tailored acoustic science and generative audio engineering.",
     "featured": false,
     "color": "indigo"
   },
@@ -5883,9 +5883,9 @@ export const catalog: CatalogAgent[] = [
       "Remote/international positioning for French market access"
     ],
     "prompts": [
-      "برای شروع یک درخواست بنویس"
+      "Ask French Consulting Market Navigator about eSN/SI margin models and negotiation levers"
     ],
-    "welcome": "سلام! من French Consulting Market Navigator هستم. The insider who decodes the opaque French consulting food chain so freelancers stop leaving money on the table",
+    "welcome": "Hi! I'm French Consulting Market Navigator. The insider who decodes the opaque French consulting food chain so freelancers stop leaving money on the table",
     "featured": false,
     "color": "#002395"
   },
@@ -5906,9 +5906,9 @@ export const catalog: CatalogAgent[] = [
       "Korean business culture for foreign professionals — 품의 decision process, nunchi reading, KakaoTalk business etiquette, hierarchy navigation, and relationship-first deal mechanics"
     ],
     "prompts": [
-      "برای شروع یک درخواست بنویس"
+      "Tell Korean Business Navigator what you are working on"
     ],
-    "welcome": "سلام! من Korean Business Navigator هستم. The bridge between Western directness and Korean relationship dynamics — reads the room so you don't torch the deal",
+    "welcome": "Hi! I'm Korean Business Navigator. The bridge between Western directness and Korean relationship dynamics — reads the room so you don't torch the deal",
     "featured": false,
     "color": "#003478"
   },
@@ -5930,9 +5930,9 @@ export const catalog: CatalogAgent[] = [
       "Governance & Audit Gate Engineering: Designing human-in-the-loop validation checkpoints for sensitive AI operations."
     ],
     "prompts": [
-      "برای شروع یک درخواست بنویس"
+      "Ask Master Plan Architect about state Machine Formalization"
     ],
-    "welcome": "سلام! من Master Plan Architect هستم. Think deeply, honor past engineering dignity, red-team every assumption, and draft immutable implementation contracts before writing a single line of code.",
+    "welcome": "Hi! I'm Master Plan Architect. Think deeply, honor past engineering dignity, red-team every assumption, and draft immutable implementation contracts before writing a single line of code.",
     "featured": false,
     "color": "indigo"
   },
@@ -5960,7 +5960,7 @@ export const catalog: CatalogAgent[] = [
       "Create prompt templates for common workflows that guide agents toward better outputs",
       "Use resource URIs that are predictable and self-documenting"
     ],
-    "welcome": "سلام! من MCP Builder هستم. Builds the tools that make AI agents actually useful in the real world.",
+    "welcome": "Hi! I'm MCP Builder. Builds the tools that make AI agents actually useful in the real world.",
     "featured": false,
     "color": "indigo"
   },
@@ -5986,9 +5986,9 @@ export const catalog: CatalogAgent[] = [
       "Interpretability deep-dive: SHAP value analysis and Partial Dependence Plots for feature behavior"
     ],
     "prompts": [
-      "برای شروع یک درخواست بنویس"
+      "Ask Model QA Specialist about replicate feature selection and transformation procedures"
     ],
-    "welcome": "سلام! من Model QA Specialist هستم. Audits ML models end-to-end — from data reconstruction to calibration testing.",
+    "welcome": "Hi! I'm Model QA Specialist. Audits ML models end-to-end — from data reconstruction to calibration testing.",
     "featured": false,
     "color": "#B22222"
   },
@@ -6014,9 +6014,9 @@ export const catalog: CatalogAgent[] = [
       "A/B testing framework for price point validation"
     ],
     "prompts": [
-      "برای شروع یک درخواست بنویس"
+      "Ask Pricing Analyst about price optimization"
     ],
-    "welcome": "سلام! من Pricing Analyst هستم. Finds the price point where value captured meets value delivered — then proves it with data.",
+    "welcome": "Hi! I'm Pricing Analyst. Finds the price point where value captured meets value delivered — then proves it with data.",
     "featured": false,
     "color": "gold"
   },
@@ -6042,9 +6042,9 @@ export const catalog: CatalogAgent[] = [
       "Org strategy (single org vs multi-org, sandbox strategy)"
     ],
     "prompts": [
-      "برای شروع یک درخواست بنویس"
+      "Ask Salesforce Architect about multi-cloud architecture (Sales"
     ],
-    "welcome": "سلام! من Salesforce Architect هستم. The calm hand that turns a tangled Salesforce org into an architecture that scales — one governor limit at a time",
+    "welcome": "Hi! I'm Salesforce Architect. The calm hand that turns a tangled Salesforce org into an architecture that scales — one governor limit at a time",
     "featured": false,
     "color": "#00A1E0"
   },
@@ -6070,9 +6070,9 @@ export const catalog: CatalogAgent[] = [
       "Can simulate a wide range of opponent personalities and strategies"
     ],
     "prompts": [
-      "برای شروع یک درخواست بنویس"
+      "Tell Strategy Duel Agent what you are working on"
     ],
-    "welcome": "سلام! من Strategy Duel Agent هستم. Orchestrates high-stakes, turn-based strategy battles with sharp analysis and memorable commentary",
+    "welcome": "Hi! I'm Strategy Duel Agent. Orchestrates high-stakes, turn-based strategy battles with sharp analysis and memorable commentary",
     "featured": false,
     "color": "#1e90ff"
   },
@@ -6093,9 +6093,9 @@ export const catalog: CatalogAgent[] = [
       "Workflow design specialist who maps complete workflow trees for every system, user journey, and agent interaction — covering happy paths, all branch conditions, failure modes, recovery paths, handoff contracts, and observable states to produce build-ready specs that agents can implement against and QA can test against."
     ],
     "prompts": [
-      "برای شروع یک درخواست بنویس"
+      "Tell Workflow Architect what you are working on"
     ],
-    "welcome": "سلام! من Workflow Architect هستم. Every path the system can take — mapped, named, and specified before a single line is written.",
+    "welcome": "Hi! I'm Workflow Architect. Every path the system can take — mapped, named, and specified before a single line is written.",
     "featured": false,
     "color": "orange"
   },
@@ -6116,9 +6116,9 @@ export const catalog: CatalogAgent[] = [
       "Full-spectrum study abroad planning expert covering the US, UK, Canada, Australia, Europe, Hong Kong, and Singapore — proficient in undergraduate, master's, and PhD application strategy, school selection, essay coaching, profile enhancement, standardized test planning, visa preparation, and overseas life adaptation, helping Chinese students craft personalized end-to-end study abroad plans."
     ],
     "prompts": [
-      "برای شروع یک درخواست بنویس"
+      "Tell Study Abroad Advisor what you are working on"
     ],
-    "welcome": "سلام! من Study Abroad Advisor هستم. Guides Chinese students through the entire study abroad journey — from school selection and essays to visas — with data-driven advice and zero anxiety selling.",
+    "welcome": "Hi! I'm Study Abroad Advisor. Guides Chinese students through the entire study abroad journey — from school selection and essays to visas — with data-driven advice and zero anxiety selling.",
     "featured": false,
     "color": "#1B4D3E"
   },
@@ -6140,9 +6140,9 @@ export const catalog: CatalogAgent[] = [
       "Environmental management systems: ISO 14001 certification requirements, REACH/RoHS hazardous substance controls"
     ],
     "prompts": [
-      "برای شروع یک درخواست بنویس"
+      "Ask Supply Chain Strategist about carbon footprint tracking"
     ],
-    "welcome": "سلام! من Supply Chain Strategist هستم. Builds your procurement engine and supply chain resilience across China's manufacturing ecosystem, from supplier sourcing to risk management.",
+    "welcome": "Hi! I'm Supply Chain Strategist. Builds your procurement engine and supply chain resilience across China's manufacturing ecosystem, from supplier sourcing to risk management.",
     "featured": false,
     "color": "blue"
   },
@@ -6169,7 +6169,7 @@ export const catalog: CatalogAgent[] = [
       "Daily log entry (Intent / Changes / Open loops); optional Hub triplet (Top links / Tags / Open loops) at top.",
       "Intent: What the user wanted to accomplish."
     ],
-    "welcome": "سلام! من ZK Steward هستم. Channels Luhmann's Zettelkasten to build connected, validated knowledge bases.",
+    "welcome": "Hi! I'm ZK Steward. Channels Luhmann's Zettelkasten to build connected, validated knowledge bases.",
     "featured": false,
     "color": "teal"
   },
@@ -6190,9 +6190,9 @@ export const catalog: CatalogAgent[] = [
       "Expert data analyst transforming raw data into actionable business insights. Creates dashboards, performs statistical analysis, tracks KPIs, and provides strategic decision support through data visualization and reporting."
     ],
     "prompts": [
-      "برای شروع یک درخواست بنویس"
+      "Tell Analytics Reporter what you are working on"
     ],
-    "welcome": "سلام! من Analytics Reporter هستم. Transforms raw data into the insights that drive your next decision.",
+    "welcome": "Hi! I'm Analytics Reporter. Transforms raw data into the insights that drive your next decision.",
     "featured": false,
     "color": "teal"
   },
@@ -6213,9 +6213,9 @@ export const catalog: CatalogAgent[] = [
       "Consultant-grade AI specialist trained to think and communicate like a senior strategy consultant. Transforms complex business inputs into concise, actionable executive summaries using McKinsey SCQA, BCG Pyramid Principle, and Bain frameworks for C-suite decision-makers."
     ],
     "prompts": [
-      "برای شروع یک درخواست بنویس"
+      "Tell Executive Summary Generator what you are working on"
     ],
-    "welcome": "سلام! من Executive Summary Generator هستم. Thinks like a McKinsey consultant, writes for the C-suite.",
+    "welcome": "Hi! I'm Executive Summary Generator. Thinks like a McKinsey consultant, writes for the C-suite.",
     "featured": false,
     "color": "purple"
   },
@@ -6236,9 +6236,9 @@ export const catalog: CatalogAgent[] = [
       "Expert financial analyst and controller specializing in financial planning, budget management, and business performance analysis. Maintains financial health, optimizes cash flow, and provides strategic financial insights for business growth."
     ],
     "prompts": [
-      "برای شروع یک درخواست بنویس"
+      "Tell Finance Tracker what you are working on"
     ],
-    "welcome": "سلام! من Finance Tracker هستم. Keeps the books clean, the cash flowing, and the forecasts honest.",
+    "welcome": "Hi! I'm Finance Tracker. Keeps the books clean, the cash flowing, and the forecasts honest.",
     "featured": false,
     "color": "green"
   },
@@ -6259,9 +6259,9 @@ export const catalog: CatalogAgent[] = [
       "Expert infrastructure specialist focused on system reliability, performance optimization, and technical operations management. Maintains robust, scalable infrastructure supporting business operations with security, performance, and cost efficiency."
     ],
     "prompts": [
-      "برای شروع یک درخواست بنویس"
+      "Tell Infrastructure Maintainer what you are working on"
     ],
-    "welcome": "سلام! من Infrastructure Maintainer هستم. Keeps the lights on, the servers humming, and the alerts quiet.",
+    "welcome": "Hi! I'm Infrastructure Maintainer. Keeps the lights on, the servers humming, and the alerts quiet.",
     "featured": false,
     "color": "orange"
   },
@@ -6282,9 +6282,9 @@ export const catalog: CatalogAgent[] = [
       "Expert legal and compliance specialist ensuring business operations, data handling, and content creation comply with relevant laws, regulations, and industry standards across multiple jurisdictions."
     ],
     "prompts": [
-      "برای شروع یک درخواست بنویس"
+      "Tell Legal Compliance Checker what you are working on"
     ],
-    "welcome": "سلام! من Legal Compliance Checker هستم. Ensures your operations comply with the law across every jurisdiction that matters.",
+    "welcome": "Hi! I'm Legal Compliance Checker. Ensures your operations comply with the law across every jurisdiction that matters.",
     "featured": false,
     "color": "red"
   },
@@ -6305,9 +6305,9 @@ export const catalog: CatalogAgent[] = [
       "Expert customer support specialist delivering exceptional customer service, issue resolution, and user experience optimization. Specializes in multi-channel support, proactive customer care, and turning support interactions into positive brand experiences."
     ],
     "prompts": [
-      "برای شروع یک درخواست بنویس"
+      "Tell Support Responder what you are working on"
     ],
-    "welcome": "سلام! من Support Responder هستم. Turns frustrated users into loyal advocates, one interaction at a time.",
+    "welcome": "Hi! I'm Support Responder. Turns frustrated users into loyal advocates, one interaction at a time.",
     "featured": false,
     "color": "blue"
   },
@@ -6328,9 +6328,9 @@ export const catalog: CatalogAgent[] = [
       "Expert accessibility specialist who audits interfaces against WCAG standards, tests with assistive technologies, and ensures inclusive design. Defaults to finding barriers — if it's not tested with a screen reader, it's not accessible."
     ],
     "prompts": [
-      "برای شروع یک درخواست بنویس"
+      "Tell Accessibility Auditor what you are working on"
     ],
-    "welcome": "سلام! من Accessibility Auditor هستم. If it's not tested with a screen reader, it's not accessible.",
+    "welcome": "Hi! I'm Accessibility Auditor. If it's not tested with a screen reader, it's not accessible.",
     "featured": false,
     "color": "#0077B6"
   },
@@ -6351,9 +6351,9 @@ export const catalog: CatalogAgent[] = [
       "Expert API testing specialist focused on comprehensive API validation, performance testing, and quality assurance across all systems and third-party integrations"
     ],
     "prompts": [
-      "برای شروع یک درخواست بنویس"
+      "Tell API Tester what you are working on"
     ],
-    "welcome": "سلام! من API Tester هستم. Breaks your API before your users do.",
+    "welcome": "Hi! I'm API Tester. Breaks your API before your users do.",
     "featured": false,
     "color": "purple"
   },
@@ -6374,9 +6374,9 @@ export const catalog: CatalogAgent[] = [
       "Screenshot-obsessed, fantasy-allergic QA specialist - Default to finding 3-5 issues, requires visual proof for everything"
     ],
     "prompts": [
-      "برای شروع یک درخواست بنویس"
+      "Tell Evidence Collector what you are working on"
     ],
-    "welcome": "سلام! من Evidence Collector هستم. Screenshot-obsessed QA who won't approve anything without visual proof.",
+    "welcome": "Hi! I'm Evidence Collector. Screenshot-obsessed QA who won't approve anything without visual proof.",
     "featured": false,
     "color": "orange"
   },
@@ -6397,9 +6397,9 @@ export const catalog: CatalogAgent[] = [
       "Expert performance testing and optimization specialist focused on measuring, analyzing, and improving system performance across all applications and infrastructure"
     ],
     "prompts": [
-      "برای شروع یک درخواست بنویس"
+      "Tell Performance Benchmarker what you are working on"
     ],
-    "welcome": "سلام! من Performance Benchmarker هستم. Measures everything, optimizes what matters, and proves the improvement.",
+    "welcome": "Hi! I'm Performance Benchmarker. Measures everything, optimizes what matters, and proves the improvement.",
     "featured": false,
     "color": "orange"
   },
@@ -6420,9 +6420,9 @@ export const catalog: CatalogAgent[] = [
       "Stops fantasy approvals, evidence-based certification - Default to \"NEEDS WORK\", requires overwhelming proof for production readiness"
     ],
     "prompts": [
-      "برای شروع یک درخواست بنویس"
+      "Tell Reality Checker what you are working on"
     ],
-    "welcome": "سلام! من Reality Checker هستم. Defaults to \"NEEDS WORK\" — requires overwhelming proof for production readiness.",
+    "welcome": "Hi! I'm Reality Checker. Defaults to \"NEEDS WORK\" — requires overwhelming proof for production readiness.",
     "featured": true,
     "color": "red"
   },
@@ -6443,9 +6443,9 @@ export const catalog: CatalogAgent[] = [
       "Track and drive suite health metrics — pass rate, duration, flake rate — like the production SLOs they are"
     ],
     "prompts": [
-      "برای شروع یک درخواست بنویس"
+      "Ask Test Automation Engineer about track and drive suite health metrics"
     ],
-    "welcome": "سلام! من Test Automation Engineer هستم. A flaky test is a bug with your name on it. Deterministic, isolated, fast — you don't get to pick two.",
+    "welcome": "Hi! I'm Test Automation Engineer. A flaky test is a bug with your name on it. Deterministic, isolated, fast — you don't get to pick two.",
     "featured": false,
     "color": "#2EAD33"
   },
@@ -6466,9 +6466,9 @@ export const catalog: CatalogAgent[] = [
       "Expert test analysis specialist focused on comprehensive test result evaluation, quality metrics analysis, and actionable insight generation from testing activities"
     ],
     "prompts": [
-      "برای شروع یک درخواست بنویس"
+      "Tell Test Results Analyzer what you are working on"
     ],
-    "welcome": "سلام! من Test Results Analyzer هستم. Reads test results like a detective reads evidence — nothing gets past.",
+    "welcome": "Hi! I'm Test Results Analyzer. Reads test results like a detective reads evidence — nothing gets past.",
     "featured": false,
     "color": "indigo"
   },
@@ -6489,9 +6489,9 @@ export const catalog: CatalogAgent[] = [
       "Expert technology assessment specialist focused on evaluating, testing, and recommending tools, software, and platforms for business use and productivity optimization"
     ],
     "prompts": [
-      "برای شروع یک درخواست بنویس"
+      "Tell Tool Evaluator what you are working on"
     ],
-    "welcome": "سلام! من Tool Evaluator هستم. Tests and recommends the right tools so your team doesn't waste time on the wrong ones.",
+    "welcome": "Hi! I'm Tool Evaluator. Tests and recommends the right tools so your team doesn't waste time on the wrong ones.",
     "featured": false,
     "color": "teal"
   },
@@ -6512,9 +6512,9 @@ export const catalog: CatalogAgent[] = [
       "Expert process improvement specialist focused on analyzing, optimizing, and automating workflows across all business functions for maximum productivity and efficiency"
     ],
     "prompts": [
-      "برای شروع یک درخواست بنویس"
+      "Tell Workflow Optimizer what you are working on"
     ],
-    "welcome": "سلام! من Workflow Optimizer هستم. Finds the bottleneck, fixes the process, automates the rest.",
+    "welcome": "Hi! I'm Workflow Optimizer. Finds the bottleneck, fixes the process, automates the rest.",
     "featured": false,
     "color": "green"
   }

@@ -10,10 +10,11 @@
     "catalog": "node scripts/generate-catalog.mjs",
     "export:server-content": "bun run catalog && node scripts/export-personas.mjs",
     "check:i18n": "node scripts/check-i18n.mjs",
+    "check:catalog": "node scripts/check-catalog.mjs",
     "check:routes": "node scripts/check-routes.mjs",
     "sitemap": "node scripts/generate-sitemap.mjs",
     "typecheck": "tsc --noEmit -p tsconfig.json",
-    "check": "bun run check:i18n && bun run check:routes && bun run typecheck",
+    "check": "bun run check:i18n && bun run check:catalog && bun run check:routes && bun run typecheck",
     "format": "oxfmt"
   },
   "dependencies": {

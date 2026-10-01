@@ -161,10 +161,12 @@ export default function Chat() {
       return copy;
     });
 
+  /** Stores the dictionary key so the message follows a language switch. */
   function fail(code: string) {
     const key = `chat.error.${code}`;
-    const message = t(key);
-    setError(message === key ? t("chat.error.server") : message);
+    // `t` returns the key itself when neither dictionary has it.
+    const known = t(key) !== key;
+    setError(known ? key : "chat.error.server");
   }
 
   function reset() {
@@ -259,7 +261,7 @@ export default function Chat() {
                 };
               return copy;
             });
-            if (event.truncated) setError(t("chat.error.budget"));
+            if (event.truncated) setError("chat.error.budget");
             // The thread now exists server-side: remember it so the next turn
             // continues the same conversation and the sidebar shows it.
             setActiveId((current) => current ?? event.conversationId);
@@ -477,7 +479,7 @@ export default function Chat() {
               <i />
             </div>
           )}
-          {error && !modal && <p className="text-sm text-red-200">{error}</p>}
+          {error && !modal && <p className="text-sm text-red-200">{t(error)}</p>}
         </div>
         <form onSubmit={submit} className="border-t border-white/8 p-4">
           <div className="flex items-end gap-3 rounded-2xl border border-white/10 bg-[#0b1124] p-2">

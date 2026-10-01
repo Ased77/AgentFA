@@ -55,16 +55,23 @@ export default function Pricing() {
     return yearly ? Math.round(monthlyPrice * (1 - prices.yearlyDiscount) * 12) : monthlyPrice;
   }
 
-  function localizedError(err: unknown): string {
+  /**
+   * The dictionary key for a failed purchase.
+   *
+   * The key is returned rather than the message so the notice re-translates when
+   * the language changes; `t(key) === key` is how a missing key is detected, since
+   * the fallback chain in `t` returns the key itself when neither dictionary has
+   * it.
+   */
+  function errorKey(err: unknown): string {
     const code = err instanceof ApiError ? err.code : "network";
     const key = `purchase.error.${code}`;
-    const message = t(key);
-    return message === key ? t("purchase.error.generic") : message;
+    return t(key) === key ? "purchase.error.generic" : key;
   }
 
   async function choosePlan(key: PlanKey) {
     if (!user) {
-      setError(t("pricing.loginRequired"));
+      setError("pricing.loginRequired");
       return;
     }
     setError("");
@@ -82,7 +89,7 @@ export default function Pricing() {
       );
       setWallet(await api.wallet());
     } catch (err) {
-      setError(localizedError(err));
+      setError(errorKey(err));
     } finally {
       setBusy(null);
     }
@@ -90,7 +97,7 @@ export default function Pricing() {
 
   async function buy(tokens: number, minutes: number, message: string) {
     if (!user) {
-      setError(t("pricing.loginRequired"));
+      setError("pricing.loginRequired");
       return;
     }
     setError("");
@@ -102,7 +109,7 @@ export default function Pricing() {
       setConfirm(message);
       setWallet(await api.wallet());
     } catch (err) {
-      setError(localizedError(err));
+      setError(errorKey(err));
     } finally {
       setBusy(null);
     }
@@ -137,7 +144,7 @@ export default function Pricing() {
       </div>
       {error && (
         <p className="mt-6 text-center text-sm text-rose-300" role="alert">
-          {error}
+          {t(error)}
         </p>
       )}
       <div className="mt-12 grid gap-5 lg:grid-cols-3">

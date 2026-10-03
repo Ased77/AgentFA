@@ -113,6 +113,18 @@ function Shell() {
                               ? t("titles.login")
                               : t("notFound.title")
     document.title = `${page} | ${t("brand.name")}`
+    // The canonical lives here, not in the static shell: one shell serves every
+    // route, so a baked-in href would tell search engines that all 264 agent
+    // pages are `/`. Writing it per route keeps each URL self-canonical; query
+    // strings are dropped because no public route is distinguished by one.
+    const origin = window.location.origin
+    let canonical = document.querySelector<HTMLLinkElement>('link[rel="canonical"]')
+    if (!canonical) {
+      canonical = document.createElement("link")
+      canonical.rel = "canonical"
+      document.head.appendChild(canonical)
+    }
+    canonical.href = `${origin}${pathname}`
   }, [pathname, t])
   return (
     <>

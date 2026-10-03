@@ -112,7 +112,16 @@ function siteConfiguration(config: SiteConfiguration): Plugin {
   const appleTouchIcon = config.icons?.appleTouch ?? ''
   const description = config.description ?? ''
   const favicon = config.icons?.icon ?? ''
-  const socialImage = config.openGraph?.image ?? ''
+  // Crawlers ignore a relative og:image: the og spec requires an absolute URL,
+  // and `site.config.json` stores the path so the same file can be served from
+  // any origin. Resolve it against `url` here, once, instead of baking an
+  // origin into the config.
+  const socialImageRaw = config.openGraph?.image ?? ''
+  const socialImage = socialImageRaw
+    ? socialImageRaw.startsWith('http://') || socialImageRaw.startsWith('https://')
+      ? socialImageRaw
+      : `${siteUrl}${socialImageRaw.startsWith('/') ? '' : '/'}${socialImageRaw}`
+    : ''
   const language = sanitizeHtmlValue(config.language) || 'en'
   const googleAnalyticsId = sanitizeHtmlValue(config.analytics?.googleAnalyticsId)
   const headStart = config.customScripts?.headStart ?? ''
@@ -187,6 +196,13 @@ function siteConfiguration(config: SiteConfiguration): Plugin {
             { tag: 'meta', attrs: { name: 'twitter:image', content: socialImage }, injectTo: 'head' },
           )
         }
+        // No static <link rel="canonical"> in the shell on purpose: the one
+        // document shell serves every route, so a baked-in href would point all
+        // of them at `/` and collapse the 264 agent pages in the index. The
+        // canonical for the current path is written per route by `Shell` in
+        // `src/routes.tsx`, next to `document.title` — a bot that renders gets
+        // the right URL, and one that does not gets no canonical at all, which
+        // is safe (absent = no preference) rather than wrong.
 
         if (googleAnalyticsId) {
           tags.push(

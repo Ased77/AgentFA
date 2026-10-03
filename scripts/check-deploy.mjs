@@ -81,7 +81,12 @@ await check("the app shell is served at /", async () => {
   const noindex = /name="robots"[^>]*content="[^"]*noindex/i.test(res.text);
   expect(!noindex, "the shell is served with `noindex` — the public site is hidden from search engines");
   expect(/rel="icon"/i.test(res.text), 'the shell has no <link rel="icon"> — no favicon');
-  expect(/property="og:image"/i.test(res.text), "the shell has no og:image — shared links render as bare text");
+  const ogImage = res.text.match(/property="og:image"[^>]*content="([^"]*)"/i)?.[1] ?? res.text.match(/content="([^"]*)"[^>]*property="og:image"/i)?.[1];
+  expect(ogImage, "the shell has no og:image — shared links render as bare text");
+  expect(
+    /^https?:\/\//.test(ogImage),
+    `og:image is ${ogImage} — not an absolute URL, so crawlers discard it and shared links render as bare text`,
+  );
   return `${res.text.length} bytes, metadata present`;
 });
 

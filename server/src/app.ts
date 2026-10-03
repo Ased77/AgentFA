@@ -3,6 +3,7 @@ import cookie from "@fastify/cookie";
 import cors from "@fastify/cors";
 import { env, isProd, providerKeySecret } from "./env.js";
 import { registerAuthGuard } from "./plugins/auth.js";
+import { badRequest } from "./lib/errors.js";
 import { healthRoutes } from "./routes/health.js";
 import { authRoutes } from "./routes/auth.js";
 import { catalogRoutes } from "./routes/catalog.js";
@@ -14,6 +15,7 @@ import { walletRoutes } from "./routes/wallet.js";
 import { agentsRoutes } from "./routes/agents.js";
 import { chatRoutes } from "./routes/chat.js";
 import { paymentRoutes } from "./routes/payments.js";
+import { clientErrorRoutes } from "./routes/client-errors.js";
 
 export async function buildApp(): Promise<FastifyInstance> {
   const app = Fastify({
@@ -48,8 +50,13 @@ export async function buildApp(): Promise<FastifyInstance> {
     if (!trimmed) return done(null, {});
     try {
       done(null, JSON.parse(trimmed));
-    } catch (err) {
-      done(err as Error);
+    } catch {
+      // A body that is not JSON is the caller's mistake, not ours. Handing
+      // Fastify the bare `SyntaxError` made it answer 500, which misreports a
+      // bad request as a server failure — and a 5xx is what the client-side
+      // error reporter forwards, so it would have shown up as a crash that
+      // never happened.
+      done(badRequest("invalid_json"));
     }
   });
 
@@ -66,6 +73,9 @@ export async function buildApp(): Promise<FastifyInstance> {
   await app.register(agentsRoutes, { prefix: "/api/agents" });
   await app.register(chatRoutes, { prefix: "/api/chat" });
   await app.register(paymentRoutes, { prefix: "/api/payments" });
+  // Registered without a prefix: it owns both `/api/client-errors` (public) and
+  // `/api/admin/client-errors` (admin), and those two do not share a prefix.
+  await app.register(clientErrorRoutes);
 
   return app;
 }

@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from "react";
+import { Fragment, useCallback, useEffect, useState } from "react";
 import { Check, Plug, Save, Trash2, X } from "lucide-react";
 import { agents } from "../data/agents";
 import { useI18n } from "../lib/i18n";
@@ -6,6 +6,7 @@ import {
   ApiError,
   api,
   type AdminStats,
+  type ClientErrorRow,
   type PublicProvider,
   type RefundRow,
 } from "../lib/account";
@@ -423,6 +424,123 @@ function RefundQueue() {
   );
 }
 
+/**
+ * What visitors' browsers crashed on.
+ *
+ * Grouped by fingerprint on the server, so a bug that hit a thousand people is
+ * one row here with a count — which is the only shape in which this list is
+ * readable. The message is redacted before storage; the original appears only
+ * when a rule actually fired, so nobody has to guess whether a value was
+ * removed or simply never sent.
+ */
+function ErrorLog() {
+  const { t, n } = useI18n();
+  const [errors, setErrors] = useState<ClientErrorRow[]>([]);
+  const [total, setTotal] = useState(0);
+  const [last24h, setLast24h] = useState(0);
+  const [loading, setLoading] = useState(true);
+  const [failed, setFailed] = useState(false);
+  const [open, setOpen] = useState<string | null>(null);
+
+  useEffect(() => {
+    let alive = true;
+    api
+      .adminClientErrors()
+      .then((data) => {
+        if (!alive) return;
+        setErrors(data.errors);
+        setTotal(data.total);
+        setLast24h(data.groupsLast24h);
+      })
+      .catch(() => alive && setFailed(true))
+      .finally(() => alive && setLoading(false));
+    return () => {
+      alive = false;
+    };
+  }, []);
+
+  return (
+    <section className="mt-8 rounded-2xl border border-white/10 p-4 sm:p-6">
+      <div className="flex flex-wrap items-baseline justify-between gap-2">
+        <h2 className="font-bold">{t("admin.errors")}</h2>
+        {total > 0 && (
+          <span className="text-xs text-slate-500">
+            {t("admin.errorsGroups", { count: n(total) })} · {" "}
+            {t("admin.errorsLast24h", { count: n(last24h) })}
+          </span>
+        )}
+      </div>
+      <p className="mt-2 max-w-2xl text-sm text-slate-400">{t("admin.errorsBody")}</p>
+
+      {failed ? (
+        <p className="mt-3 text-sm text-rose-300" role="alert">
+          {t("purchase.error.network")}
+        </p>
+      ) : loading ? (
+        <p className="mt-3 text-sm text-slate-500">{t("common.loading")}</p>
+      ) : errors.length === 0 ? (
+        <p className="mt-3 text-sm text-slate-400">{t("admin.noErrors")}</p>
+      ) : (
+        <div className="table-scroll mt-4 rounded-2xl border border-white/10">
+          <table className="w-full min-w-[44rem] text-start text-sm">
+            <tbody>
+              {errors.map((row) => (
+                <Fragment key={row.id}>
+                  <tr className="border-b border-white/5 align-top">
+                    <td className="p-3">
+                      <span className="rounded bg-white/5 px-2 py-0.5 text-xs text-slate-400">
+                        {row.kind}
+                      </span>
+                    </td>
+                    <td className="p-3">
+                      <button
+                        className="text-start hover:text-emerald-300"
+                        onClick={() => setOpen(open === row.id ? null : row.id)}
+                      >
+                        {row.message}
+                      </button>
+                      {row.rawMessage && (
+                        // Shown on its own line, labelled: this is what the
+                        // visitor saw, before redaction.
+                        <p className="mt-1 text-xs text-amber-200/80">
+                          {t("admin.errorsStack")}: {row.rawMessage}
+                        </p>
+                      )}
+                    </td>
+                    <td className="p-3 text-slate-400" dir="ltr">
+                      {row.route || "—"}
+                    </td>
+                    <td className="p-3 text-slate-400">{t("admin.errorsSeen", { count: n(row.count) })}</td>
+                    <td className="p-3 text-slate-400">
+                      {new Date(row.lastSeenAt).toLocaleString()}
+                    </td>
+                  </tr>
+                  {open === row.id && (
+                    <tr className="border-b border-white/5 bg-black/20">
+                      <td colSpan={5} className="p-3 text-xs text-slate-400">
+                        <p dir="ltr" className="whitespace-pre-wrap break-all font-mono">
+                          {row.stack || row.source || "—"}
+                        </p>
+                        <p className="mt-2">
+                          {t("admin.errorsRelease")}: {row.release || "—"} · {row.viewport || "—"} ·{" "}
+                          {row.lang || "—"} · {row.userId ?? t("admin.errorsGuest")}
+                        </p>
+                        <p className="mt-1" dir="ltr">
+                          {row.userAgent}
+                        </p>
+                      </td>
+                    </tr>
+                  )}
+                </Fragment>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
+    </section>
+  );
+}
+
 export default function Admin() {
   const { t, n, toman, agentName, agentDivision } = useI18n();
   const [stats, setStats] = useState<AdminStats | null>(null);
@@ -472,6 +590,7 @@ export default function Admin() {
         </div>
       )}
       <RefundQueue />
+      <ErrorLog />
       <ProviderSection />
       <section className="mt-8 rounded-2xl border border-white/10">
         <div className="flex flex-wrap items-center justify-between gap-3 p-4 sm:p-5">

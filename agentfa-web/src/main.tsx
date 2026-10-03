@@ -22,7 +22,13 @@ import '@fontsource/vazirmatn/latin-900.css'
 
 import App from './App'
 import { I18nProvider } from './lib/i18n'
+import { install, markAlive, setRelease } from './lib/report'
 import './index.css'
+
+// Before React: a crash during the first render has to be caught by the
+// listeners that were attached before it, not after.
+setRelease(__RELEASE__)
+install()
 
 ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode>
@@ -31,3 +37,8 @@ ReactDOM.createRoot(document.getElementById('root')!).render(
     </I18nProvider>
   </React.StrictMode>,
 )
+
+// The tree is committed: this load is not a white screen, so clear the stamp a
+// future load would otherwise report. `requestAnimationFrame` waits for the
+// browser to actually paint, which is the thing a user judges by.
+requestAnimationFrame(() => requestAnimationFrame(markAlive))

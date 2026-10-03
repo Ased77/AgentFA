@@ -1,6 +1,7 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useState, type ReactNode } from "react";
 import { formatPhone, localizeDigits } from "./phone";
 import { faAgents } from "../data/fa-agents";
+import { setReportLang } from "./report";
 
 export type Lang = "fa" | "en";
 
@@ -365,6 +366,20 @@ const fa: Dict = {
   "admin.approve": "تأیید",
   "admin.reject": "رد",
   "admin.pendingRefunds": "بازگشت در انتظار",
+
+  "admin.errors": "خطاهای مرورگر",
+  "admin.errorsBody": "خرابی‌هایی که مرورگر کاربران گزارش کرده‌اند. هر ردیف یک باگ است، نه یک بازدید.",
+  "admin.noErrors": "هیچ خطایی گزارش نشده است.",
+  "admin.errorsGroups": "{count} گروه خطا",
+  "admin.errorsLast24h": "{count} مورد در ۲۴ ساعت گذشته",
+  "admin.errorsSeen": "{count} بار",
+  "admin.errorsFirstSeen": "اولین بار",
+  "admin.errorsLastSeen": "آخرین بار",
+  "admin.errorsRoute": "مسیر",
+  "admin.errorsRelease": "نسخه",
+  "admin.errorsKind": "نوع",
+  "admin.errorsStack": "جزئیات فنی",
+  "admin.errorsGuest": "مهمان",
 
   "footer.terms": "قوانین و مقررات",
   "footer.privacy": "حریم خصوصی",
@@ -737,6 +752,20 @@ const en: Dict = {
   "admin.reject": "Reject",
   "admin.pendingRefunds": "Refunds pending",
 
+  "admin.errors": "Browser errors",
+  "admin.errorsBody": "Failures reported by visitors' browsers. One row is one bug, not one visit.",
+  "admin.noErrors": "Nothing has been reported.",
+  "admin.errorsGroups": "{count} error groups",
+  "admin.errorsLast24h": "{count} in the last 24 hours",
+  "admin.errorsSeen": "seen {count}×",
+  "admin.errorsFirstSeen": "First seen",
+  "admin.errorsLastSeen": "Last seen",
+  "admin.errorsRoute": "Route",
+  "admin.errorsRelease": "Release",
+  "admin.errorsKind": "Kind",
+  "admin.errorsStack": "Technical detail",
+  "admin.errorsGuest": "Guest",
+
   "footer.terms": "Terms",
   "footer.privacy": "Privacy",
   "footer.contact": "Contact",
@@ -835,7 +864,14 @@ export function I18nProvider({ children }: { children: ReactNode }) {
   const setLang = useCallback((l: Lang) => {
     setLangState(l);
     if (typeof localStorage !== "undefined") localStorage.setItem(STORAGE_KEY, l);
+    // A crash reads very differently in Persian than in English; the report
+    // carries the language that was on screen when it happened.
+    setReportLang(l);
   }, []);
+
+  useEffect(() => {
+    setReportLang(lang);
+  }, [lang]);
 
   const value = useMemo<I18nValue>(() => {
     const dict = dicts[lang];

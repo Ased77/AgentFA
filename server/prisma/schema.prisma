@@ -56,6 +56,7 @@ model User {
   usage        UsageEvent[]
   conversations Conversation[]
   previews      PreviewUsage[]
+  clientErrors  ClientError[]
 }
 
 model Wallet {
@@ -284,4 +285,40 @@ model RateLimit {
   count       Int      @default(0)
 
   @@id([key, windowStart])
+}
+
+/// A crash or failed request reported by a browser.
+///
+/// Without this, a render error in a visitor's browser produced nothing but a
+/// console message: the uptime check sees HTTP, not a React tree that threw. A
+/// blank page could sit there until someone happened to reload it.
+model ClientError {
+  id String @id @default(cuid())
+
+  /// Grouping key: what makes two reports the *same* failure, rather than two
+  /// rows nobody can triage. Derived on the server, never trusted from input.
+  /// Unique, so a repeat report is one atomic upsert rather than a read-modify-write.
+  fingerprint String @unique
+  /// The failure itself: message for a crash, request path for a bad response.
+  kind     String
+  message  String
+  /// Original message, kept only when redaction actually changed it — otherwise
+  /// nobody can tell whether a value was removed or never sent.
+  rawMessage String?
+  stack      String @default("")
+  source     String @default("")
+  route      String @default("")
+  release    String @default("")
+  userAgent  String @default("")
+  lang       String @default("")
+  viewport   String @default("")
+  /// Set when the user was signed in. No phone number, no IP, no session id.
+  user   User?   @relation(fields: [userId], references: [id], onDelete: SetNull)
+  userId String?
+
+  count        Int      @default(1)
+  firstSeenAt  DateTime @default(now())
+  lastSeenAt   DateTime @default(now())
+
+  @@index([lastSeenAt])
 }

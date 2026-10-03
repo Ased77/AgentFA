@@ -1,3 +1,5 @@
+import { report } from "./report";
+
 export class ApiError extends Error {
   readonly status: number;
   readonly code: string;
@@ -18,22 +20,48 @@ export class ApiError extends Error {
 const API_BASE = import.meta.env.VITE_API_BASE ?? "";
 
 async function request<T>(path: string, init?: RequestInit): Promise<T> {
-  const res = await fetch(`${API_BASE}${path}`, {
-    credentials: "include",
-    // Only claim a JSON body when one is actually sent: endpoints like
-    // /api/agents/:id/buy take no input.
-    headers: {
-      ...(init?.body ? { "Content-Type": "application/json" } : {}),
-      ...(init?.headers ?? {}),
-    },
-    ...init,
-  });
+  let res: Response;
+  try {
+    res = await fetch(`${API_BASE}${path}`, {
+      credentials: "include",
+      // Only claim a JSON body when one is actually sent: endpoints like
+      // /api/agents/:id/buy take no input.
+      headers: {
+        ...(init?.body ? { "Content-Type": "application/json" } : {}),
+        ...(init?.headers ?? {}),
+      },
+      ...init,
+    });
+  } catch (err) {
+    // The API being unreachable is the failure mode the uptime check cannot
+    // see from inside a page: the shell loads, then every request dies.
+    report({
+      kind: "fetch",
+      message: `network failure on ${method(init)} ${path}`,
+      source: path,
+    });
+    throw err;
+  }
   if (!res.ok) {
     const body = await res.json().catch(() => ({}));
-    throw new ApiError(res.status, (body as { error?: string }).error ?? "request_failed");
+    const code = (body as { error?: string }).error ?? "request_failed";
+    // 4xx is the caller's business (a wrong code, a missing entitlement) and is
+    // already shown to the user. 5xx is ours: nothing on the page can explain it,
+    // and if it is a deploy-wide failure nobody is told.
+    if (res.status >= 500) {
+      report({
+        kind: "fetch",
+        message: `${method(init)} ${path} answered ${res.status} ${code}`,
+        source: path,
+      });
+    }
+    throw new ApiError(res.status, code);
   }
   return (await res.json()) as T;
 }
+
+/** The verb, for a message that has to be readable a week later. */
+const method = (init?: RequestInit): string => (init?.method ?? "GET").toUpperCase();
 
 /** The signed-in user. A mobile number is the only identity there is. */
 export type SessionUser = { id: string; phone: string; role: "user" | "admin" };
@@ -137,6 +165,27 @@ export type AdminStats = {
   pendingRefunds: number;
   revenueToman: number;
   tokensUsed: number;
+};
+
+/** One grouped browser failure, as the admin panel reads it. */
+export type ClientErrorRow = {
+  id: string;
+  fingerprint: string;
+  kind: string;
+  message: string;
+  /** The unredacted message, present only when redaction changed it. */
+  rawMessage: string | null;
+  stack: string;
+  source: string;
+  route: string;
+  release: string;
+  userAgent: string;
+  lang: string;
+  viewport: string;
+  userId: string | null;
+  count: number;
+  firstSeenAt: string;
+  lastSeenAt: string;
 };
 
 export type RefundRow = {
@@ -281,6 +330,11 @@ export const api = {
 
   adminRefunds: () => request<{ refunds: RefundRow[] }>("/api/admin/refunds"),
 
+  adminClientErrors: (limit = 50) =>
+    request<{ errors: ClientErrorRow[]; total: number; groupsLast24h: number }>(
+      `/api/admin/client-errors?limit=${limit}`,
+    ),
+
   approveRefund: (id: string) =>
     request<{ settled: boolean }>(`/api/admin/refunds/${id}/approve`, { method: "POST" }),
 
@@ -334,9 +388,24 @@ export async function streamAgentChat(input: {
 
   if (!res.ok) {
     const body = await res.json().catch(() => ({}));
-    throw new ApiError(res.status, (body as { error?: string }).error ?? "chat_failed");
+    const code = (body as { error?: string }).error ?? "chat_failed";
+    if (res.status >= 500) {
+      report({
+        kind: "fetch",
+        message: `POST /api/chat/stream answered ${res.status} ${code}`,
+        source: "/api/chat/stream",
+      });
+    }
+    throw new ApiError(res.status, code);
   }
-  if (!res.body) throw new ApiError(500, "no_stream");
+  if (!res.body) {
+    report({
+      kind: "fetch",
+      message: "POST /api/chat/stream returned no stream body",
+      source: "/api/chat/stream",
+    });
+    throw new ApiError(500, "no_stream");
+  }
 
   const reader = res.body.getReader();
   const decoder = new TextDecoder();

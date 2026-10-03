@@ -13,6 +13,13 @@ export default defineConfig(({ mode }) => {
 
   return {
     base: process.env.SITE_BASE_URL ? `${process.env.SITE_BASE_URL}/` : '/',
+    // A crash report is only actionable if you know which build produced it.
+    // Vercel exposes the commit it is building; locally this is `dev`.
+    define: {
+      __RELEASE__: JSON.stringify(
+        process.env.VERCEL_GIT_COMMIT_SHA?.slice(0, 12) || 'dev',
+      ),
+    },
     build: {
       sourcemap: emitSourcemaps ? 'inline' : false,
       minify: !emitSourcemaps,

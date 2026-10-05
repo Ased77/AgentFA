@@ -122,15 +122,15 @@ export default function Pricing() {
         <h1 className="page-title mt-3">
           {t("pricing.title1")} <span>{t("pricing.title2")}</span>
         </h1>
-        <p className="mx-auto mt-5 max-w-xl leading-8 text-slate-400">{t("pricing.body")}</p>
+        <p className="mx-auto mt-5 max-w-xl leading-8 text-ink-muted">{t("pricing.body")}</p>
         <button
           type="button"
           onClick={() => setYearly(!yearly)}
           aria-pressed={yearly}
           className={`mt-7 rounded-full border px-4 py-2 text-sm ${
             yearly
-              ? "border-violet-400 bg-violet-500/20 text-violet-200"
-              : "border-white/10 text-slate-300"
+              ? "border-brand-border bg-brand-soft text-ink"
+              : "border-line text-ink-muted"
           }`}
         >
           {t("pricing.yearly")}{" "}
@@ -155,8 +155,8 @@ export default function Pricing() {
             <article
               className={`relative rounded-3xl border p-6 sm:p-7 ${
                 plan.featured
-                  ? "border-violet-400 bg-violet-500/10"
-                  : "border-white/10 bg-white/[.03]"
+                  ? "border-brand-border bg-brand-soft"
+                  : "border-line bg-surface"
               }`}
               key={plan.key}
             >
@@ -170,22 +170,22 @@ export default function Pricing() {
               <p className="mt-6 text-4xl font-black">
                 {total === 0 ? t("pricing.free") : toman(total)}
                 {total > 0 && (
-                  <small className="text-sm font-normal text-slate-400">
+                  <small className="text-sm font-normal text-ink-muted">
                     {" "}
                     {t(yearly ? "pricing.perYear" : "pricing.perMonth")}
                   </small>
                 )}
               </p>
               {yearly && total > 0 && (
-                <p className="mt-1 text-xs text-slate-400">
+                <p className="mt-1 text-xs text-ink-muted">
                   {t("pricing.perMonthShort", { price: toman(plan.monthlyEquivalent) })} ·{" "}
                   {t("pricing.billedYearly")}
                 </p>
               )}
-              <p className="mt-3 text-sm text-violet-200">
+              <p className="mt-3 text-sm text-brand">
                 {t("pricing.allowance", { tokens: n(plan.tokens), minutes: n(plan.minutes) })}
               </p>
-              <ul className="my-8 space-y-3 text-sm text-slate-300">
+              <ul className="my-8 space-y-3 text-sm text-ink-muted">
                 {[`plan.${plan.key}.f1`, `plan.${plan.key}.f2`].map((key) => (
                   <li className="flex gap-2" key={key}>
                     <Check size={17} className="mt-0.5 shrink-0 text-emerald-400" />
@@ -213,11 +213,11 @@ export default function Pricing() {
         <div className="mx-auto mt-8 grid max-w-4xl gap-4 md:grid-cols-3">
           {prices.bundles.map((bundle) => (
             <div
-              className="rounded-2xl border border-white/10 bg-white/[.03] p-5 text-center"
+              className="rounded-2xl border border-line bg-surface p-5 text-center"
               key={`t${bundle.tokens}`}
             >
               <b className="text-xl">{t("pricing.tokensBundle", { tokens: n(bundle.tokens) })}</b>
-              <p className="mt-2 text-sm text-slate-400">{toman(bundle.price)}</p>
+              <p className="mt-2 text-sm text-ink-muted">{toman(bundle.price)}</p>
               <button
                 type="button"
                 onClick={() =>
@@ -234,13 +234,13 @@ export default function Pricing() {
         <div className="mx-auto mt-6 grid max-w-4xl gap-4 md:grid-cols-3">
           {prices.timePasses.map((pass) => (
             <div
-              className="rounded-2xl border border-white/10 bg-white/[.03] p-5 text-center"
+              className="rounded-2xl border border-line bg-surface p-5 text-center"
               key={`m${pass.minutes}`}
             >
               <b className="text-xl">
                 {t("pricing.minutesBundle", { minutes: n(pass.minutes) })}
               </b>
-              <p className="mt-2 text-sm text-slate-400">{toman(pass.price)}</p>
+              <p className="mt-2 text-sm text-ink-muted">{toman(pass.price)}</p>
               <button
                 type="button"
                 onClick={() =>
@@ -267,7 +267,7 @@ export default function Pricing() {
         >
           <div className="text-center">
             <Check className="mx-auto size-10 rounded-full bg-emerald-500/20 p-2 text-emerald-300" />
-            <p className="mt-4 text-slate-300">{confirm}</p>
+            <p className="mt-4 text-ink-muted">{confirm}</p>
             <button className="btn mt-6" onClick={() => setConfirm("")}>
               {t("pricing.gotIt")}
             </button>

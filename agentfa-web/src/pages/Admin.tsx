@@ -149,11 +149,11 @@ function ProviderSection() {
   if (loading) return null;
 
   return (
-    <section className="mt-8 rounded-2xl border border-white/10 p-4 sm:p-6">
+    <section className="mt-8 rounded-2xl border border-line p-4 sm:p-6">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
           <h2 className="font-bold">{t("admin.provider.title")}</h2>
-          <p className="mt-2 max-w-2xl text-sm text-slate-400">{t("admin.provider.body")}</p>
+          <p className="mt-2 max-w-2xl text-sm text-ink-muted">{t("admin.provider.body")}</p>
         </div>
         <span className={`badge ${draft.enabled ? "" : "opacity-50"}`}>
           {draft.enabled ? t("admin.provider.active") : t("admin.provider.disabled")}
@@ -162,7 +162,7 @@ function ProviderSection() {
 
       <div className="mt-6 grid gap-4 md:grid-cols-2">
         <label className="text-sm">
-          <span className="text-slate-400">{t("admin.provider.label")}</span>
+          <span className="text-ink-muted">{t("admin.provider.label")}</span>
           <input
             className="field mt-2"
             value={draft.label}
@@ -171,7 +171,7 @@ function ProviderSection() {
           />
         </label>
         <label className="text-sm">
-          <span className="text-slate-400">{t("admin.provider.baseUrl")}</span>
+          <span className="text-ink-muted">{t("admin.provider.baseUrl")}</span>
           <input
             className="field mt-2"
             dir="ltr"
@@ -181,7 +181,7 @@ function ProviderSection() {
           />
         </label>
         <label className="text-sm">
-          <span className="text-slate-400">{t("admin.provider.model")}</span>
+          <span className="text-ink-muted">{t("admin.provider.model")}</span>
           <input
             className="field mt-2"
             dir="ltr"
@@ -191,7 +191,7 @@ function ProviderSection() {
           />
         </label>
         <label className="text-sm">
-          <span className="text-slate-400">{t("admin.provider.key")}</span>
+          <span className="text-ink-muted">{t("admin.provider.key")}</span>
           <input
             className="field mt-2"
             dir="ltr"
@@ -202,7 +202,7 @@ function ProviderSection() {
             placeholder={saved ? saved.apiKeyMasked : "sk-…"}
           />
           {saved && !draft.apiKey && (
-            <span className="mt-1 block text-xs text-slate-500" dir="ltr">
+            <span className="mt-1 block text-xs text-ink-muted" dir="ltr">
               {saved.apiKeyMasked}
             </span>
           )}
@@ -211,7 +211,7 @@ function ProviderSection() {
 
       <div className="mt-6 grid gap-4 md:grid-cols-2">
         <div className="text-sm">
-          <span className="text-slate-400">{t("admin.provider.meter")}</span>
+          <span className="text-ink-muted">{t("admin.provider.meter")}</span>
           <div className="mt-2 flex flex-wrap gap-2">
             {(["tokens", "time"] as MeterMode[]).map((mode) => (
               <button
@@ -220,8 +220,8 @@ function ProviderSection() {
                 onClick={() => update({ meter: mode })}
                 className={`rounded-xl border px-4 py-2 text-sm ${
                   draft.meter === mode
-                    ? "border-violet-400 bg-violet-500/20 text-violet-100"
-                    : "border-white/10 text-slate-300"
+                    ? "border-brand-border bg-brand-soft text-ink"
+                    : "border-line text-ink-muted"
                 }`}
               >
                 {t(`admin.provider.meter.${mode}`)}
@@ -231,7 +231,7 @@ function ProviderSection() {
         </div>
         <div className="grid gap-3 text-sm sm:grid-cols-2">
           <label>
-            <span className="text-slate-400">{t("admin.provider.rateTokens")}</span>
+            <span className="text-ink-muted">{t("admin.provider.rateTokens")}</span>
             <input
               className="field mt-2"
               dir="ltr"
@@ -241,7 +241,7 @@ function ProviderSection() {
             />
           </label>
           <label>
-            <span className="text-slate-400">{t("admin.provider.rateTime")}</span>
+            <span className="text-ink-muted">{t("admin.provider.rateTime")}</span>
             <input
               className="field mt-2"
               dir="ltr"
@@ -254,7 +254,7 @@ function ProviderSection() {
       </div>
 
       <label className="mt-6 block text-sm">
-        <span className="text-slate-400">{t("admin.provider.scope")}</span>
+        <span className="text-ink-muted">{t("admin.provider.scope")}</span>
         <input
           className="field mt-2"
           dir="ltr"
@@ -262,7 +262,7 @@ function ProviderSection() {
           onChange={(e) => update({ agentScopeText: e.target.value })}
           placeholder={t("admin.provider.scopePlaceholder")}
         />
-        <span className="mt-1 block text-xs text-slate-500">
+        <span className="mt-1 block text-xs text-ink-muted">
           {scopeIds.length === 0
             ? t("admin.provider.scopeAll", { count: n(agents.length) })
             : t("admin.provider.scopeCount", { count: n(scopeIds.length) })}
@@ -306,7 +306,7 @@ function ProviderSection() {
         {savedFlag && <span className="text-sm text-emerald-300">{t("admin.provider.saved")}</span>}
       </div>
       {result && (
-        <p className="mt-4 break-words text-sm text-slate-300" dir="auto">
+        <p className="mt-4 break-words text-sm text-ink-muted" dir="auto">
           {result}
         </p>
       )}
@@ -366,7 +366,7 @@ function RefundQueue() {
   }
 
   return (
-    <section className="mt-8 rounded-2xl border border-white/10 p-4 sm:p-6">
+    <section className="mt-8 rounded-2xl border border-line p-4 sm:p-6">
       <h2 className="font-bold">{t("admin.refunds")}</h2>
       {error && (
         <p className="mt-3 text-sm text-rose-300" role="alert">
@@ -374,21 +374,21 @@ function RefundQueue() {
         </p>
       )}
       {loading ? (
-        <p className="mt-3 text-sm text-slate-500">{t("common.loading")}</p>
+        <p className="mt-3 text-sm text-ink-muted">{t("common.loading")}</p>
       ) : refunds.length === 0 ? (
-        <p className="mt-3 text-sm text-slate-400">{t("admin.noRefunds")}</p>
+        <p className="mt-3 text-sm text-ink-muted">{t("admin.noRefunds")}</p>
       ) : (
-        <div className="table-scroll mt-4 rounded-2xl border border-white/10">
+        <div className="table-scroll mt-4 rounded-2xl border border-line">
           <table className="w-full min-w-[36rem] text-start text-sm">
             <tbody>
               {refunds.map((row) => (
-                <tr className="border-b border-white/5" key={row.id}>
+                <tr className="border-b border-line/60" key={row.id}>
                   <td className="p-3" dir="ltr">
                     {row.user.phone ?? row.userId}
                   </td>
                   <td className="p-3">{row.agentId}</td>
                   <td className="p-3">{toman(row.amount)}</td>
-                  <td className="p-3 text-slate-400">
+                  <td className="p-3 text-ink-muted">
                     {new Date(row.createdAt).toLocaleDateString()}
                   </td>
                   <td className="p-3">
@@ -416,7 +416,7 @@ function RefundQueue() {
         </div>
       )}
       {refunds.length > 0 && (
-        <p className="mt-3 text-xs text-slate-500">
+        <p className="mt-3 text-xs text-ink-muted">
           {t("admin.pendingRefunds")}: {n(refunds.length)}
         </p>
       )}
@@ -460,35 +460,35 @@ function ErrorLog() {
   }, []);
 
   return (
-    <section className="mt-8 rounded-2xl border border-white/10 p-4 sm:p-6">
+    <section className="mt-8 rounded-2xl border border-line p-4 sm:p-6">
       <div className="flex flex-wrap items-baseline justify-between gap-2">
         <h2 className="font-bold">{t("admin.errors")}</h2>
         {total > 0 && (
-          <span className="text-xs text-slate-500">
+          <span className="text-xs text-ink-muted">
             {t("admin.errorsGroups", { count: n(total) })} · {" "}
             {t("admin.errorsLast24h", { count: n(last24h) })}
           </span>
         )}
       </div>
-      <p className="mt-2 max-w-2xl text-sm text-slate-400">{t("admin.errorsBody")}</p>
+      <p className="mt-2 max-w-2xl text-sm text-ink-muted">{t("admin.errorsBody")}</p>
 
       {failed ? (
         <p className="mt-3 text-sm text-rose-300" role="alert">
           {t("purchase.error.network")}
         </p>
       ) : loading ? (
-        <p className="mt-3 text-sm text-slate-500">{t("common.loading")}</p>
+        <p className="mt-3 text-sm text-ink-muted">{t("common.loading")}</p>
       ) : errors.length === 0 ? (
-        <p className="mt-3 text-sm text-slate-400">{t("admin.noErrors")}</p>
+        <p className="mt-3 text-sm text-ink-muted">{t("admin.noErrors")}</p>
       ) : (
-        <div className="table-scroll mt-4 rounded-2xl border border-white/10">
+        <div className="table-scroll mt-4 rounded-2xl border border-line">
           <table className="w-full min-w-[44rem] text-start text-sm">
             <tbody>
               {errors.map((row) => (
                 <Fragment key={row.id}>
-                  <tr className="border-b border-white/5 align-top">
+                  <tr className="border-b border-line/60 align-top">
                     <td className="p-3">
-                      <span className="rounded bg-white/5 px-2 py-0.5 text-xs text-slate-400">
+                      <span className="rounded bg-surface-2 px-2 py-0.5 text-xs text-ink-muted">
                         {row.kind}
                       </span>
                     </td>
@@ -507,17 +507,17 @@ function ErrorLog() {
                         </p>
                       )}
                     </td>
-                    <td className="p-3 text-slate-400" dir="ltr">
+                    <td className="p-3 text-ink-muted" dir="ltr">
                       {row.route || "—"}
                     </td>
-                    <td className="p-3 text-slate-400">{t("admin.errorsSeen", { count: n(row.count) })}</td>
-                    <td className="p-3 text-slate-400">
+                    <td className="p-3 text-ink-muted">{t("admin.errorsSeen", { count: n(row.count) })}</td>
+                    <td className="p-3 text-ink-muted">
                       {new Date(row.lastSeenAt).toLocaleString()}
                     </td>
                   </tr>
                   {open === row.id && (
-                    <tr className="border-b border-white/5 bg-black/20">
-                      <td colSpan={5} className="p-3 text-xs text-slate-400">
+                    <tr className="border-b border-line/60 bg-black/20">
+                      <td colSpan={5} className="p-3 text-xs text-ink-muted">
                         <p dir="ltr" className="whitespace-pre-wrap break-all font-mono">
                           {row.stack || row.source || "—"}
                         </p>
@@ -585,24 +585,24 @@ export default function Admin() {
               </div>
             ))
           ) : (
-            <p className="text-sm text-slate-500">{t("common.loading")}</p>
+            <p className="text-sm text-ink-muted">{t("common.loading")}</p>
           )}
         </div>
       )}
       <RefundQueue />
       <ErrorLog />
       <ProviderSection />
-      <section className="mt-8 rounded-2xl border border-white/10">
+      <section className="mt-8 rounded-2xl border border-line">
         <div className="flex flex-wrap items-center justify-between gap-3 p-4 sm:p-5">
           <h2 className="font-bold">{t("admin.manageAgents")}</h2>
-          <span className="text-xs text-slate-500">
+          <span className="text-xs text-ink-muted">
             {stats ? t("admin.catalogCount", { count: n(stats.agents) }) : ""}
           </span>
         </div>
         {/* Only the table scrolls sideways, so the heading stays put on a phone. */}
-        <div className="table-scroll border-t border-white/10">
+        <div className="table-scroll border-t border-line">
           <table className="w-full min-w-[40rem] text-start text-sm">
-            <thead className="border-y border-white/10 text-slate-500">
+            <thead className="border-y border-line text-ink-muted">
               <tr>
                 <th className="p-4">{t("admin.col.agent")}</th>
                 <th>{t("admin.col.category")}</th>
@@ -611,7 +611,7 @@ export default function Admin() {
             </thead>
             <tbody>
               {agents.map((a) => (
-                <tr className="border-b border-white/5" key={a.id}>
+                <tr className="border-b border-line/60" key={a.id}>
                   <td className="p-4">
                     {a.icon} {agentName(a)}
                   </td>

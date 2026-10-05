@@ -61,7 +61,7 @@ export function Modal({ title, onClose, closeLabel, children, className }: Modal
 
   return (
     <div
-      className="fixed inset-0 z-50 grid place-items-center bg-slate-950/75 p-4"
+      className="fixed inset-0 z-50 grid place-items-center bg-black/70 p-4"
       onMouseDown={(event) => {
         if (event.target === event.currentTarget) onClose();
       }}
@@ -72,7 +72,7 @@ export function Modal({ title, onClose, closeLabel, children, className }: Modal
         aria-modal="true"
         aria-label={title}
         tabIndex={-1}
-        className={`modal-panel w-full max-w-md rounded-3xl border border-white/10 bg-[#101936] p-5 outline-none sm:p-6 ${className ?? ""}`}
+        className={`modal-panel w-full max-w-md rounded-3xl border border-line bg-surface p-5 outline-none sm:p-6 ${className ?? ""}`}
       >
         <div className="flex items-start justify-between gap-3">
           <h2 className="text-xl font-bold">{title}</h2>

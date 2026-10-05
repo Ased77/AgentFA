@@ -335,10 +335,10 @@ export default function Chat() {
   if (!user)
     return (
       <main className="section grid min-h-[60vh] place-items-center text-center">
-        <div className="max-w-lg rounded-3xl border border-white/10 bg-white/[.03] p-8">
-          <Lock className="mx-auto text-violet-300" />
+        <div className="max-w-lg rounded-3xl border border-line bg-surface p-8">
+          <Lock className="mx-auto text-brand" />
           <h1 className="mt-5 text-2xl font-black">{t("chat.lockedTitle")}</h1>
-          <p className="mt-4 leading-8 text-slate-400">{t("chat.lockedBody")}</p>
+          <p className="mt-4 leading-8 text-ink-muted">{t("chat.lockedBody")}</p>
           <Link className="btn mt-7" to="/login">
             {t("nav.login")}
           </Link>
@@ -349,10 +349,10 @@ export default function Chat() {
   if (previewExhausted)
     return (
       <main className="section grid min-h-[60vh] place-items-center text-center">
-        <div className="max-w-lg rounded-3xl border border-white/10 bg-white/[.03] p-8">
-          <Sparkles className="mx-auto text-violet-300" />
+        <div className="max-w-lg rounded-3xl border border-line bg-surface p-8">
+          <Sparkles className="mx-auto text-brand" />
           <h1 className="mt-5 text-2xl font-black">{t("chat.previewEnded")}</h1>
-          <p className="mt-4 leading-8 text-slate-400">{t("chat.lockedBody")}</p>
+          <p className="mt-4 leading-8 text-ink-muted">{t("chat.lockedBody")}</p>
           <Link className="btn mt-7" to={`/agent/${agent.slug}`}>
             {t("chat.buyAgent")}
           </Link>
@@ -362,19 +362,19 @@ export default function Chat() {
 
   return (
     <main className="chat-shell mx-auto flex max-w-7xl gap-4 p-3 sm:p-4">
-      <aside className="hidden w-70 shrink-0 rounded-2xl border border-white/8 bg-white/[.03] p-4 lg:block">
+      <aside className="hidden w-70 shrink-0 rounded-2xl border border-line bg-surface-2/50 p-4 lg:block">
         <button className="btn w-full justify-center text-sm" onClick={reset}>
           <Plus size={15} /> {t("chat.newChat")}
         </button>
-        <p className="mt-7 text-xs text-slate-500">{t("chat.conversations")}</p>
+        <p className="mt-7 text-xs text-ink-muted">{t("chat.conversations")}</p>
         <div className="mt-3 space-y-2">
           {conversations.length === 0 && (
-            <p className="text-xs text-slate-500">{t("chat.noConversations")}</p>
+            <p className="text-xs text-ink-muted">{t("chat.noConversations")}</p>
           )}
           {conversations.map((conversation) => (
             <div
               className={`group flex items-center gap-1 rounded-xl p-2 text-sm ${
-                activeId === conversation.id ? "bg-white/10" : "hover:bg-white/5"
+                activeId === conversation.id ? "bg-surface" : "hover:bg-surface"
               }`}
               key={conversation.id}
             >
@@ -383,7 +383,7 @@ export default function Chat() {
                 onClick={() => void openConversation(conversation.id)}
               >
                 <span className="block truncate">{conversation.title || t("chat.untitled")}</span>
-                <span className="block truncate text-xs text-slate-500">
+                <span className="block truncate text-xs text-ink-muted">
                   {n(conversation.totalTokens)} {t("common.token")}
                 </span>
               </button>
@@ -398,8 +398,8 @@ export default function Chat() {
           ))}
         </div>
       </aside>
-      <section className="flex min-h-0 min-w-0 flex-1 flex-col rounded-2xl border border-white/8 bg-[#101936]">
-        <header className="flex items-center justify-between gap-2 border-b border-white/8 px-4 py-3 sm:px-5 sm:py-4">
+      <section className="flex min-h-0 min-w-0 flex-1 flex-col rounded-2xl border border-line bg-surface">
+        <header className="flex items-center justify-between gap-2 border-b border-line px-4 py-3 sm:px-5 sm:py-4">
           <div className="flex min-w-0 items-center gap-3">
             <span className="text-2xl">{agent.icon}</span>
             <div className="min-w-0">
@@ -410,7 +410,7 @@ export default function Chat() {
           <div className="flex shrink-0 items-center gap-2">
             {/* The wallet sidebar is xl-only, so phones need their own way in. */}
             <button
-              className="flex items-center gap-1 rounded-full border border-white/10 px-3 py-1.5 text-xs text-slate-200 xl:hidden"
+              className="flex items-center gap-1 rounded-full border border-line px-3 py-1.5 text-xs text-ink-muted xl:hidden"
               onClick={() => setModal(true)}
               title={t("chat.buyMore")}
               aria-label={t("chat.buyMore")}
@@ -427,12 +427,12 @@ export default function Chat() {
           </div>
         </header>
         {previewActive && (
-          <div className="mx-4 mt-3 flex flex-wrap items-center justify-between gap-3 rounded-xl bg-violet-500/15 p-3 text-sm sm:mx-5 sm:mt-4">
-            <span className="text-violet-100">
+          <div className="mx-4 mt-3 flex flex-wrap items-center justify-between gap-3 rounded-xl bg-brand-soft p-3 text-sm sm:mx-5 sm:mt-4">
+            <span className="text-ink">
               <b>{t("chat.previewBadge")}</b> ·{" "}
               {t("chat.previewLeft", { count: n(preview?.remaining ?? 0) })}
             </span>
-            <Link className="text-violet-200 underline" to={`/agent/${agent.slug}`}>
+            <Link className="text-brand underline" to={`/agent/${agent.slug}`}>
               {t("chat.buyAgent")}
             </Link>
           </div>
@@ -451,11 +451,11 @@ export default function Chat() {
             <div className={`flex ${m.role === "user" ? "justify-start" : "justify-end"}`} key={i}>
               <div
                 className={`max-w-[85%] whitespace-pre-wrap rounded-2xl px-4 py-3 text-sm leading-7 ${
-                  m.role === "user" ? "bg-violet-600" : "border border-white/8 bg-white/[.04]"
+                  m.role === "user" ? "bg-brand" : "border border-line bg-surface-2"
                 }`}
               >
                 <Code text={m.text} />
-                <small className="mt-2 block text-slate-500">
+                <small className="mt-2 block text-ink-muted">
                   {m.tokens ? `${t("chat.usagePrefix", { tokens: n(m.tokens) })} · ` : ""}
                   {m.seconds ? `${t("chat.usageTime", { minutes: minutes(m.seconds) })} · ` : ""}
                   {m.time}
@@ -481,8 +481,8 @@ export default function Chat() {
           )}
           {error && !modal && <p className="text-sm text-red-200">{t(error)}</p>}
         </div>
-        <form onSubmit={submit} className="border-t border-white/8 p-4">
-          <div className="flex items-end gap-3 rounded-2xl border border-white/10 bg-[#0b1124] p-2">
+        <form onSubmit={submit} className="border-t border-line p-4">
+          <div className="flex items-end gap-3 rounded-2xl border border-line bg-surface-2 p-2">
             <button type="button" disabled className="icon-btn opacity-35" aria-label={t("chat.attach")}>
               <Paperclip size={18} />
             </button>
@@ -499,7 +499,7 @@ export default function Chat() {
               placeholder={t("chat.inputPlaceholder")}
             />
             <button
-              className="icon-btn bg-violet-600 text-white"
+              className="icon-btn bg-brand text-white"
               aria-label={t("chat.send")}
               disabled={loading}
             >
@@ -508,21 +508,21 @@ export default function Chat() {
           </div>
         </form>
       </section>
-      <aside className="hidden w-62 shrink-0 rounded-2xl border border-white/8 bg-white/[.03] p-5 xl:block">
+      <aside className="hidden w-62 shrink-0 rounded-2xl border border-line bg-surface-2/50 p-5 xl:block">
         <span className="text-4xl">{agent.icon}</span>
         <h2 className="mt-3 font-bold">{agentName(agent)}</h2>
-        <p className="mt-1 text-sm text-slate-500">{agent.category}</p>
-        <div className="mt-8 border-y border-white/8 py-5">
-          <p className="text-xs text-slate-500">{t("chat.thisChatUsage")}</p>
+        <p className="mt-1 text-sm text-ink-muted">{agent.category}</p>
+        <div className="mt-8 border-y border-line py-5">
+          <p className="text-xs text-ink-muted">{t("chat.thisChatUsage")}</p>
           <b className="mt-1 block">
             {n(used)} {t("common.token")}
           </b>
           <b className="mt-1 block">
             {minutes(spent)} {t("chat.minutes")}
           </b>
-          <p className="mt-4 text-xs text-slate-500">{t("chat.yourBalance")}</p>
+          <p className="mt-4 text-xs text-ink-muted">{t("chat.yourBalance")}</p>
           <b className="mt-1 block text-xl">{n(wallet.tokenBalance)}</b>
-          <p className="mt-2 text-xs text-slate-500">{t("chat.yourTime")}</p>
+          <p className="mt-2 text-xs text-ink-muted">{t("chat.yourTime")}</p>
           <b className="mt-1 block text-xl">{minutes(wallet.timeBalanceSeconds)}</b>
         </div>
         <button
@@ -541,19 +541,19 @@ export default function Chat() {
           onClose={() => setModal(false)}
           closeLabel={t("common.close")}
         >
-          <p className="text-sm leading-7 text-slate-400">{error || t("chat.chooseBundle")}</p>
+          <p className="text-sm leading-7 text-ink-muted">{error || t("chat.chooseBundle")}</p>
           <div className="mt-6 grid gap-3">
             {prices.bundles.map((bundle) => (
               <button
                 key={bundle.tokens}
                 onClick={() => void topUp(bundle.tokens, 0)}
                 disabled={loading}
-                className="flex justify-between rounded-xl border border-white/10 p-4 hover:border-violet-400"
+                className="flex justify-between rounded-xl border border-line p-4 hover:border-brand-border"
               >
                 <b>
                   {n(bundle.tokens)} {t("common.token")}
                 </b>
-                <span className="text-violet-300">{toman(bundle.price)}</span>
+                <span className="text-brand">{toman(bundle.price)}</span>
               </button>
             ))}
           </div>
@@ -564,12 +564,12 @@ export default function Chat() {
                 key={pass.minutes}
                 onClick={() => void topUp(0, pass.minutes)}
                 disabled={loading}
-                className="flex justify-between rounded-xl border border-white/10 p-4 hover:border-violet-400"
+                className="flex justify-between rounded-xl border border-line p-4 hover:border-brand-border"
               >
                 <b>
                   {n(pass.minutes)} {t("chat.minutes")}
                 </b>
-                <span className="text-violet-300">{toman(pass.price)}</span>
+                <span className="text-brand">{toman(pass.price)}</span>
               </button>
             ))}
           </div>

@@ -97,7 +97,7 @@ export default function Account() {
       <p className="eyebrow">{t("account.eyebrow")}</p>
       <h1 className="page-title mt-3">{t("account.title")}</h1>
 
-      <section className="mt-9 rounded-3xl border border-white/10 bg-white/[.03] p-6">
+      <section className="mt-9 rounded-3xl border border-line bg-surface p-6">
         <h2 className="font-bold">{t("account.phone")}</h2>
         <p className="mt-3 text-lg" dir="ltr">
           {phone(user?.phone ?? "")}
@@ -106,7 +106,7 @@ export default function Account() {
         {step === "idle" ? (
           <form onSubmit={startChange} className="mt-5">
             <label className="text-sm">
-              <span className="text-slate-400">{t("account.newPhone")}</span>
+              <span className="text-ink-muted">{t("account.newPhone")}</span>
               <input
                 className="field mt-2"
                 dir="ltr"
@@ -124,7 +124,7 @@ export default function Account() {
           </form>
         ) : (
           <form onSubmit={confirmChange} className="mt-5">
-            <p className="text-sm text-slate-400">
+            <p className="text-sm text-ink-muted">
               {t("auth.codeSentTo", { phone: localizeDigits(formatPhone(pendingPhone), lang) })}
             </p>
             <input
@@ -153,7 +153,7 @@ export default function Account() {
 
       <section className="mt-8 rounded-3xl border border-rose-400/25 bg-rose-500/[.06] p-6">
         <h2 className="font-bold text-rose-200">{t("account.delete")}</h2>
-        <p className="mt-3 text-sm leading-7 text-slate-300">{t("account.deleteWarn")}</p>
+        <p className="mt-3 text-sm leading-7 text-ink-muted">{t("account.deleteWarn")}</p>
         <button className="btn btn-soft mt-5" onClick={() => void deleteAccount()} disabled={busy}>
           {t("account.deleteConfirm")}
         </button>

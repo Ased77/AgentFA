@@ -131,7 +131,7 @@ export default function Login() {
     <main className="auth-shell grid place-items-center p-4 sm:p-5">
       <form
         onSubmit={step === "phone" ? submitPhone : submitCode}
-        className="w-full max-w-md rounded-3xl border border-white/10 bg-white/[.03] p-6 shadow-2xl sm:p-7"
+        className="w-full max-w-md rounded-3xl border border-line bg-surface p-6 shadow-2xl sm:p-7"
       >
         <p className="eyebrow">
           <Smartphone size={14} /> {t("auth.phoneEyebrow")}
@@ -139,7 +139,7 @@ export default function Login() {
         <h1 className="mt-3 text-2xl font-black sm:text-3xl">
           {step === "phone" ? t("auth.phoneTitle") : t("auth.codeTitle")}
         </h1>
-        <p className="mt-3 text-sm leading-7 text-slate-400">
+        <p className="mt-3 text-sm leading-7 text-ink-muted">
           {step === "phone"
             ? t("auth.phoneBody")
             : t("auth.codeSentTo", { phone: shownPhone })}
@@ -163,7 +163,7 @@ export default function Login() {
               {busy ? t("auth.sending") : t("auth.sendCode")}
               <ForwardArrow size={17} />
             </button>
-            <p className="mt-5 text-center text-xs leading-6 text-slate-500">
+            <p className="mt-5 text-center text-xs leading-6 text-ink-muted">
               {t("auth.newAccount")}
             </p>
           </>
@@ -198,7 +198,7 @@ export default function Login() {
             <div className="mt-5 flex flex-wrap items-center justify-center gap-x-5 gap-y-2 text-sm">
               <button
                 type="button"
-                className="text-violet-300 disabled:text-slate-500"
+                className="text-brand disabled:text-ink-muted"
                 disabled={resendIn > 0 || busy}
                 onClick={() => void requestCode(phone)}
               >
@@ -208,7 +208,7 @@ export default function Login() {
               </button>
               <button
                 type="button"
-                className="text-slate-400"
+                className="text-ink-muted"
                 onClick={() => {
                   setStep("phone");
                   setError("");
@@ -226,7 +226,7 @@ export default function Login() {
           </p>
         )}
 
-        <p className="mt-6 flex items-center justify-center gap-2 text-xs text-slate-500">
+        <p className="mt-6 flex items-center justify-center gap-2 text-xs text-ink-muted">
           <ShieldCheck size={13} /> {t("auth.secure")}
         </p>
       </form>

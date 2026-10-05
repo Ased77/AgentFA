@@ -9,7 +9,7 @@ export default function NotFound() {
     <main className="section grid min-h-[50vh] place-items-center text-center">
       <div className="max-w-lg">
         <h1 className="page-title">{t("notFound.title")}</h1>
-        <p className="mt-5 leading-8 text-slate-400">{t("notFound.body")}</p>
+        <p className="mt-5 leading-8 text-ink-muted">{t("notFound.body")}</p>
         <Link className="btn mt-7" to="/marketplace">
           {t("notFound.cta")} <ForwardArrow size={16} />
         </Link>

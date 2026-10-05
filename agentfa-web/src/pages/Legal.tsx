@@ -14,7 +14,7 @@ export default function Legal({ kind }: { kind: Kind }) {
     <main className="section">
       <p className="eyebrow">{t("brand.name")}</p>
       <h1 className="page-title mt-3">{t(`legal.${kind}Title`)}</h1>
-      <p className="mt-6 max-w-3xl text-base leading-8 text-slate-300">{t(`legal.${kind}Body`)}</p>
+      <p className="mt-6 max-w-3xl text-base leading-8 text-ink-muted">{t(`legal.${kind}Body`)}</p>
     </main>
   );
 }

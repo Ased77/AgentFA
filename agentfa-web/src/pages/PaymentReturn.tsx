@@ -67,12 +67,12 @@ export default function PaymentReturn() {
 
   return (
     <main className="section grid min-h-[60vh] place-items-center text-center">
-      <div className="w-full max-w-lg rounded-3xl border border-white/10 bg-white/[.03] p-8">
+      <div className="w-full max-w-lg rounded-3xl border border-line bg-surface p-8">
         <Icon className={`mx-auto ${tone}`} size={40} />
         <h1 className="mt-5 text-2xl font-black">{copy.title}</h1>
-        {copy.body && <p className="mt-4 leading-8 text-slate-400">{copy.body}</p>}
+        {copy.body && <p className="mt-4 leading-8 text-ink-muted">{copy.body}</p>}
         {row && (
-          <p className="mt-4 text-sm text-slate-300">
+          <p className="mt-4 text-sm text-ink-muted">
             {toman(row.amount)}
             {row.agentId ? "" : row.tokens ? ` · ${row.tokens} ${t("common.token")}` : ""}
           </p>

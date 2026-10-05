@@ -1,4 +1,4 @@
-import { lazy, Suspense, useEffect, useMemo, useState, type ReactNode } from "react"
+import { lazy, Suspense, useEffect, useMemo, useState, type FormEvent, type ReactNode } from "react"
 import {
   createBrowserRouter,
   Link,
@@ -18,14 +18,16 @@ import {
   Menu,
   MessageSquare,
   Search,
+  SlidersHorizontal,
   Sparkles,
   Wallet,
   X,
 } from "lucide-react"
 import type { Agent, CatalogDivision } from "./data/agents"
-// The featured list is small and belongs to the landing page; the full catalog
-// is fetched on demand by the routes that need all 264 agents.
+// The featured list and the 18 division rows are small and belong to the landing
+// page; the full catalog is fetched on demand by the routes that need all 264 agents.
 import { featuredAgents } from "./data/featured.generated"
+import { divisions as divisionCatalog } from "./data/divisions.generated"
 import { useCatalog } from "./data/useCatalog"
 import { useI18n } from "./lib/i18n"
 import { useSession } from "./lib/session"
@@ -38,7 +40,15 @@ import {
   type UsagePoint,
   type WalletSnapshot,
 } from "./lib/account"
+import { AgentCard } from "./components/AgentCard"
+import { Breadcrumbs, type Crumb } from "./components/Breadcrumbs"
+import { DivisionIcon } from "./components/DivisionIcon"
+import { EmptyState } from "./components/EmptyState"
+import { FilterChip } from "./components/FilterChip"
 import { ForwardArrow } from "./components/ForwardArrow"
+import { Modal } from "./components/Modal"
+import { SectionHead } from "./components/SectionHead"
+import { CatalogSkeleton } from "./components/Skeleton"
 import Legal from "./pages/Legal"
 import NotFound from "./pages/NotFound"
 
@@ -58,7 +68,7 @@ function LanguageSwitcher() {
     <button
       type="button"
       onClick={() => setLang(lang === "fa" ? "en" : "fa")}
-      className="flex items-center gap-1 rounded-full border border-white/10 px-3 py-1.5 text-xs text-slate-300 transition hover:border-violet-400/50 hover:text-white"
+      className="flex items-center gap-1 rounded-full border border-line px-3 py-1.5 text-xs text-ink-muted transition hover:border-brand-border hover:text-ink"
       title={t("nav.lang")}
       aria-label={t("nav.lang")}
     >
@@ -69,7 +79,7 @@ function LanguageSwitcher() {
 }
 
 function Shell() {
-  const { pathname } = useLocation()
+  const { pathname, hash } = useLocation()
   const { t } = useI18n()
   const { user, logout } = useSession()
   const [menu, setMenu] = useState(false)
@@ -126,25 +136,53 @@ function Shell() {
     }
     canonical.href = `${origin}${pathname}`
   }, [pathname, t])
+  // `/#how` and `/#categories` must work from other routes too, so the hash is
+  // followed on the page that just rendered, not just when a link is in view.
+  useEffect(() => {
+    if (!hash) return
+    const frame = requestAnimationFrame(() => {
+      const target = document.getElementById(hash.slice(1))
+      if (!target) return
+      const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches
+      target.scrollIntoView({ behavior: reduced ? "auto" : "smooth", block: "start" })
+    })
+    return () => cancelAnimationFrame(frame)
+  }, [pathname, hash])
   return (
     <>
-      <header className="sticky top-0 z-30 border-b border-white/8 bg-[#0b1124]/80 backdrop-blur-xl">
+      <header className="sticky top-0 z-40 border-b border-line bg-bg/85 backdrop-blur-xl">
         <div className="mx-auto flex h-16 max-w-7xl items-center justify-between gap-3 px-4 sm:h-18 sm:px-5">
           <Link
             to="/"
-            className="flex min-w-0 items-center gap-2 text-lg font-black tracking-tight sm:text-xl"
+            className="flex min-w-0 items-center gap-2 text-lg font-bold tracking-tight sm:text-xl"
           >
-            <span className="grid size-9 shrink-0 place-items-center rounded-xl bg-violet-500 text-white">
+            <span className="grid size-9 shrink-0 place-items-center rounded-xl bg-brand text-white">
               <Bot size={20} />
             </span>
             <span className="truncate">{t("brand.name")}</span>
           </Link>
-          <nav className="hidden items-center gap-7 text-sm text-slate-300 md:flex">
-            <Link to="/marketplace">{t("nav.marketplace")}</Link>
-            <Link to="/pricing">{t("nav.pricing")}</Link>
-            <a href="#how">{t("nav.how")}</a>
+          <nav className="hidden items-center gap-6 text-sm md:flex">
+            {[
+              {
+                to: "/marketplace",
+                label: t("nav.marketplace"),
+                active: pathname.startsWith("/marketplace") || pathname.startsWith("/agent"),
+              },
+              { to: "/#categories", label: t("nav.categories"), active: false },
+              { to: "/pricing", label: t("nav.pricing"), active: pathname.startsWith("/pricing") },
+              { to: "/#how", label: t("nav.how"), active: false },
+            ].map((item) => (
+              <Link
+                key={item.to}
+                to={item.to}
+                aria-current={item.active ? "page" : undefined}
+                className={`transition ${item.active ? "font-medium text-ink" : "text-ink-muted hover:text-ink"}`}
+              >
+                {item.label}
+              </Link>
+            ))}
             {user?.role === "admin" && (
-              <Link to="/admin" className="text-violet-300">
+              <Link to="/admin" className="text-accent transition hover:text-ink">
                 {t("nav.admin")}
               </Link>
             )}
@@ -161,12 +199,12 @@ function Shell() {
                   <LayoutDashboard size={17} />{" "}
                   <span className="hidden sm:inline">{t("nav.dashboard")}</span>
                 </Link>
-                <Link className="text-sm text-slate-300" to="/account">
+                <Link className="text-sm text-ink-muted transition hover:text-ink" to="/account">
                   {t("account.title")}
                 </Link>
                 {/* Logging out lives in the menu on phones, where space is short. */}
                 <button
-                  className="hidden text-sm text-slate-400 md:block"
+                  className="hidden text-sm text-ink-muted transition hover:text-ink md:block"
                   onClick={() => void logout()}
                 >
                   {t("nav.logout")}
@@ -195,47 +233,50 @@ function Shell() {
         {menu && (
           <nav
             id="mobile-nav"
-            className="grid gap-1 border-t border-white/8 px-4 pb-4 pt-3 text-sm md:hidden"
+            className="grid gap-1 border-t border-line px-4 pb-4 pt-3 text-sm md:hidden"
           >
             {[
-              { to: "/marketplace", label: t("nav.marketplace") },
-              { to: "/pricing", label: t("nav.pricing") },
+              {
+                to: "/marketplace",
+                label: t("nav.marketplace"),
+                active: pathname.startsWith("/marketplace") || pathname.startsWith("/agent"),
+              },
+              { to: "/#categories", label: t("nav.categories"), active: false },
+              { to: "/pricing", label: t("nav.pricing"), active: pathname.startsWith("/pricing") },
+              { to: "/#how", label: t("nav.how"), active: false },
               ...(user?.role === "admin"
-                ? [{ to: "/admin", label: t("nav.admin") }]
+                ? [{ to: "/admin", label: t("nav.admin"), active: false }]
                 : []),
             ].map((link) => (
               <Link
                 key={link.to}
                 to={link.to}
-                className="rounded-xl px-3 py-3 text-slate-200 transition hover:bg-white/5"
+                aria-current={link.active ? "page" : undefined}
+                onClick={() => setMenu(false)}
+                className={`rounded-xl px-3 py-3 transition hover:bg-surface-2 ${link.active ? "font-medium text-ink" : "text-ink-muted"}`}
               >
                 {link.label}
               </Link>
             ))}
-            <a
-              href="#how"
-              className="rounded-xl px-3 py-3 text-slate-200 transition hover:bg-white/5"
-              onClick={() => setMenu(false)}
-            >
-              {t("nav.how")}
-            </a>
-            <div className="my-2 h-px bg-white/8" />
+            <div className="my-2 h-px bg-line" />
             {user ? (
               <>
                 <Link
                   to="/dashboard"
-                  className="rounded-xl px-3 py-3 text-slate-200 transition hover:bg-white/5"
+                  onClick={() => setMenu(false)}
+                  className="rounded-xl px-3 py-3 text-ink-muted transition hover:bg-surface-2"
                 >
                   {t("nav.dashboard")}
                 </Link>
                 <Link
                   to="/account"
-                  className="rounded-xl px-3 py-3 text-slate-200 transition hover:bg-white/5"
+                  onClick={() => setMenu(false)}
+                  className="rounded-xl px-3 py-3 text-ink-muted transition hover:bg-surface-2"
                 >
                   {t("account.title")}
                 </Link>
                 <button
-                  className="rounded-xl px-3 py-3 text-start text-slate-400 transition hover:bg-white/5"
+                  className="rounded-xl px-3 py-3 text-start text-ink-muted transition hover:bg-surface-2"
                   onClick={() => void logout()}
                 >
                   {t("nav.logout")}
@@ -244,7 +285,8 @@ function Shell() {
             ) : (
               <Link
                 to="/login"
-                className="rounded-xl px-3 py-3 text-slate-200 transition hover:bg-white/5"
+                onClick={() => setMenu(false)}
+                className="rounded-xl px-3 py-3 text-ink-muted transition hover:bg-surface-2"
               >
                 {t("nav.login")}
               </Link>
@@ -253,13 +295,31 @@ function Shell() {
         )}
       </header>
       <Outlet />
-      <footer className="border-t border-white/8 py-10 text-center text-sm text-slate-500">
-        <nav className="mb-4 flex flex-wrap items-center justify-center gap-x-6 gap-y-2">
-          <Link to="/terms">{t("footer.terms")}</Link>
-          <Link to="/privacy">{t("footer.privacy")}</Link>
-          <Link to="/contact">{t("footer.contact")}</Link>
-        </nav>
-        © {t("brand.name")} · {t("footer.tagline")}
+      <footer className="border-t border-line bg-surface-2/60">
+        <div className="mx-auto max-w-7xl px-4 py-10 sm:px-5">
+          <div className="flex flex-col gap-6 sm:flex-row sm:items-start sm:justify-between">
+            <div className="flex items-center gap-2.5">
+              <span className="grid size-8 place-items-center rounded-lg bg-brand text-white">
+                <Bot size={16} />
+              </span>
+              <div>
+                <p className="text-sm font-bold">{t("brand.name")}</p>
+                <p className="text-xs text-ink-muted">{t("footer.tagline")}</p>
+              </div>
+            </div>
+            <nav className="grid grid-cols-2 gap-x-10 gap-y-2 text-sm text-ink-muted sm:flex sm:flex-wrap sm:gap-x-6">
+              <Link to="/marketplace" className="transition hover:text-ink">{t("nav.marketplace")}</Link>
+              <Link to="/pricing" className="transition hover:text-ink">{t("nav.pricing")}</Link>
+              <Link to="/#how" className="transition hover:text-ink">{t("nav.how")}</Link>
+              <Link to="/terms" className="transition hover:text-ink">{t("footer.terms")}</Link>
+              <Link to="/privacy" className="transition hover:text-ink">{t("footer.privacy")}</Link>
+              <Link to="/contact" className="transition hover:text-ink">{t("footer.contact")}</Link>
+            </nav>
+          </div>
+          <p className="mt-8 text-xs text-ink-muted/80">
+            © {t("brand.name")} · {t("footer.tagline")}
+          </p>
+        </div>
       </footer>
     </>
   )
@@ -274,139 +334,180 @@ function Shell() {
 const EMPTY_AGENTS: Agent[] = []
 const EMPTY_DIVISIONS: CatalogDivision[] = []
 
-function AgentCard({ agent }: { agent: Agent }) {
-  const { owns } = useEntitlements()
-  const own = owns(agent.id)
-  const { t, n, toman, agentName, agentDescription } = useI18n()
-  return (
-    <article className="agent-card group relative">
-      <div className="mb-7 flex items-start justify-between">
-        <span className="grid size-15 place-items-center rounded-2xl bg-white/6 text-3xl">
-          {agent.icon}
-        </span>
-        {agent.featured && (
-          <span className="badge">{t("common.bestSeller")}</span>
-        )}
-      </div>
-      <div className="mb-3 flex items-center justify-between">
-        <h3 className="text-lg font-bold">{agentName(agent)}</h3>
-        <span className="text-sm text-amber-300">★ {n(agent.rating)}</span>
-      </div>
-      <p className="h-12 overflow-hidden text-sm leading-6 text-slate-400 [display:-webkit-box] [-webkit-box-orient:vertical] [-webkit-line-clamp:2]">
-        {agentDescription(agent)}
-      </p>
-      <div className="mt-6 flex items-center justify-between border-t border-white/8 pt-5">
-        <div>
-          <b className="text-sm">{toman(agent.price)}</b>
-          <span className="mx-2 text-xs text-slate-500">
-            {n(agent.sales)} {t("common.sales")}
-          </span>
-        </div>
-        <Link
-          to={own ? `/chat/${agent.id}` : `/agent/${agent.slug}`}
-          // The pseudo-element stretches this link across the whole card, so the
-          // entire card is clickable while the arrow stays the only anchor.
-          className="icon-btn after:absolute after:inset-0 after:content-['']"
-          aria-label={`${t("common.view")} ${agentName(agent)}`}
-        >
-          <ForwardArrow size={18} />
-        </Link>
-      </div>
-    </article>
-  )
+/** Cards rendered per page; "Show more" extends the grid without a round-trip. */
+const PAGE_SIZE = 24
+type SortKey = "popular" | "cheap" | "expensive"
+type PriceKey = "low" | "mid" | "high"
+
+// The three ranges the real price set (29k–69k) actually falls into. There are
+// no free agents in the catalog, so a free/paid toggle would always show an
+// empty column — ranges instead.
+const PRICE_TIERS: Record<PriceKey, (price: number) => boolean> = {
+  low: (price) => price <= 39_000,
+  mid: (price) => price > 39_000 && price <= 49_000,
+  high: (price) => price > 49_000,
 }
 
 function Landing() {
-  const { t, n, lang } = useI18n()
+  const { t, n, lang, division } = useI18n()
+  const nav = useNavigate()
+  const [query, setQuery] = useState("")
   const steps: [number, string, string][] = [
     [1, t("landing.step1t"), t("landing.step1d")],
     [2, t("landing.step2t"), t("landing.step2d")],
     [3, t("landing.step3t"), t("landing.step3d")],
   ]
-  const faqs = [
-    t("landing.faqQ1"),
-    t("landing.faqQ2"),
-    t("landing.faqQ3"),
-    t("landing.faqQ4"),
+  // One answer per question: the old single shared `landing.faqA` answered the
+  // first question only and left the other three with an unrelated paragraph.
+  const faqs: [string, string][] = [
+    [t("landing.faqQ1"), t("landing.faqA1")],
+    [t("landing.faqQ2"), t("landing.faqA2")],
+    [t("landing.faqQ3"), t("landing.faqA3")],
+    [t("landing.faqQ4"), t("landing.faqA4")],
   ]
+  // The most populated real divisions first: the grid and the hero shortcuts are
+  // the generated division set with its real counts, not a hand-written list.
+  const categories = useMemo(
+    () => [...divisionCatalog].sort((a, b) => b.count - a.count).slice(0, 8),
+    [],
+  )
+  function submitSearch(event: FormEvent) {
+    event.preventDefault()
+    const value = query.trim()
+    // The marketplace owns search state; the hero just hands the query over.
+    nav(value ? `/marketplace?q=${encodeURIComponent(value)}` : "/marketplace")
+  }
   return (
     <main>
       <section className="relative overflow-hidden">
-        <div className="hero-orb" />
-        <div className="mx-auto grid max-w-7xl place-items-center px-5 py-20 text-center sm:py-24 lg:min-h-[620px]">
-          <div className="max-w-4xl">
-            <p className="eyebrow">
-              <Sparkles size={14} /> {t("landing.eyebrow")}
-            </p>
-            <h1 className="mt-6 text-[2rem] font-black leading-[1.3] tracking-tight sm:mt-7 sm:text-5xl sm:leading-[1.2] md:text-7xl">
-              {t("landing.title1")}
-              <br />
-              <span className="text-violet-300">{t("landing.title2")}</span>
-            </h1>
-            <p className="mx-auto mt-6 max-w-2xl text-base leading-8 text-slate-300 sm:mt-7 sm:text-lg">
-              {t("landing.subtitle")}
-            </p>
-            <div className="mt-10 flex flex-wrap justify-center gap-3">
-              <Link className="btn btn-large" to="/login">
-                {t("landing.cta")} <ForwardArrow size={18} />
+        <div className="hero-glow" aria-hidden="true" />
+        <div className="relative mx-auto max-w-3xl px-5 pb-16 pt-16 text-center sm:pb-20 sm:pt-24">
+          <p className="eyebrow justify-center">
+            <Sparkles size={14} aria-hidden="true" /> {t("landing.eyebrow")}
+          </p>
+          <h1 className="mt-6 text-[2rem] font-bold leading-[1.35] tracking-tight sm:text-5xl sm:leading-[1.25]">
+            {t("landing.title1")}
+            <br />
+            <span className="text-brand">{t("landing.title2")}</span>
+          </h1>
+          <p className="mx-auto mt-5 max-w-2xl text-base leading-8 text-ink-muted sm:text-lg">
+            {t("landing.subtitle")}
+          </p>
+          <form
+            onSubmit={submitSearch}
+            role="search"
+            className="hero-search mx-auto mt-8 max-w-2xl text-start"
+          >
+            <Search size={20} className="shrink-0 text-ink-muted" aria-hidden="true" />
+            <label htmlFor="hero-search" className="sr-only">
+              {t("landing.searchSubmit")}
+            </label>
+            <input
+              id="hero-search"
+              type="search"
+              value={query}
+              onChange={(e) => setQuery(e.target.value)}
+              placeholder={t("landing.searchPlaceholder")}
+              autoComplete="off"
+              enterKeyHint="search"
+            />
+            <button type="submit" className="btn shrink-0">
+              {t("landing.searchSubmit")}
+            </button>
+          </form>
+          <div className="mt-5 flex flex-wrap items-center justify-center gap-2 text-xs">
+            <span className="text-ink-muted">{t("landing.popular")}:</span>
+            {categories.slice(0, 4).map((d) => (
+              <Link key={d.slug} to={`/marketplace?cat=${d.slug}`} className="prompt">
+                {division(d)}
               </Link>
-              <Link className="btn btn-soft btn-large" to="/marketplace">
-                {t("landing.seeAgents")}
-              </Link>
-            </div>
-            <div className="mt-10 flex flex-wrap justify-center gap-4 text-sm text-slate-400 sm:mt-14 sm:gap-8">
-              <span>✓ {t("landing.noCard")}</span>
-              <span>✓ {t("landing.fluent")}</span>
-              <span>✓ {t("landing.oneTime")}</span>
-            </div>
+            ))}
+          </div>
+          <div className="mt-9 flex flex-wrap justify-center gap-3">
+            <Link className="btn btn-large" to="/login">
+              {t("landing.cta")} <ForwardArrow size={18} />
+            </Link>
+            <Link className="btn btn-soft btn-large" to="/marketplace">
+              {t("landing.seeAgents")}
+            </Link>
+          </div>
+          <div className="mt-8 flex flex-wrap justify-center gap-x-6 gap-y-2 text-sm text-ink-muted">
+            <span>✓ {t("landing.noCard")}</span>
+            <span>✓ {t("landing.fluent")}</span>
+            <span>✓ {t("landing.oneTime")}</span>
           </div>
         </div>
       </section>
-      <section className="section">
-        <div className="section-head">
-          <div>
-            <p className="eyebrow">{t("landing.findEyebrow")}</p>
-            <h2>{t("landing.findTitle")}</h2>
-          </div>
-          <Link to="/marketplace" className="text-sm text-violet-300">
-            {t("landing.seeAll")} <ForwardArrow size={16} />
-          </Link>
+
+      <section id="categories" className="section scroll-mt-20">
+        <SectionHead
+          eyebrow={t("nav.categories")}
+          title={t("landing.catTitle")}
+          action={
+            <Link to="/marketplace" className="text-sm font-medium text-brand transition hover:text-accent">
+              {t("landing.catAll")}
+            </Link>
+          }
+        />
+        <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
+          {categories.map((d) => (
+            <Link key={d.slug} to={`/marketplace?cat=${d.slug}`} className="category-card">
+              <span className="category-icon">
+                <DivisionIcon name={d.icon} />
+              </span>
+              <span className="font-medium">{division(d)}</span>
+              <span className="text-xs text-ink-muted">
+                {t("market.count", { count: n(d.count) })}
+              </span>
+            </Link>
+          ))}
         </div>
-        <div className="grid gap-5 md:grid-cols-2 xl:grid-cols-3">
-          {featuredAgents.slice(0, 6).map((a) => (
+      </section>
+
+      <section className="section pt-0">
+        <SectionHead
+          eyebrow={t("landing.findEyebrow")}
+          title={t("landing.findTitle")}
+          action={
+            <Link to="/marketplace" className="text-sm font-medium text-brand transition hover:text-accent">
+              {t("landing.seeAll")} <ForwardArrow size={16} />
+            </Link>
+          }
+        />
+        <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+          {featuredAgents.slice(0, 8).map((a) => (
             <AgentCard key={a.id} agent={a} />
           ))}
         </div>
       </section>
-      <section id="how" className="section">
-        <p className="eyebrow">{t("landing.howEyebrow")}</p>
-        <h2 className="mb-10">{t("landing.howTitle")}</h2>
-        <div className="grid gap-px overflow-hidden rounded-3xl border border-white/8 bg-white/8 md:grid-cols-3">
+
+      <section id="how" className="section scroll-mt-20">
+        <SectionHead eyebrow={t("landing.howEyebrow")} title={t("landing.howTitle")} />
+        <div className="grid gap-px overflow-hidden rounded-3xl border border-line bg-line md:grid-cols-3">
           {steps.map((x) => (
-            <div className="bg-[#101936] p-6 sm:p-8" key={x[0]}>
-              <b className="text-4xl text-violet-400">{n(x[0]).padStart(2, lang === "fa" ? "۰" : "0")}</b>
-              <h3 className="mt-6 text-lg font-bold sm:mt-12 sm:text-xl">{x[1]}</h3>
-              <p className="mt-3 text-sm leading-6 text-slate-400">{x[2]}</p>
+            <div className="bg-surface p-6 sm:p-8" key={x[0]}>
+              <b className="text-4xl text-brand">{n(x[0]).padStart(2, lang === "fa" ? "۰" : "0")}</b>
+              <h3 className="mt-6 text-lg font-semibold sm:mt-12 sm:text-xl">{x[1]}</h3>
+              <p className="mt-3 text-sm leading-6 text-ink-muted">{x[2]}</p>
             </div>
           ))}
         </div>
       </section>
-      <section id="faq" className="section">
-        <p className="eyebrow">{t("landing.faqEyebrow")}</p>
-        <h2 className="mb-8">{t("landing.faqTitle")}</h2>
-        <div className="mx-auto max-w-3xl divide-y divide-white/8 rounded-2xl border border-white/8 bg-white/[.03]">
-          {faqs.map((q) => (
-            <details className="group px-5 py-4 sm:px-6 sm:py-5" key={q}>
-              <summary className="flex cursor-pointer list-none items-center justify-between font-medium">
-                {q}
+
+      <section id="faq" className="section pt-0">
+        <SectionHead eyebrow={t("landing.faqEyebrow")} title={t("landing.faqTitle")} />
+        <div className="mx-auto max-w-3xl divide-y divide-line rounded-2xl border border-line bg-surface">
+          {faqs.map(([question, answer]) => (
+            <details className="group px-5 py-4 sm:px-6 sm:py-5" key={question}>
+              <summary className="flex cursor-pointer list-none items-center justify-between gap-3 font-medium">
+                {question}
                 <ChevronDown
-                  className="transition group-open:rotate-180"
+                  className="shrink-0 transition group-open:rotate-180"
                   size={18}
+                  aria-hidden="true"
                 />
               </summary>
-              <p className="mt-4 max-w-2xl text-sm leading-7 text-slate-400">
-                {t("landing.faqA")}
-              </p>
+              <p className="mt-4 max-w-2xl text-sm leading-7 text-ink-muted">{answer}</p>
             </details>
           ))}
         </div>
@@ -415,22 +516,71 @@ function Landing() {
   )
 }
 
+/** URL-backed state: `?q=`, `?cat=`, `?price=`, `?sort=` are deep-linkable —
+    which is what the hero search and the landing category cards rely on. */
 function Marketplace() {
-  const [q, setQ] = useState("")
-  const [cat, setCat] = useState<string | null>(null)
-  const [sort, setSort] = useState<"popular" | "cheap" | "expensive">("popular")
-  const { t, division, agentName, agentDescription, agentDivision } = useI18n()
+  const [params, setParams] = useSearchParams()
+  const q = params.get("q") ?? ""
+  const cat = params.get("cat")
+  const price = params.get("price") as PriceKey | null
+  const sort = (params.get("sort") as SortKey | null) ?? "popular"
+  const { t, n, division, agentName, agentDescription, agentDivision } = useI18n()
   const catalog = useCatalog()
   const agents = catalog?.agents ?? EMPTY_AGENTS
   const divisions = catalog?.divisions ?? EMPTY_DIVISIONS
+  const [visible, setVisible] = useState(PAGE_SIZE)
+  const [drawer, setDrawer] = useState(false)
 
-  const cats = useMemo(
+  // One writer for every filter: resets paging and merges into the URL.
+  const update = (patch: Record<string, string | null>) => {
+    setVisible(PAGE_SIZE)
+    setParams((previous) => {
+      const next = new URLSearchParams(previous)
+      for (const [key, value] of Object.entries(patch)) {
+        if (value === null || value === "") next.delete(key)
+        else next.set(key, value)
+      }
+      return next
+    })
+  }
+  const reset = () => {
+    setVisible(PAGE_SIZE)
+    setParams(new URLSearchParams())
+  }
+
+  // Unknown ?cat=/?price= values act as "all" instead of filtering everything out.
+  const activeCat = cat && divisions.some((d) => d.slug === cat) ? cat : null
+  const activePrice = price && price in PRICE_TIERS ? price : null
+
+  const filterGroups = useMemo(
     () => [
-      { slug: "all", label: t("common.all") },
-      ...divisions.map((d) => ({ slug: d.slug, label: division(d) })),
+      {
+        key: "market.filter.category",
+        options: [
+          { key: "all", label: t("common.all"), count: agents.length },
+          ...divisions.map((d) => ({ key: d.slug, label: division(d), count: d.count })),
+        ],
+        selected: activeCat ?? "all",
+        onSelect: (key: string) => update({ cat: key === "all" ? null : key }),
+      },
+      {
+        key: "market.filter.price",
+        options: [
+          { key: "low", label: t("market.price.low"), count: 0 },
+          { key: "mid", label: t("market.price.mid"), count: 0 },
+          { key: "high", label: t("market.price.high"), count: 0 },
+        ],
+        selected: activePrice ?? "",
+        onSelect: (key: string) => update({ price: activePrice === key ? null : key }),
+      },
     ],
-    [divisions, division, t],
+    // `update`/`reset` are recreated each render but the groups only recompute
+    // when the underlying data or selection changes; the closures read current
+    // state at click time through the component scope.
+    [divisions, agents.length, activeCat, activePrice, division, t],
   )
+  const activeFilterCount = (activeCat ? 1 : 0) + (activePrice ? 1 : 0) + (q ? 1 : 0)
+
   const list = useMemo(
     () =>
       agents
@@ -439,7 +589,8 @@ function Marketplace() {
             // Filter by division slug, never by a localized label: the previous
             // version compared the English chip text against the Persian
             // `category`, so every category returned nothing in English.
-            (!cat || cat === "all" || a.division === cat) &&
+            (!activeCat || a.division === activeCat) &&
+            (!activePrice || PRICE_TIERS[activePrice](a.price)) &&
             (agentName(a).toLowerCase().includes(q.toLowerCase()) ||
               agentDescription(a).toLowerCase().includes(q.toLowerCase()) ||
               agentDivision(a).toLowerCase().includes(q.toLowerCase())),
@@ -455,60 +606,194 @@ function Marketplace() {
     // module constant when it was imported at the top of the file, and leaving it
     // out meant the grid stayed computed from the empty placeholder and rendered
     // "No agents match your search" with a fully populated category row above it.
-    [q, cat, sort, agents, agentName, agentDescription, agentDivision],
+    [q, activeCat, activePrice, sort, agents, agentName, agentDescription, agentDivision],
   )
   // Wait for the catalog instead of flashing an empty grid and filling it in a
   // moment later. This is where the 264-agent chunk is actually requested.
-  if (!catalog) return <PageLoading />
+  if (!catalog) return <CatalogSkeleton />
   return (
     <main className="section min-h-screen">
       <p className="eyebrow">{t("market.eyebrow")}</p>
       <h1 className="page-title">
         {t("market.title1")} <span>{t("market.title2")}</span>
       </h1>
-      <div className="mt-10 flex flex-col gap-4 lg:flex-row">
-        <label className="search">
-          <Search size={19} />
-          <input
-            value={q}
-            onChange={(e) => setQ(e.target.value)}
-            placeholder={t("market.search")}
-          />
-        </label>
-        <select
-          value={sort}
-          onChange={(e) => setSort(e.target.value as typeof sort)}
-          className="select"
-        >
-          <option value="popular">{t("market.sort.popular")}</option>
-          <option value="cheap">{t("market.sort.cheap")}</option>
-          <option value="expensive">{t("market.sort.expensive")}</option>
-        </select>
+
+      <div className="mt-9 flex items-start gap-8">
+        {/* Desktop sidebar */}
+        <aside className="hidden w-56 shrink-0 lg:block" aria-label={t("market.filters")}>
+          <div className="sticky top-24 grid gap-6">
+            {filterGroups.map((group) => (
+              <div key={group.key}>
+                <h2 className="mb-2 text-sm font-semibold text-ink">{t(group.key)}</h2>
+                <div className="grid gap-1">
+                  {group.options.map((option) => (
+                    <button
+                      key={option.key}
+                      type="button"
+                      className="filter-option"
+                      aria-pressed={group.selected === option.key}
+                      onClick={group.onSelect.bind(null, option.key)}
+                    >
+                      <span className="truncate">{option.label}</span>
+                      {option.count > 0 && (
+                        <span className="filter-option-count">{n(option.count)}</span>
+                      )}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            ))}
+            {activeFilterCount > 0 && (
+              <button type="button" className="btn btn-soft w-full justify-center text-xs" onClick={reset}>
+                {t("market.clear")}
+              </button>
+            )}
+          </div>
+        </aside>
+
+        <div className="min-w-0 flex-1">
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
+            <label className="search">
+              <Search size={18} aria-hidden="true" />
+              <span className="sr-only">{t("market.search")}</span>
+              <input
+                value={q}
+                onChange={(event) => update({ q: event.target.value || null })}
+                placeholder={t("market.search")}
+                type="search"
+              />
+            </label>
+            <div className="flex gap-3">
+              <label className="sr-only" htmlFor="market-sort">{t("market.sort.label")}</label>
+              <select
+                id="market-sort"
+                value={sort}
+                onChange={(event) => update({ sort: event.target.value === "popular" ? null : event.target.value })}
+                className="select"
+              >
+                <option value="popular">{t("market.sort.popular")}</option>
+                <option value="cheap">{t("market.sort.cheap")}</option>
+                <option value="expensive">{t("market.sort.expensive")}</option>
+              </select>
+              {/* Mobile filter trigger */}
+              <button
+                type="button"
+                className="btn btn-soft shrink-0 lg:hidden"
+                onClick={() => setDrawer(true)}
+                aria-haspopup="dialog"
+              >
+                <SlidersHorizontal size={16} aria-hidden="true" />
+                <span className="relative">
+                  {t("market.filters")}
+                  {activeFilterCount > 0 && <span className="filter-badge absolute -top-2 -end-2">{activeFilterCount}</span>}
+                </span>
+              </button>
+            </div>
+          </div>
+
+          {activeFilterCount > 0 && (
+            <div className="mt-4 flex flex-wrap items-center gap-2">
+              {q && (
+                <FilterChip
+                  label={t("market.chip.query", { query: q })}
+                  onRemove={() => update({ q: null })}
+                  removeLabel={t("market.removeFilter", { name: q })}
+                />
+              )}
+              {activeCat && (
+                <FilterChip
+                  label={division(divisions.find((d) => d.slug === activeCat)!)}
+                  onRemove={() => update({ cat: null })}
+                  removeLabel={t("market.removeFilter", {
+                    name: division(divisions.find((d) => d.slug === activeCat)!),
+                  })}
+                />
+              )}
+              {activePrice && (
+                <FilterChip
+                  label={t(`market.price.${activePrice}`)}
+                  onRemove={() => update({ price: null })}
+                  removeLabel={t("market.removeFilter", { name: t(`market.price.${activePrice}`) })}
+                />
+              )}
+              <button type="button" className="text-xs text-ink-muted underline-offset-4 transition hover:text-ink hover:underline" onClick={reset}>
+                {t("market.clear")}
+              </button>
+            </div>
+          )}
+
+          <p className="mt-6 text-sm text-ink-muted" role="status">
+            {t("market.showing", { shown: n(Math.min(visible, list.length)), total: n(list.length) })}
+          </p>
+
+          <div className="mt-4 grid gap-5 sm:grid-cols-2 xl:grid-cols-3">
+            {list.slice(0, visible).map((a) => (
+              <AgentCard key={a.id} agent={a} />
+            ))}
+          </div>
+
+          {list.length > visible && (
+            <div className="mt-10 text-center">
+              <button type="button" className="btn btn-soft" onClick={() => setVisible((count) => count + PAGE_SIZE)}>
+                {t("market.loadMore")} ({n(list.length - visible)})
+              </button>
+            </div>
+          )}
+
+          {!list.length && (
+            <EmptyState
+              message={t("market.empty")}
+              hint={t("market.emptyHint")}
+              action={
+                <button type="button" className="btn" onClick={reset}>
+                  {t("market.clear")}
+                </button>
+              }
+            />
+          )}
+        </div>
       </div>
-      <div className="chip-row mt-6">
-        {cats.map((c) => (
-          <button
-            onClick={() => setCat(c.slug)}
-            className={`tab ${cat === c.slug ? "active" : ""}`}
-            key={c.slug}
-            title={`${c.label}${
-              c.slug !== "all"
-                ? ` — ${t("market.count", {
-                    count: divisions.find((d) => d.slug === c.slug)?.count ?? 0,
-                  })}`
-                : ""
-            }`}
-          >
-            {c.label}
-          </button>
-        ))}
-      </div>
-      <div className="mt-8 grid gap-5 md:grid-cols-2 xl:grid-cols-3">
-        {list.map((a) => (
-          <AgentCard key={a.id} agent={a} />
-        ))}
-      </div>
-      {!list.length && <div className="empty">{t("market.empty")}</div>}
+
+      {/* Mobile filter drawer */}
+      {drawer && (
+        <Modal title={t("market.filters")} onClose={() => setDrawer(false)} closeLabel={t("common.close")}>
+          <div className="grid gap-6">
+            {filterGroups.map((group) => (
+              <div key={group.key}>
+                <h3 className="mb-2 text-sm font-semibold text-ink">{t(group.key)}</h3>
+                <div className="grid gap-1">
+                  {group.options.map((option) => (
+                    <button
+                      key={option.key}
+                      type="button"
+                      className="filter-option"
+                      aria-pressed={group.selected === option.key}
+                      onClick={() => {
+                        group.onSelect(option.key)
+                      }}
+                    >
+                      <span className="truncate">{option.label}</span>
+                      {option.count > 0 && (
+                        <span className="filter-option-count">{n(option.count)}</span>
+                      )}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            ))}
+            <div className="grid gap-2">
+              {activeFilterCount > 0 && (
+                <button type="button" className="btn btn-soft w-full justify-center" onClick={reset}>
+                  {t("market.clear")}
+                </button>
+              )}
+              <button type="button" className="btn w-full justify-center" onClick={() => setDrawer(false)}>
+                {t("market.showResults", { count: n(list.length) })}
+              </button>
+            </div>
+          </div>
+        </Modal>
+      )}
     </main>
   )
 }
@@ -535,6 +820,9 @@ function Detail() {
   if (!a) return <NotFound />
   const agentId = a.id
   const own = owns(agentId)
+  // Related by the only real link the data has: the division. Self excluded,
+  // capped at four — no invented "similar score" behind it.
+  const related = catalog.agents.filter((x) => x.division === a.division && x.id !== a.id).slice(0, 4)
 
   // An unknown error code falls back to the generic message instead of leaking a
   // raw code into the UI. The *key* is returned, not the message, so the notice
@@ -580,34 +868,39 @@ function Detail() {
   }
   return (
     <main className="section">
-      <Link to="/marketplace" className="text-sm text-slate-400">
-        <ForwardArrow size={16} /> {t("detail.back")}
-      </Link>
+      <Breadcrumbs
+        items={[
+          { label: t("nav.home"), to: "/" },
+          { label: t("nav.marketplace"), to: "/marketplace" },
+          { label: agentDivision(a), to: `/marketplace?cat=${a.division}` },
+          { label: agentName(a) },
+        ]}
+      />
       <div className="mt-8 grid gap-12 lg:grid-cols-[1fr_.8fr]">
         <div>
           <div className="flex flex-wrap items-start gap-4 sm:gap-5">
-            <span className="grid size-16 shrink-0 place-items-center rounded-2xl bg-violet-500/15 text-4xl sm:size-22 sm:rounded-3xl sm:text-5xl">
+            <span className="grid size-16 shrink-0 place-items-center rounded-2xl bg-brand-soft text-4xl ring-1 ring-brand-border sm:size-22 sm:rounded-3xl sm:text-5xl">
               {a.icon}
             </span>
             <div className="min-w-0 flex-1">
               <p className="eyebrow">{agentDivision(a)}</p>
-              <h1 className="mt-2 text-3xl font-black sm:text-4xl">{agentName(a)}</h1>
-              <p className="mt-2 text-amber-300">
-                ★ {n(a.rating)}{" "}
-                <span className="mx-2 text-slate-500">
+              <h1 className="mt-2 text-3xl font-bold sm:text-4xl">{agentName(a)}</h1>
+              <p className="mt-2 text-sm text-ink-muted">
+                <span className="text-accent">★ {n(a.rating)}</span>
+                <span className="ms-2">
                   ({n(a.sales)} {t("common.sales")})
                 </span>
               </p>
             </div>
           </div>
-          <p className="mt-8 max-w-2xl text-base leading-8 text-slate-300 sm:mt-10 sm:text-lg sm:leading-9">
+          <p className="mt-8 max-w-2xl text-base leading-8 text-ink-muted sm:mt-10 sm:text-lg sm:leading-9">
             {agentLongDescription(a)}
           </p>
           <h2 className="mt-10 text-xl font-bold">{t("detail.whatItDoes")}</h2>
           <ul className="mt-5 grid gap-3 sm:grid-cols-2">
             {agentFeatures(a).map((f) => (
-              <li className="flex gap-2 text-slate-300" key={f}>
-                <Check size={18} className="mt-1 shrink-0 text-emerald-400" />
+              <li className="flex gap-2 text-ink-muted" key={f}>
+                <Check size={18} className="mt-1 shrink-0 text-accent" aria-hidden="true" />
                 {f}
               </li>
             ))}
@@ -625,10 +918,10 @@ function Detail() {
             ))}
           </div>
         </div>
-        <aside className="h-fit rounded-3xl border border-violet-400/25 bg-violet-500/8 p-6 sm:p-7 lg:sticky lg:top-24">
+        <aside className="h-fit rounded-3xl border border-brand-border bg-brand-soft p-6 sm:p-7 lg:sticky lg:top-24">
           <span className="badge">{t("detail.guarantee")}</span>
-          <div className="mt-8 text-3xl font-black">{toman(a.price)}</div>
-          <p className="mt-2 text-sm text-slate-400">{t("detail.lifetime")}</p>
+          <div className="mt-8 text-3xl font-bold">{toman(a.price)}</div>
+          <p className="mt-2 text-sm text-ink-muted">{t("detail.lifetime")}</p>
           <button
             className="btn mt-7 w-full justify-center"
             onClick={own ? () => nav(`/chat/${a.id}`) : () => void purchase()}
@@ -660,6 +953,24 @@ function Detail() {
           )}
         </aside>
       </div>
+      {related.length > 0 && (
+        <section className="mt-14 border-t border-line pt-10" aria-labelledby="related-title">
+          <div className="section-head">
+            <h2 id="related-title" className="!mb-0 text-xl font-bold">{t("detail.related")}</h2>
+            <Link
+              to={`/marketplace?cat=${a.division}`}
+              className="text-sm font-medium text-brand transition hover:text-accent"
+            >
+              {t("landing.seeAll")}
+            </Link>
+          </div>
+          <div className="grid gap-5 sm:grid-cols-2 xl:grid-cols-4">
+            {related.map((r) => (
+              <AgentCard key={r.id} agent={r} />
+            ))}
+          </div>
+        </section>
+      )}
     </main>
   )
 }
@@ -722,17 +1033,17 @@ function Dashboard() {
       <div className="mt-9 grid gap-4 md:grid-cols-3">
         {stats.map(([value, label, Icon]) => (
           <div className="stat" key={label}>
-            <Icon className="text-violet-300" />
+            <Icon className="text-brand" />
             <b>{value}</b>
             <span>{label}</span>
           </div>
         ))}
       </div>
       <div className="mt-8 grid gap-6 lg:grid-cols-[1.4fr_1fr]">
-        <section className="rounded-3xl border border-white/8 bg-white/[.03] p-6">
+        <section className="rounded-3xl border border-line bg-surface p-6">
           <div className="flex justify-between">
             <h2 className="font-bold">{t("dash.usage")}</h2>
-            <span className="text-sm text-slate-500">{t("common.token")}</span>
+            <span className="text-sm text-ink-muted">{t("common.token")}</span>
           </div>
           {usage.length ? (
             <div className="chart mt-8 flex items-end gap-2">
@@ -745,13 +1056,13 @@ function Dashboard() {
               ))}
             </div>
           ) : (
-            <p className="mt-8 text-sm text-slate-500">{t("dash.usageEmpty")}</p>
+            <p className="mt-8 text-sm text-ink-muted">{t("dash.usageEmpty")}</p>
           )}
         </section>
-        <section className="rounded-3xl border border-violet-400/20 bg-violet-500/8 p-6">
-          <Sparkles className="text-violet-300" />
+        <section className="rounded-3xl border border-brand-border bg-brand-soft p-6">
+          <Sparkles className="text-brand" />
           <h2 className="mt-8 text-xl font-bold">{t("dash.ready")}</h2>
-          <p className="mt-3 text-sm leading-7 text-slate-300">
+          <p className="mt-3 text-sm leading-7 text-ink-muted">
             {t("dash.readyBody")}
           </p>
           <Link className="btn mt-6" to="/marketplace">
@@ -762,7 +1073,7 @@ function Dashboard() {
       <div className="section px-0">
         <div className="section-head">
           <h2>{t("dash.myAgents")}</h2>
-          <Link className="text-sm text-violet-300" to="/marketplace">
+          <Link className="text-sm text-brand" to="/marketplace">
             {t("dash.manage")}
           </Link>
         </div>
@@ -775,7 +1086,7 @@ function Dashboard() {
         ) : (
           <div className="empty">
             {t("dash.empty")}{" "}
-            <Link className="text-violet-300" to="/marketplace">
+            <Link className="text-brand" to="/marketplace">
               {t("dash.start")}
             </Link>
           </div>
@@ -784,18 +1095,18 @@ function Dashboard() {
       <div className="section px-0">
         <div className="section-head">
           <h2>{t("dash.billing")}</h2>
-          <span className="text-sm text-slate-500">
+          <span className="text-sm text-ink-muted">
             {t("dash.currentPlan")}: {t(`plan.${planKey}`)}
           </span>
         </div>
         {transactions.length ? (
-          <div className="table-scroll rounded-2xl border border-white/10">
+          <div className="table-scroll rounded-2xl border border-line">
             <table className="w-full min-w-[34rem] text-start text-sm">
               <tbody>
                 {transactions.map((row) => (
-                  <tr className="border-b border-white/5" key={row.id}>
+                  <tr className="border-b border-line/60" key={row.id}>
                     <td className="p-3">{txLabel(row)}</td>
-                    <td className="p-3 text-slate-400">
+                    <td className="p-3 text-ink-muted">
                       {new Date(row.createdAt).toLocaleDateString(locale)}
                     </td>
                     <td className="p-3">{toman(row.amount)}</td>
@@ -827,7 +1138,7 @@ function Dashboard() {
 
 function PageLoading() {
   const { t } = useI18n()
-  return <main className="section text-center text-slate-500">{t("common.loading")}</main>
+  return <main className="section text-center text-ink-muted">{t("common.loading")}</main>
 }
 
 /**

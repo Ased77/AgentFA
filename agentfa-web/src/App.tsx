@@ -12,7 +12,7 @@ export default function App() {
       fallback={(reset) => (
         <div className="section text-center">
           <h1 className="text-2xl font-black">{t("error.crashTitle")}</h1>
-          <p className="mt-4 leading-8 text-slate-400">{t("error.crashBody")}</p>
+          <p className="mt-4 leading-8 text-ink-muted">{t("error.crashBody")}</p>
           <button className="btn mt-6" onClick={reset}>
             {t("error.retry")}
           </button>

@@ -29,7 +29,11 @@ JSON="divisions.json"
 # into the repo), not a source-agent category. strategy/ holds playbooks and
 # runbooks (no agent frontmatter), not agents. Neither is a division — they must
 # never be scanned as source-agent categories.
-NON_DIVISION_DIRS=(examples scripts integrations strategy)
+# Application code also lives at the repo root and is not an agent division:
+# api/ (the Vercel Function entry), server/ (the backend service), agentfa-web/
+# (the web app) and gateway/ (the AI Gateway service). None of them contains a
+# single frontmatter agent file, so none may be registered in divisions.json.
+NON_DIVISION_DIRS=(examples scripts integrations strategy api server agentfa-web gateway)
 
 errors=0
 fail() { echo "ERROR $*"; errors=$((errors + 1)); }

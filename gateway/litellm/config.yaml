@@ -1,0 +1,180 @@
+# ==============================================================================
+# LiteLLM Proxy - AI Gateway configuration
+#
+# The FastAPI app only ever requests the LOGICAL groups "agent-pro" /
+# "agent-basic". Everything below (providers, real model ids, keys) is internal
+# and never reaches a customer: the API strips all of it and returns only
+# {reply, credit_remaining_percent}.
+#
+# Resilience design
+# -----------------
+#   * Two deployments (API keys) per provider group -> LiteLLM load-balances
+#     across them with latency-based routing, so one bad key never takes a
+#     provider down.
+#   * router_settings.num_retries retries WITHIN a group (it prefers a
+#     deployment that has not been tried yet, i.e. the second key).
+#   * router_settings.fallbacks walks the provider chain IN ORDER when a whole
+#     group fails: gpt-4o -> claude -> gemini -> local Ollama.
+#   * allowed_fails / cooldown_time is the circuit breaker: after N failures a
+#     bad deployment is skipped for cooldown_time seconds.
+#   * Ollama is the last line of defence (local, always reachable, no quota).
+#
+# Timeout budget (why these numbers)
+# ----------------------------------
+# The customer-facing deadline is 25s, enforced by the API's httpx client
+# (connect=3s / read=20s) plus a hard 25s `anyio.fail_after` around the call.
+# If a single attempt were allowed to consume 25s, the API would abort before
+# any fallback provider could even be tried, which would make the fallback
+# chain useless. The per-attempt timeouts below therefore fit inside 25s:
+#
+#   worst case per remote group : 2 attempts x 8s  = 16s
+#   + one fallback attempt      : 8s            => 24s < 25s deadline
+#
+# Fast failures (401/429/refused connection) cost milliseconds, so in practice
+# the whole chain is traversed in a fraction of that budget.
+# ==============================================================================
+
+model_list:
+  # ---------------------------------------------------------------------------
+  # agent-pro  (client-facing name; gpt-4o is the primary provider)
+  # ---------------------------------------------------------------------------
+  - model_name: agent-pro
+    litellm_params:
+      model: openai/gpt-4o
+      api_key: os.environ/OPENAI_API_KEY_1
+      timeout: 8             # per-attempt total timeout (seconds)
+      stream_timeout: 6      # max wait for the first streamed token
+  - model_name: agent-pro
+    litellm_params:
+      model: openai/gpt-4o
+      api_key: os.environ/OPENAI_API_KEY_2
+      timeout: 8
+      stream_timeout: 6
+
+  # ---------------------------------------------------------------------------
+  # agent-pro fallback 1: Anthropic
+  # ---------------------------------------------------------------------------
+  - model_name: agent-pro-claude
+    litellm_params:
+      model: anthropic/claude-3-5-sonnet-20241022
+      api_key: os.environ/ANTHROPIC_API_KEY_1
+      timeout: 8
+      stream_timeout: 6
+  - model_name: agent-pro-claude
+    litellm_params:
+      model: anthropic/claude-3-5-sonnet-20241022
+      api_key: os.environ/ANTHROPIC_API_KEY_2
+      timeout: 8
+      stream_timeout: 6
+
+  # ---------------------------------------------------------------------------
+  # agent-pro fallback 2: Google Gemini
+  # ---------------------------------------------------------------------------
+  - model_name: agent-pro-gemini
+    litellm_params:
+      model: gemini/gemini-1.5-pro
+      api_key: os.environ/GEMINI_API_KEY_1
+      timeout: 8
+      stream_timeout: 6
+  - model_name: agent-pro-gemini
+    litellm_params:
+      model: gemini/gemini-1.5-pro
+      api_key: os.environ/GEMINI_API_KEY_2
+      timeout: 8
+      stream_timeout: 6
+
+  # ---------------------------------------------------------------------------
+  # agent-pro fallback 3: local Ollama (always available, slower)
+  # ---------------------------------------------------------------------------
+  - model_name: agent-pro-ollama
+    litellm_params:
+      model: ollama/llama3.1:70b
+      api_base: os.environ/OLLAMA_API_BASE
+      timeout: 20            # local inference: longer budget, but still bounded
+      stream_timeout: 15
+
+  # ---------------------------------------------------------------------------
+  # agent-basic  (client-facing name; gpt-4o-mini is the primary provider)
+  # ---------------------------------------------------------------------------
+  - model_name: agent-basic
+    litellm_params:
+      model: openai/gpt-4o-mini
+      api_key: os.environ/OPENAI_API_KEY_1
+      timeout: 6
+      stream_timeout: 5
+  - model_name: agent-basic
+    litellm_params:
+      model: openai/gpt-4o-mini
+      api_key: os.environ/OPENAI_API_KEY_2
+      timeout: 6
+      stream_timeout: 5
+
+  # ---------------------------------------------------------------------------
+  # agent-basic fallback 1: Gemini Flash
+  # ---------------------------------------------------------------------------
+  - model_name: agent-basic-flash
+    litellm_params:
+      model: gemini/gemini-1.5-flash
+      api_key: os.environ/GEMINI_API_KEY_1
+      timeout: 6
+      stream_timeout: 5
+  - model_name: agent-basic-flash
+    litellm_params:
+      model: gemini/gemini-1.5-flash
+      api_key: os.environ/GEMINI_API_KEY_2
+      timeout: 6
+      stream_timeout: 5
+
+  # ---------------------------------------------------------------------------
+  # agent-basic fallback 2: local Ollama
+  # ---------------------------------------------------------------------------
+  - model_name: agent-basic-ollama
+    litellm_params:
+      model: ollama/llama3.1:8b
+      api_base: os.environ/OLLAMA_API_BASE
+      timeout: 15
+      stream_timeout: 12
+
+# ==============================================================================
+# Router: load balancing, retries and the fallback chains
+# ==============================================================================
+router_settings:
+  routing_strategy: latency-based-routing  # pick the fastest healthy deployment
+  num_retries: 2                           # retries within a group (2 keys)
+  allowed_fails: 5                         # circuit breaker: failures before opening
+  cooldown_time: 60                        # seconds a failing deployment is skipped
+  enable_pre_call_checks: true             # skip cooled-down deployments up front
+  fallbacks:
+    # Keys are the model names our API requests; values are tried in order.
+    # Every target below MUST exist in model_list (asserted by tests/).
+    - agent-pro: [agent-pro-claude, agent-pro-gemini, agent-pro-ollama]
+    - agent-basic: [agent-basic-flash, agent-basic-ollama]
+
+# ==============================================================================
+# LiteLLM core settings
+# ==============================================================================
+litellm_settings:
+  num_retries: 2              # proxy-level retries (bounded, see budget above)
+  request_timeout: 10         # proxy-wide default per attempt
+  allowed_fails: 5            # circuit breaker: open after 5 failures...
+  cooldown_time: 60           # ...and skip the deployment for 60 seconds
+  enforce_user_param: true    # every request MUST carry "user" (our customer id);
+                              # also the cache partition key
+  cache: true                 # cache identical requests (cuts provider spend)
+  cache_params:
+    type: redis               # Redis-backed cache (URL from env REDIS_URL)
+    ttl: 3600                 # 1 hour
+  # Custom callback injects the internal X-Model-Used / X-Real-Cost response
+  # headers and logs structured per-request telemetry. NOTE: the value must be
+  # a dotted path to the module-level *instance*; the class name fails to load.
+  callbacks: custom_callbacks.proxy_handler_instance
+  # Full request/response logging to Postgres (LiteLLM_SpendLogs table):
+  success_callback: ["postgres"]
+  failure_callback: ["postgres"]
+
+# ==============================================================================
+# Auth + persistence
+# ==============================================================================
+general_settings:
+  master_key: os.environ/LITELLM_MASTER_KEY   # ONLY our FastAPI app holds this
+  database_url: os.environ/LITELLM_DATABASE_URL

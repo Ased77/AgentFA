@@ -1,0 +1,16 @@
+# Local environment / secrets - never commit these
+.env
+.env.*
+!.env.example
+
+# Virtualenvs used for tests / callback verification
+.venv/
+.venv-litellm/
+
+# Python / pytest artifacts
+__pycache__/
+*.py[cod]
+.pytest_cache/
+
+# Throwaway SQLite databases used by the tests
+*.db

@@ -1,0 +1,23 @@
+# AI Gateway - development & test dependencies.
+#   pip install -r requirements-dev.txt
+-r requirements.txt
+
+# Test runner
+pytest==8.3.4
+pytest-asyncio==0.25.0
+
+# Tests run against SQLite (no Postgres needed) - aiosqlite provides the driver.
+aiosqlite==0.20.0
+
+# YAML parsing for the LiteLLM config regression tests.
+PyYAML==6.0.2
+
+# NOTE: litellm is deliberately NOT installed here.
+#   1. It runs inside the LiteLLM proxy image (which ships its own pinned copy),
+#      never inside the api image - see litellm/custom_callbacks.py.
+#   2. litellm >= 1.104 requires pydantic-settings>=2.14.1, which conflicts with
+#      the API's pinned pydantic-settings==2.7.0. Sharing one environment would
+#      force an unnecessary downgrade/upgrade of the API's runtime deps.
+# tests/test_custom_callbacks.py therefore skips unless litellm is importable.
+# To run it too, install litellm in a throwaway environment:
+#   uv venv .venv-litellm && uv pip install --python .venv-litellm litellm pytest pytest-asyncio

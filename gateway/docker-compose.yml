@@ -1,0 +1,138 @@
+# ==============================================================================
+# AI Gateway orchestration
+#
+#   Customer ──HTTP──> api (FastAPI, :8000 public) ──internal──> litellm :4000
+#                                                    ├──> redis    (cache + rate limits)
+#                                                    └──> postgres (LiteLLM logs + gateway DB)
+#
+# SECURITY: only the api publishes a port. litellm, redis and postgres are
+# reachable exclusively from inside the `gateway_internal` Docker network —
+# customers can never hit LiteLLM directly, so the master key and all
+# provider/model details stay private.
+# ==============================================================================
+
+services:
+  # ---------------------------------------------------------------- database
+  postgres:
+    image: postgres:17-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-gateway}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-gateway}
+      # Init script below creates both databases: litellm (spend logs) + gateway (app data).
+      POSTGRES_MULTIPLE_DATABASES: litellm,gateway
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+      - ./docker/initdb:/docker-entrypoint-initdb.d:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-gateway} -d litellm"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  # ---------------------------------------------------------------- cache
+  redis:
+    image: redis:7-alpine
+    restart: unless-stopped
+    command: ["redis-server", "--appendonly", "yes"]
+    volumes:
+      - redis-data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  # ---------------------------------------------------------------- LLM gateway (INTERNAL ONLY)
+  litellm:
+    # Pinned version. NOTE: GHCR (ghcr.io/berriai/litellm) only publishes the
+    # rolling main-stable / main-latest tags - per-version tags exist on Docker
+    # Hub. Verified: `docker manifest inspect litellm/litellm:v1.104.0`,
+    # multi-arch amd64+arm64, digest sha256:c1809fa704d5...
+    image: litellm/litellm:v1.104.0
+    # Rolling alternatives (unpinned, same code path):
+    #   image: ghcr.io/berriai/litellm:main-stable
+    #   image: docker.litellm.ai/berriai/litellm:main-stable
+    restart: unless-stopped
+    # The image's ENTRYPOINT is docker/prod_entrypoint.sh, which forwards
+    # arguments to the `litellm` CLI - so flags only, no binary name.
+    command: [
+      "--config", "/app/config.yaml",
+      "--port", "4000",
+    ]
+    # Guarantees `custom_callbacks` is importable for
+    # `litellm_settings.callbacks: custom_callbacks.proxy_handler_instance`.
+    working_dir: /app
+    volumes:
+      - ./litellm/config.yaml:/app/config.yaml:ro
+      - ./litellm/custom_callbacks.py:/app/custom_callbacks.py:ro
+    environment:
+      LITELLM_MASTER_KEY: ${LITELLM_MASTER_KEY:?set in .env}
+      LITELLM_DATABASE_URL: ${LITELLM_DATABASE_URL:-postgresql://gateway:gateway@postgres:5432/litellm}
+      LITELLM_SALT_KEY: ${LITELLM_SALT_KEY:?set in .env}
+      REDIS_URL: ${REDIS_URL:-redis://redis:6379/0}
+      OPENAI_API_KEY_1: ${OPENAI_API_KEY_1:-}
+      OPENAI_API_KEY_2: ${OPENAI_API_KEY_2:-}
+      ANTHROPIC_API_KEY_1: ${ANTHROPIC_API_KEY_1:-}
+      ANTHROPIC_API_KEY_2: ${ANTHROPIC_API_KEY_2:-}
+      GEMINI_API_KEY_1: ${GEMINI_API_KEY_1:-}
+      GEMINI_API_KEY_2: ${GEMINI_API_KEY_2:-}
+      OLLAMA_API_BASE: ${OLLAMA_API_BASE:-http://host.docker.internal:11434}
+      PYTHONPATH: /app
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    healthcheck:
+      # NOTE: curl is NOT present in the LiteLLM image (see BerriAI/litellm#9295),
+      # so the probe must use python3 - this mirrors the healthcheck LiteLLM
+      # ships in its own docker-compose.yml. /health/liveliness makes no LLM calls.
+      test:
+        - CMD-SHELL
+        - python3 -c "import urllib.request; urllib.request.urlopen('http://localhost:4000/health/liveliness', timeout=5)"
+      interval: 15s
+      timeout: 5s
+      retries: 10
+      start_period: 40s
+    # NOTE: no `ports:` — LiteLLM is unreachable from the host network.
+    # For a one-off debug shell:  docker compose exec litellm curl -s localhost:4000/health
+
+  # ---------------------------------------------------------------- public API
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    ports:
+      - "${API_PORT:-8000}:8000"          # the ONLY public port
+    environment:
+      DATABASE_URL: ${DATABASE_URL:-postgresql+asyncpg://gateway:gateway@postgres:5432/gateway}
+      REDIS_URL: ${REDIS_URL:-redis://redis:6379/1}
+      LITELLM_BASE_URL: http://litellm:4000
+      LITELLM_MASTER_KEY: ${LITELLM_MASTER_KEY:?set in .env}
+      JWT_SECRET: ${JWT_SECRET:?set in .env}
+      JWT_ALGORITHM: ${JWT_ALGORITHM:-HS256}
+      ACCESS_TOKEN_EXPIRE_MINUTES: ${ACCESS_TOKEN_EXPIRE_MINUTES:-60}
+      MARKUP: ${MARKUP:-2.5}
+      RATE_LIMIT_PER_MIN: ${RATE_LIMIT_PER_MIN:-60}
+      DAILY_MESSAGE_CAP: ${DAILY_MESSAGE_CAP:-200}
+      SIGNUP_BONUS_CREDIT: ${SIGNUP_BONUS_CREDIT:-5.0}
+      LOG_LEVEL: ${LOG_LEVEL:-INFO}
+    depends_on:
+      postgres:
+        condition: service_healthy
+      litellm:
+        condition: service_healthy
+    healthcheck:
+      test:
+        - CMD-SHELL
+        - python3 -c "import urllib.request; urllib.request.urlopen('http://localhost:8000/health', timeout=5)"
+      interval: 15s
+      timeout: 5s
+      retries: 10
+      start_period: 20s
+
+volumes:
+  postgres-data:
+  redis-data:

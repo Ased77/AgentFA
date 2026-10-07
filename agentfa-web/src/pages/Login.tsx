@@ -2,9 +2,18 @@ import { useEffect, useRef, useState, type FormEvent } from "react";
 import { useNavigate } from "react-router-dom";
 import { ShieldCheck, Smartphone } from "lucide-react";
 import { ForwardArrow } from "../components/ForwardArrow";
+import { PhoneField } from "../components/PhoneField";
 import { ApiError } from "../lib/account";
 import { useI18n } from "../lib/i18n";
-import { formatPhone, localizeDigits, normalizePhone } from "../lib/phone";
+import {
+  defaultCountry,
+  formatPhone,
+  IRAN,
+  localizeDigits,
+  normalizeCountryPhone,
+  toAsciiDigits,
+  type Country,
+} from "../lib/phone";
 import { useSession } from "../lib/session";
 
 /**
@@ -14,6 +23,12 @@ import { useSession } from "../lib/session";
  * code creates the account on a first login, so `/login` and `/signup` render
  * this page. The API never says whether a number is known, and neither does the
  * copy — "we sent a code" is true in both cases.
+ *
+ * The number is entered as a country plus a national number. Persian readers start
+ * on Iran and see their digits (۰۹۱۲…); anyone else can pick their own country
+ * code. The API itself signs in Iranian mobiles only — its SMS gateway is Iranian —
+ * so a foreign number is validated here, then refused by the server, and the error
+ * says exactly that instead of pretending the number is malformed.
  */
 
 /** Errors this flow can surface, mapped to dictionary keys. */
@@ -34,6 +49,8 @@ export default function Login() {
   const { startOtp, verifyOtp, user } = useSession();
 
   const [step, setStep] = useState<"phone" | "code">("phone");
+  // Iran in FA; in EN the browser's own region, falling back to Iran.
+  const [country, setCountry] = useState<Country>(() => defaultCountry(lang));
   const [typed, setTyped] = useState("");
   const [phone, setPhone] = useState("");
   const [code, setCode] = useState("");
@@ -72,6 +89,12 @@ export default function Login() {
    */
   function errorKey(err: unknown): string {
     if (!(err instanceof ApiError)) return "auth.error.network";
+    // A number that is perfectly valid, just not Iranian: the API answers
+    // `invalid_phone` for anything outside its own market, which is not the same
+    // thing as a typo and should not be reported as one.
+    if (err.code === "invalid_phone" && country.iso !== IRAN.iso) {
+      return "auth.error.sms_iran_only";
+    }
     if ((ERROR_CODES as readonly string[]).includes(err.code)) return `auth.error.${err.code}`;
     if (err.status >= 500 || err.status === 404) return "auth.error.unavailable";
     return "auth.error.generic";
@@ -97,9 +120,9 @@ export default function Login() {
   function submitPhone(event: FormEvent) {
     event.preventDefault();
     // Validate locally for instant feedback; the server normalizes again.
-    const normalized = normalizePhone(typed);
+    const normalized = normalizeCountryPhone(country, typed);
     if (!normalized.ok) {
-      setError("auth.error.invalid_phone");
+      setError(normalized.reason === "empty" ? "auth.error.phone_required" : "auth.error.invalid_phone");
       return;
     }
     void requestCode(normalized.phone);
@@ -147,17 +170,12 @@ export default function Login() {
 
         {step === "phone" ? (
           <>
-            <input
-              className="field mt-6 text-center tracking-widest"
-              dir="ltr"
-              type="tel"
-              inputMode="tel"
-              autoComplete="tel"
+            <PhoneField
+              country={country}
+              onCountryChange={setCountry}
               value={typed}
-              onChange={(event) => setTyped(event.target.value)}
-              placeholder={t("auth.phonePlaceholder")}
-              aria-label={t("auth.phone")}
-              required
+              onValueChange={setTyped}
+              describedBy={error ? "login-error" : undefined}
             />
             <button className="btn mt-5 w-full justify-center" disabled={busy}>
               {busy ? t("auth.sending") : t("auth.sendCode")}
@@ -176,8 +194,10 @@ export default function Login() {
               inputMode="numeric"
               autoComplete="one-time-code"
               maxLength={6}
-              value={code}
-              onChange={(event) => setCode(event.target.value.replace(/\D/g, "").slice(0, 6))}
+              value={localizeDigits(code, lang)}
+              // A Persian keyboard types Persian digits, which `/\D/` used to strip
+              // silently — the code never arrived in the field at all.
+              onChange={(event) => setCode(toAsciiDigits(event.target.value).replace(/\D/g, "").slice(0, 6))}
               placeholder="------"
               aria-label={t("auth.code")}
               required
@@ -221,7 +241,7 @@ export default function Login() {
         )}
 
         {error && (
-          <p className="mt-4 text-center text-sm text-rose-300" role="alert">
+          <p id="login-error" className="mt-4 text-center text-sm text-rose-300" role="alert">
             {t(error)}
           </p>
         )}

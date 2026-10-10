@@ -61,6 +61,23 @@ a:hover { color: var(--color-accent); }
 .search input{width:100%;border:0;background:transparent;padding:.95rem 0;color:var(--color-ink);outline:0}
 .field{width:100%;border:1px solid var(--color-line);border-radius:.75rem;background:var(--color-surface-2);padding:.85rem 1rem;color:var(--color-ink);outline:0}
 .field:focus{border-color:var(--color-brand-border)}
+/* Country picker and number in one control: the picker is a segment on the left,
+   the number takes the rest, a hairline divides them. The picker is still a
+   native <select>, laid invisible over its own segment — a native select cannot
+   show a flag, so we draw the segment and let the select stay the real control. */
+.phone-combo{display:flex;width:100%;align-items:stretch;border:1px solid var(--color-line);border-radius:.75rem;background:var(--color-surface-2);transition:border-color .18s}
+.phone-combo:focus-within{border-color:var(--color-brand-border)}
+.phone-combo__country{position:relative;display:flex;flex:none;align-items:center;border-right:1px solid var(--color-line)}
+.phone-combo__select{position:absolute;inset:0;width:100%;height:100%;border:0;appearance:none;cursor:pointer;font:inherit;opacity:0;background:var(--color-surface-2);color:var(--color-ink)}
+.phone-combo__select:focus-visible{outline-offset:-3px}
+/* min-width holds the divider still while the dial code changes length. */
+.phone-combo__face{display:flex;align-items:center;justify-content:center;gap:.4rem;min-width:6.5rem;padding:.85rem .7rem;font-size:.95rem;font-weight:600;font-variant-numeric:tabular-nums}
+.phone-combo__flag{font-size:1.05rem;font-weight:400}
+/* Platforms without colour flag glyphs (Windows) get the ISO code in the same
+   slot, styled as a badge — visible, and obviously on purpose. */
+.phone-combo__flag--code{font-size:.78rem;font-weight:700;letter-spacing:.05em;color:var(--color-ink-muted)}
+.phone-combo__chevron{flex:none;color:var(--color-ink-muted)}
+.phone-combo__input{flex:1;min-width:0;border:0;background:transparent;padding:.85rem .9rem;color:var(--color-ink);outline:0;letter-spacing:.08em}
 .select,.tab{border:1px solid var(--color-line);border-radius:.75rem;background:var(--color-surface-2);color:var(--color-ink-muted);padding:.7rem .9rem;font:inherit;font-size:.875rem;transition:.18s}
 .select:hover,.tab:hover{color:var(--color-ink);border-color:var(--color-line-strong)}
 .tab.active{background:var(--color-brand);border-color:var(--color-brand);color:#fff}
@@ -156,6 +173,7 @@ a:hover { color: var(--color-accent); }
   main a[href]:not(.btn):not(.icon-btn):not(.category-card):not(.agent-card),
   main button:not(.btn):not(.icon-btn):not(.tab):not(.prompt):not(.filter-option){padding-block:.35rem}
   .field{padding:.8rem .9rem}
+  .phone-combo__face,.phone-combo__input{padding-block:.8rem}
 }
 
 /* Motion is decoration: users who ask for less get none. */

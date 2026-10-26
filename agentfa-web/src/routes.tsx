@@ -220,7 +220,7 @@ function Shell() {
             )}
             <button
               type="button"
-              className="icon-btn md:hidden"
+              className="icon-btn md-hidden"
               onClick={() => setMenu((open) => !open)}
               aria-label={t("nav.menu")}
               aria-expanded={menu}
@@ -678,7 +678,7 @@ function Marketplace() {
               {/* Mobile filter trigger */}
               <button
                 type="button"
-                className="btn btn-soft shrink-0 lg:hidden"
+                className="btn btn-soft shrink-0 lg-hidden"
                 onClick={() => setDrawer(true)}
                 aria-haspopup="dialog"
               >

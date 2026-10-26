@@ -138,6 +138,13 @@ a:hover { color: var(--color-accent); }
 /* Category chips: one swipeable row on phones, wrapped rows above. */
 .chip-row{display:flex;flex-wrap:wrap;gap:.5rem}
 
+/* Breaks that belong to one viewport width, in Tailwind's own units.
+   They cannot be `md:hidden`/`lg:hidden`: `.btn`, `.icon-btn` and friends set
+   `display` from plain CSS, and plain CSS outranks every utility no matter which
+   one is written first, so the utility loses and the control stays on screen. */
+@media (min-width:768px){ .md-hidden{display:none} }
+@media (min-width:1024px){ .lg-hidden{display:none} }
+
 /* Hover styling is for pointers that can actually hover; on touch the effects
    stick to the tapped element until the next tap elsewhere. */
 @media (hover:none){

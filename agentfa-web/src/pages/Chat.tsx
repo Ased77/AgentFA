@@ -1,6 +1,7 @@
-import { FormEvent, useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { Download, Plus, Paperclip, Send, Sparkles, Trash2, Wallet } from "lucide-react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { Download, Paperclip, Plus, Sparkles, Trash2, Wallet } from "lucide-react";
 import { Link, useNavigate, useParams, useSearchParams } from "react-router-dom";
+import PromptBar, { type PromptBarLabels, type PromptBarModel, type PromptBarSource } from "../components/PromptBar";
 import { agents } from "../data/agents";
 import {
   ApiError,
@@ -59,6 +60,39 @@ const EMPTY_WALLET: WalletSnapshot = {
   monthlyTimeUsedSeconds: 0,
 };
 
+/** Effort step (low → high) → how many characters of each attached file enter the prompt. */
+const ATTACH_CAPS = [2_000, 6_000, 12_000, 18_000];
+/** Effort slider labels, low → high, per interface language. */
+const FA_EFFORTS = ["کم", "متوسط", "زیاد", "بیشینه"];
+const EN_EFFORTS = ["Low", "Medium", "High", "Max"];
+/** The chat API rejects messages above 20,000 characters; leave a little margin. */
+const MESSAGE_CAP = 19_000;
+/** Files whose text can be read synchronously in the browser. */
+const TEXT_ACCEPT =
+  ".txt,.md,.markdown,.json,.csv,.tsv,.log,.xml,.yml,.yaml,.html,.css," +
+  ".js,.mjs,.cjs,.ts,.tsx,.jsx,.py,.rb,.go,.rs,.java,.c,.h,.cpp,.cs,.php,.sql,.sh";
+
+/**
+ * Builds the outgoing message: the draft plus each attachment's excerpt. Walks
+ * the caps from the chosen effort downwards until everything fits `MESSAGE_CAP`;
+ * null means even the smallest excerpt would not fit.
+ */
+function composeMessage(
+  draft: string,
+  attachments: { name: string; text: string }[],
+  capIndex: number,
+): string | null {
+  for (let i = capIndex; i >= 0; i -= 1) {
+    let out = draft;
+    for (const file of attachments) {
+      const cap = ATTACH_CAPS[i];
+      out += `\n\n--- ${file.name} ---\n${file.text.slice(0, cap)}${file.text.length > cap ? "…" : ""}`;
+    }
+    if (out.length <= MESSAGE_CAP) return out;
+  }
+  return null;
+}
+
 export default function Chat() {
   const { agentId } = useParams();
   const [params] = useSearchParams();
@@ -80,6 +114,12 @@ export default function Chat() {
   const [preview, setPreview] = useState<Preview | null>(null);
   const abortRef = useRef<AbortController | null>(null);
 
+  // Composer extras: `auto` follows the interface language; "fa"/"en" pin it
+  // for the model replies only. Attachment texts live in a ref keyed by name.
+  const [replyLang, setReplyLang] = useState<"auto" | "fa" | "en">("auto");
+  const chatLang = replyLang === "auto" ? (lang === "fa" ? "fa" : "en") : replyLang;
+  const filesRef = useRef<Map<string, string>>(new Map());
+
   const owned = agent ? owns(agent.id) : false;
   const locale = lang === "fa" ? "fa-IR" : "en-US";
 
@@ -98,6 +138,125 @@ export default function Chat() {
     [agent, agentWelcome, stamp],
   );
   const [messages, setMessages] = useState<Message[]>(fresh);
+
+  // Composer data: the effort slider is the per-attachment excerpt depth, the
+  // commands are this agent's preset prompts, and the "model" picker is the
+  // reply language (the only per-request knob the chat API actually accepts).
+  const effortLabels = lang === "fa" ? FA_EFFORTS : EN_EFFORTS;
+  const composerSources: PromptBarSource[] = [
+    {
+      key: "files",
+      name: t("chat.attachFiles"),
+      description: t("chat.attachFilesDesc"),
+      icon: <Paperclip size={15} strokeWidth={2} />,
+      attach: true,
+    },
+  ];
+  const composerCommands = useMemo(
+    () => (agent ? agentPrompts(agent).map((prompt, i) => ({ key: `prompt-${i}`, name: prompt })) : []),
+    [agent, agentPrompts],
+  );
+  const composerModels: PromptBarModel[] = [
+    { key: "auto", name: t("chat.replyLang.auto"), tag: t("chat.replyLang.autoTag") },
+    { key: "fa", name: "فارسی", tag: "fa-IR" },
+    { key: "en", name: "English", tag: "en-US" },
+  ];
+  const composerLabels: PromptBarLabels = {
+    addSources: t("chat.addSources"),
+    chooseModel: t("chat.chooseReplyLang"),
+    chooseEffort: t("chat.chooseAttachDetail"),
+    effortTitle: t("chat.detail.title"),
+    effortHint: t("chat.detail.hint"),
+    effortFaster: t("chat.detail.less"),
+    effortSmarter: t("chat.detail.more"),
+    menuSources: t("chat.menuSources"),
+    menuCommands: t("chat.menuCommands"),
+    menuModels: t("chat.menuModels"),
+    menuEffort: t("chat.menuEffort"),
+    prompt: t("chat.promptAria"),
+    listening: t("chat.listening"),
+    dictate: t("chat.dictate"),
+    stopDictate: t("chat.dictateStop"),
+    send: t("chat.send"),
+    stop: t("chat.stop"),
+    noMatches: (query) => t("chat.noMatches", { query }),
+    removeFile: (file) => t("chat.removeFile", { file }),
+  };
+
+  /** Opens a text-file picker; contents are kept in `filesRef`, names are the chips. */
+  async function pickTextFiles(): Promise<string[]> {
+    const chosen = await new Promise<File[]>((resolve) => {
+      const picker = document.createElement("input");
+      picker.type = "file";
+      picker.accept = TEXT_ACCEPT;
+      picker.multiple = true;
+      let settled = false;
+      const settle = (files: File[]) => {
+        if (settled) return;
+        settled = true;
+        picker.remove();
+        resolve(files);
+      };
+      picker.addEventListener("change", () => settle(Array.from(picker.files ?? [])));
+      picker.addEventListener("cancel", () => settle([]));
+      document.body.appendChild(picker);
+      picker.click();
+    });
+    const names: string[] = [];
+    for (const file of chosen) {
+      try {
+        filesRef.current.set(file.name, (await file.text()).slice(0, 200_000));
+        names.push(file.name);
+      } catch {
+        /* unreadable file: leave it out */
+      }
+    }
+    return names;
+  }
+
+  /** Speech-to-text; rejects when unsupported or when nothing was heard. */
+  function dictate(): Promise<string> {
+    const recognitionCtor =
+      (window as unknown as { SpeechRecognition?: unknown; webkitSpeechRecognition?: unknown })
+        .SpeechRecognition ??
+      (window as unknown as { webkitSpeechRecognition?: unknown }).webkitSpeechRecognition;
+    if (!recognitionCtor) return Promise.reject(new Error("unsupported"));
+    type Recognition = {
+      lang: string;
+      interimResults: boolean;
+      maxAlternatives: number;
+      onresult: ((event: { results: ArrayLike<{ isFinal: boolean; 0: { transcript: string } }> }) => void) | null;
+      onend: (() => void) | null;
+      onerror: ((event: { error?: string }) => void) | null;
+      start: () => void;
+    };
+    const recognition = new (recognitionCtor as new () => Recognition)();
+    recognition.lang = chatLang === "fa" ? "fa-IR" : "en-US";
+    recognition.interimResults = false;
+    recognition.maxAlternatives = 1;
+    return new Promise<string>((resolve, reject) => {
+      let closed = false;
+      let transcript = "";
+      recognition.onresult = (event) => {
+        for (let i = 0; i < event.results.length; i += 1) {
+          if (event.results[i].isFinal) transcript += event.results[i][0].transcript;
+        }
+      };
+      recognition.onend = () => {
+        if (closed) return;
+        closed = true;
+        const text = transcript.trim();
+        if (text) resolve(text);
+        else reject(new Error("no_speech"));
+      };
+      recognition.onerror = (event) => {
+        if (closed) return;
+        closed = true;
+        reject(new Error(event.error ?? "error"));
+      };
+      recognition.start();
+    });
+  }
 
   // A fresh agent (or a fresh greeting) starts a new thread.
   useEffect(() => {
@@ -210,17 +369,34 @@ export default function Chat() {
     void refreshConversations();
   }
 
-  async function submit(e?: FormEvent) {
-    e?.preventDefault();
+  // `text` comes from the composer (PromptBar); the Enter key and the send tile
+  // both land here. `meta` carries the picked attachment names (contents held in
+  // `filesRef`) and the effort step, which caps how much of each attached file
+  // enters the prompt. AbortError after a manual stop is not an error to report.
+  async function submit(text?: string, meta?: { attachments?: string[]; effort?: string }) {
     const target = agent;
-    if (!target || !input.trim() || loading) return;
+    const draftText = (text ?? input).trim();
+    if (!target || !draftText || loading) return;
 
     if (!user) return nav(`/login?next=${encodeURIComponent(`/chat/${target.id}`)}`);
     if (previewExhausted) return;
 
-    const text = input;
+    // Attachment excerpts: the effort slider picks the cap, then smaller caps
+    // are tried until the whole message fits the API's 20k-character limit.
+    const capIndex = Math.max(0, effortLabels.indexOf(meta?.effort ?? effortLabels[1]));
+    const attachments = (meta?.attachments ?? []).flatMap((name) => {
+      const body = filesRef.current.get(name);
+      return body ? [{ name, text: body }] : [];
+    });
+    const message = composeMessage(draftText, attachments, capIndex);
+    if (!message) {
+      fail("tooLong");
+      return;
+    }
+    filesRef.current.clear();
+
     const now = stamp();
-    setMessages((m) => [...m, { role: "user", text, time: now }]);
+    setMessages((m) => [...m, { role: "user", text: message, time: now }]);
     setInput("");
     setError("");
     setLoading(true);
@@ -238,9 +414,9 @@ export default function Chat() {
       await streamAgentChat({
         agentId: target.id,
         conversationId: activeId ?? undefined,
-        message: text,
+        message: message,
         history,
-        lang,
+        lang: chatLang,
         signal: controller.signal,
         onEvent: (event) => {
           if (event.type === "delta") {
@@ -278,18 +454,32 @@ export default function Chat() {
         },
       });
     } catch (err) {
-      const code = err instanceof ApiError ? err.code : "network";
-      fail(code);
-      if (code === "not_owned") void api.preview(target.id).then(setPreview).catch(() => {});
-      setMessages((m) => {
-        const copy = [...m];
-        const last = copy[copy.length - 1];
-        if (last?.role === "assistant" && last.streaming) {
-          if (last.text) copy[copy.length - 1] = { ...last, streaming: false };
-          else copy.pop();
-        }
-        return copy;
-      });
+      // The user pressed stop: keep any partial reply visible, drop the empty
+      // streaming bubble, and stay quiet instead of showing an error banner.
+      if (err instanceof DOMException && err.name === "AbortError") {
+        setMessages((m) => {
+          const copy = [...m];
+          const last = copy[copy.length - 1];
+          if (last?.role === "assistant" && last.streaming) {
+            if (last.text) copy[copy.length - 1] = { ...last, streaming: false };
+            else copy.pop();
+          }
+          return copy;
+        });
+      } else {
+        const code = err instanceof ApiError ? err.code : "network";
+        fail(code);
+        if (code === "not_owned") void api.preview(target.id).then(setPreview).catch(() => {});
+        setMessages((m) => {
+          const copy = [...m];
+          const last = copy[copy.length - 1];
+          if (last?.role === "assistant" && last.streaming) {
+            if (last.text) copy[copy.length - 1] = { ...last, streaming: false };
+            else copy.pop();
+          }
+          return copy;
+        });
+      }
     } finally {
       abortRef.current = null;
       setLoading(false);
@@ -469,32 +659,42 @@ export default function Chat() {
           )}
           {error && !modal && <p className="text-sm text-red-200">{t(error)}</p>}
         </div>
-        <form onSubmit={submit} className="border-t border-line p-4">
-          <div className="flex items-end gap-3 rounded-2xl border border-line bg-surface-2 p-2">
-            <button type="button" disabled className="icon-btn opacity-35" aria-label={t("chat.attach")}>
-              <Paperclip size={18} />
-            </button>
-            <textarea
-              className="max-h-32 min-h-11 flex-1 resize-none bg-transparent px-3 py-2 text-sm outline-none"
-              value={input}
-              onChange={(e) => setInput(e.target.value)}
-              onKeyDown={(e) => {
-                if (e.key === "Enter" && !e.shiftKey) {
-                  e.preventDefault()
-                  void submit()
-                }
-              }}
-              placeholder={t("chat.inputPlaceholder")}
-            />
-            <button
-              className="icon-btn bg-brand text-white"
-              aria-label={t("chat.send")}
-              disabled={loading}
-            >
-              <Send size={18} />
-            </button>
-          </div>
-        </form>
+        {/* AgentFA: the React Bits PromptBar drives the composer with every
+            feature wired to something real: the @/plus menu picks text files
+            (contents are inlined into the prompt, effort caps the excerpt),
+            the / menu lists this agent's preset prompts, the model picker is
+            the reply language (the `lang` the API accepts), and the mic uses
+            the browser's speech recognition. Send/stop drive the stream. */}
+        <div className="border-t border-line p-4">
+          <PromptBar
+            value={input}
+            onValueChange={setInput}
+            placeholder={t("chat.inputPlaceholder")}
+            sources={composerSources}
+            commands={composerCommands}
+            models={composerModels}
+            efforts={effortLabels}
+            busy={loading}
+            onSend={(text, meta) => void submit(text, meta)}
+            onStop={() => abortRef.current?.abort()}
+            onAttach={pickTextFiles}
+            onModelChange={(row) => setReplyLang(row.key === "fa" || row.key === "en" ? row.key : "auto")}
+            onDictate={() =>
+              dictate().catch((err) => {
+                if ((err as Error)?.message !== "no_speech") fail("dictation");
+                throw err;
+              })
+            }
+            background="var(--color-surface-2)"
+            color="var(--color-ink)"
+            menuBackground="var(--color-surface)"
+            sparkColor="var(--color-brand)"
+            // `width` is capped at the parent, so a large value simply fills
+            // the chat column like the previous full-width composer.
+            width={1600}
+            labels={composerLabels}
+          />
+        </div>
       </section>
       <aside className="hidden w-62 shrink-0 rounded-2xl border border-line bg-surface-2/50 p-5 xl:block">
         <span className="text-4xl">{agent.icon}</span>

@@ -9,6 +9,7 @@ import {
   type WalletSnapshot,
 } from "../lib/account";
 import { Modal } from "../components/Modal";
+import SwipeToast from "../components/SwipeToast";
 import { useSession } from "../lib/session";
 import { useI18n } from "../lib/i18n";
 import { usePricing } from "../lib/pricing";
@@ -139,7 +140,17 @@ export default function Pricing() {
           </span>
         </button>
         {source === "fallback" && (
-          <p className="mt-4 text-xs text-amber-300">{t("pricing.offlinePrices")}</p>
+          <SwipeToast
+            inline
+            className="mt-4"
+            title={t("pricing.offlinePrices")}
+            duration={0}
+            fuse="none"
+            closeButton
+            background="var(--color-surface)"
+            color="var(--color-ink)"
+            fuseColor="var(--color-accent)"
+          />
         )}
       </div>
       {error && (

@@ -20,6 +20,7 @@ import {
   Search,
   SlidersHorizontal,
   Sparkles,
+  TriangleAlert,
   Wallet,
   X,
 } from "lucide-react"
@@ -49,6 +50,7 @@ import { ForwardArrow } from "./components/ForwardArrow"
 import { Modal } from "./components/Modal"
 import { SectionHead } from "./components/SectionHead"
 import { CatalogSkeleton } from "./components/Skeleton"
+import SwipeToast from "./components/SwipeToast"
 import Legal from "./pages/Legal"
 import NotFound from "./pages/NotFound"
 
@@ -83,6 +85,12 @@ function Shell() {
   const { t } = useI18n()
   const { user, logout, apiDown, refresh } = useSession()
   const [menu, setMenu] = useState(false)
+  // The toast floors the apiDown banner; once dismissed it stays gone until the
+  // outage clears, otherwise every route change would resurrect it.
+  const [apiToastClosed, setApiToastClosed] = useState(false)
+  useEffect(() => {
+    if (!apiDown) setApiToastClosed(false)
+  }, [apiDown])
   // A menu left open across a navigation is a bug, so follow the route.
   useEffect(() => setMenu(false), [pathname])
   useEffect(() => {
@@ -294,15 +302,24 @@ function Shell() {
           </nav>
         )}
       </header>
-      {apiDown && (
-        <div role="status" className="border-b border-amber-400/30 bg-amber-400/10 text-amber-100">
-          <div className="mx-auto flex max-w-7xl flex-wrap items-center justify-between gap-3 px-4 py-2 text-xs sm:px-5">
-            <span>{t("common.apiDown")}</span>
-            <button type="button" className="underline" onClick={() => void refresh()}>
-              {t("common.retry")}
-            </button>
-          </div>
-        </div>
+      {apiDown && !apiToastClosed && (
+        // The fixed SwipeToast supersedes the old full-width banner: it keeps
+        // the same status semantics (role=status, aria-live) and the retry
+        // action, but floats out of the way instead of pushing the page down.
+        <SwipeToast
+          title={t("common.apiDown")}
+          icon={<TriangleAlert size={18} strokeWidth={2} />}
+          actionLabel={t("common.retry")}
+          onAction={() => void refresh()}
+          onClose={() => setApiToastClosed(true)}
+          duration={0}
+          fuse="none"
+          closeButton
+          background="var(--color-surface)"
+          color="var(--color-ink)"
+          fuseColor="var(--color-accent)"
+          width={352}
+        />
       )}
       <Outlet />
       <footer className="border-t border-line bg-surface-2/60">
@@ -948,7 +965,20 @@ function Detail() {
           >
             {t("detail.preview")}
           </button>
-          {notice && <p className="mt-4 text-sm text-emerald-300">✓ {t(notice)}</p>}
+          {notice && (
+            // Success feedback as an in-flow toast instead of a green line.
+            <SwipeToast
+              inline
+              key={notice}
+              className="mt-4"
+              title={`✓ ${t(notice)}`}
+              duration={6000}
+              background="var(--color-surface)"
+              color="var(--color-ink)"
+              fuseColor="var(--color-accent)"
+              onClose={() => setNotice("")}
+            />
+          )}
           {error && (
             <p className="mt-4 text-sm text-rose-300" role="alert">
               {t(error)}

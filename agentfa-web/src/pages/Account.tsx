@@ -4,6 +4,7 @@ import { ApiError } from "../lib/account";
 import { useI18n } from "../lib/i18n";
 import { formatPhone, localizeDigits, normalizePhone } from "../lib/phone";
 import { useSession } from "../lib/session";
+import SwipeToast from "../components/SwipeToast";
 
 /**
  * Account settings.
@@ -143,7 +144,20 @@ export default function Account() {
           </form>
         )}
 
-        {notice && <p className="mt-4 text-sm text-emerald-300">✓ {t(notice)}</p>}
+        {notice && (
+          // Success feedback as an in-flow toast instead of a green line.
+          <SwipeToast
+            inline
+            key={notice}
+            className="mt-4"
+            title={`✓ ${t(notice)}`}
+            duration={6000}
+            background="var(--color-surface)"
+            color="var(--color-ink)"
+            fuseColor="var(--color-accent)"
+            onClose={() => setNotice("")}
+          />
+        )}
         {error && (
           <p className="mt-4 text-sm text-rose-300" role="alert">
             {t(error)}

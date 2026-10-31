@@ -37,6 +37,8 @@ const fa: Dict = {
   "common.toman": "تومان",
   "common.loading": "در حال بارگذاری…",
   "common.close": "بستن",
+  "common.apiDown": "ارتباط با سرور برقرار نیست؛ ممکن است بعضی بخش‌ها در دسترس نباشند.",
+  "common.retry": "تلاش دوباره",
   "common.copy": "کپی کد",
   "common.delete": "پاک کردن",
   "common.breadcrumb": "مسیر صفحه",
@@ -119,6 +121,7 @@ const fa: Dict = {
   "auth.welcomeGift": "خوش آمدی! ۵۰٬۰۰۰ توکن هدیه به حساب اضافه شد.",
   "auth.devCode": "حالت توسعه (پیامکی ارسال نشد): کد {code}",
   "auth.secure": "نشست شما توسط سرور AgentFA محافظت می‌شود.",
+  "auth.returnTo": "پس از ورود، به همان صفحه‌ای که می‌خواستی برمی‌گردی.",
 
   "auth.error.generic": "ورود انجام نشد. دوباره تلاش کن.",
   "auth.error.network": "ارتباط با سرور برقرار نشد.",
@@ -206,6 +209,9 @@ const fa: Dict = {
 
   "admin.title": "پنل مدیریت",
   "admin.body": "نمای کلی سیستم و داده‌های نمایشی.",
+  "admin.forbiddenTitle": "دسترسی مدیریتی ندارید",
+  "admin.forbiddenBody": "این صفحه فقط برای مدیران سیستم باز است.",
+  "admin.forbiddenCta": "بازگشت به داشبورد",
   "admin.agents": "ایجنت‌ها",
   "admin.divisions": "دسته‌ها",
   "admin.featured": "ویژه",
@@ -449,6 +455,8 @@ const en: Dict = {
   "common.toman": "Toman",
   "common.loading": "Loading…",
   "common.close": "Close",
+  "common.apiDown": "We can't reach the server; some parts of the site may be unavailable.",
+  "common.retry": "Try again",
   "common.copy": "Copy code",
   "common.delete": "Clear",
   "common.breadcrumb": "Breadcrumb",
@@ -530,6 +538,7 @@ const en: Dict = {
   "auth.welcomeGift": "Welcome! 50,000 gift tokens were added to your account.",
   "auth.devCode": "Development mode (no SMS sent): code {code}",
   "auth.secure": "Your session is protected by the AgentFA server.",
+  "auth.returnTo": "After signing in you'll return to the page you were on.",
 
   "auth.error.generic": "We could not sign you in. Please try again.",
   "auth.error.network": "We could not reach the server.",
@@ -594,6 +603,9 @@ const en: Dict = {
 
   "admin.title": "Admin panel",
   "admin.body": "System overview and demo data.",
+  "admin.forbiddenTitle": "You don't have admin access",
+  "admin.forbiddenBody": "This page is available to system administrators only.",
+  "admin.forbiddenCta": "Back to dashboard",
   "admin.agents": "Agents",
   "admin.divisions": "Divisions",
   "admin.featured": "Featured",
@@ -844,6 +856,8 @@ type I18nValue = {
   t: (key: string, vars?: Record<string, string | number>) => string;
   /** Locale-aware number formatting (Persian digits in fa, grouped in en). */
   n: (value: number) => string;
+  /** Locale-aware number with exactly one decimal place (ratings). */
+  n1: (value: number) => string;
   /** Locale-aware currency (Toman). */
   toman: (value: number) => string;
   /** Mobile number as people write it: `0912 123 4567`, in local digits. */
@@ -902,9 +916,15 @@ function detectLang(): Lang {
   return "fa";
 }
 
-function interpolate(template: string, vars?: Record<string, string | number>): string {
+function interpolate(template: string, vars: Record<string, string | number> | undefined, locale: string): string {
   if (!vars) return template;
-  return template.replace(/\{(\w+)\}/g, (m, k) => String(vars[k] ?? m));
+  return template.replace(/\{(\w+)\}/g, (m, k) => {
+    const value = vars[k];
+    if (value === undefined) return m;
+    // Numbers are formatted here, not by every call site: `{percent}٪` used to
+    // render Latin digits in the middle of a Persian sentence.
+    return typeof value === "number" ? value.toLocaleString(locale) : String(value);
+  });
 }
 
 export function I18nProvider({ children }: { children: ReactNode }) {
@@ -935,7 +955,7 @@ export function I18nProvider({ children }: { children: ReactNode }) {
     const faCopy = (a: LocalizableAgent) =>
       lang === "fa" ? faAgents[a.id] : undefined;
     const t = (key: string, vars?: Record<string, string | number>) =>
-      interpolate(dict[key] ?? dicts.en[key] ?? key, vars);
+      interpolate(dict[key] ?? dicts.en[key] ?? key, vars, locale);
     return {
       lang,
       dir: lang === "fa" ? "rtl" : "ltr",
@@ -943,6 +963,7 @@ export function I18nProvider({ children }: { children: ReactNode }) {
       setLang,
       t,
       n: (v: number) => v.toLocaleString(locale),
+      n1: (v: number) => v.toLocaleString(locale, { minimumFractionDigits: 1, maximumFractionDigits: 1 }),
       toman: (v: number) => (lang === "fa" ? `${v.toLocaleString("fa-IR")} تومان` : `${v.toLocaleString("en-US")} Toman`),
       phone: (value: string) => localizeDigits(formatPhone(value), lang),
       division: (d) => (lang === "fa" ? d.labelFa : d.label),

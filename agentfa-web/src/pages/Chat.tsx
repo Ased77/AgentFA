@@ -1,5 +1,5 @@
 import { FormEvent, useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { Download, Lock, Plus, Paperclip, Send, Sparkles, Trash2, Wallet } from "lucide-react";
+import { Download, Plus, Paperclip, Send, Sparkles, Trash2, Wallet } from "lucide-react";
 import { Link, useNavigate, useParams, useSearchParams } from "react-router-dom";
 import { agents } from "../data/agents";
 import {
@@ -215,7 +215,7 @@ export default function Chat() {
     const target = agent;
     if (!target || !input.trim() || loading) return;
 
-    if (!user) return nav("/login");
+    if (!user) return nav(`/login?next=${encodeURIComponent(`/chat/${target.id}`)}`);
     if (previewExhausted) return;
 
     const text = input;
@@ -332,20 +332,8 @@ export default function Chat() {
   const spent = messages.reduce((acc, m) => acc + (m.seconds || 0), 0);
   const minutes = (seconds: number) => n(Math.max(1, Math.round(seconds / 60)));
 
-  if (!user)
-    return (
-      <main className="section grid min-h-[60vh] place-items-center text-center">
-        <div className="max-w-lg rounded-3xl border border-line bg-surface p-8">
-          <Lock className="mx-auto text-brand" />
-          <h1 className="mt-5 text-2xl font-black">{t("chat.lockedTitle")}</h1>
-          <p className="mt-4 leading-8 text-ink-muted">{t("chat.lockedBody")}</p>
-          <Link className="btn mt-7" to="/login">
-            {t("nav.login")}
-          </Link>
-        </div>
-      </main>
-    );
-
+  // Signed-out visitors never reach this page: the route guard sends them to
+  // /login with a return path, so there is no second lock screen to maintain.
   if (previewExhausted)
     return (
       <main className="section grid min-h-[60vh] place-items-center text-center">

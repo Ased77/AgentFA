@@ -15,7 +15,7 @@ import { ForwardArrow } from "./ForwardArrow"
 export function AgentCard({ agent }: { agent: Agent }) {
   const { owns } = useEntitlements()
   const own = owns(agent.id)
-  const { t, n, toman, agentName, agentDescription, agentDivision } = useI18n()
+  const { t, n, n1, toman, agentName, agentDescription, agentDivision } = useI18n()
   return (
     <article className="agent-card group relative">
       <div className="flex items-start justify-between gap-3">
@@ -30,7 +30,7 @@ export function AgentCard({ agent }: { agent: Agent }) {
       <p className="mt-5 text-xs font-medium text-brand">{agentDivision(agent)}</p>
       <div className="mt-1 flex items-start justify-between gap-3">
         <h3 className="text-lg font-semibold leading-7">{agentName(agent)}</h3>
-        <span className="mt-0.5 shrink-0 text-xs text-ink-muted">★ {n(agent.rating)}</span>
+        <span className="mt-0.5 shrink-0 text-xs text-ink-muted">★ {n1(agent.rating)}</span>
       </div>
       <p className="mt-2 h-12 overflow-hidden text-sm leading-6 text-ink-muted [display:-webkit-box] [-webkit-box-orient:vertical] [-webkit-line-clamp:2]">
         {agentDescription(agent)}

@@ -7,11 +7,13 @@ import {
   useState,
   type ReactNode,
 } from "react";
-import { api, type OtpStart, type SessionUser } from "./account";
+import { api, ApiError, type OtpStart, type SessionUser } from "./account";
 
 type SessionState = {
   user: SessionUser | null;
   loading: boolean;
+  /** The session check failed for a reason that is not "signed out". */
+  apiDown: boolean;
   refresh: () => Promise<void>;
   /** Ask for a login code. Creates no account on its own. */
   startOtp: (phone: string) => Promise<OtpStart>;
@@ -25,13 +27,19 @@ const SessionContext = createContext<SessionState | null>(null);
 export function SessionProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<SessionUser | null>(null);
   const [loading, setLoading] = useState(true);
+  const [apiDown, setApiDown] = useState(false);
 
   const refresh = useCallback(async () => {
     try {
       const { user: me } = await api.me();
       setUser(me);
-    } catch {
+      setApiDown(false);
+    } catch (err) {
       setUser(null);
+      // A 401 is a normal answer: nobody is signed in. A network failure or a
+      // 5xx is not, and the shell says so instead of quietly rendering a
+      // logged-out site that looks like it works.
+      setApiDown(err instanceof ApiError ? err.status >= 500 : true);
     } finally {
       setLoading(false);
     }
@@ -55,8 +63,8 @@ export function SessionProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const value = useMemo<SessionState>(
-    () => ({ user, loading, refresh, startOtp, verifyOtp, logout }),
-    [user, loading, refresh, startOtp, verifyOtp, logout],
+    () => ({ user, loading, apiDown, refresh, startOtp, verifyOtp, logout }),
+    [user, loading, apiDown, refresh, startOtp, verifyOtp, logout],
   );
 
   return <SessionContext.Provider value={value}>{children}</SessionContext.Provider>;

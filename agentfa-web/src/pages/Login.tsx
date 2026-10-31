@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState, type FormEvent } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { ShieldCheck, Smartphone } from "lucide-react";
 import { ForwardArrow } from "../components/ForwardArrow";
 import { PhoneField } from "../components/PhoneField";
@@ -43,8 +43,22 @@ const ERROR_CODES = [
   "sms_not_configured",
 ] as const;
 
+/**
+ * Where to go after signing in: the page the guard turned away, as long as it is
+ * a path on this site. Anything else falls back to the dashboard, so `?next=`
+ * can never be used as an open redirect.
+ */
+function safeNext(raw: string | null): string {
+  if (!raw || !raw.startsWith("/") || raw.startsWith("//")) return "";
+  if (raw.startsWith("/login") || raw.startsWith("/signup")) return "";
+  return raw;
+}
+
 export default function Login() {
   const nav = useNavigate();
+  const [params] = useSearchParams();
+  // Set by the route guard (and the buy button) when it turned a visitor away.
+  const next = safeNext(params.get("next"));
   const { t, lang } = useI18n();
   const { startOtp, verifyOtp, user } = useSession();
 
@@ -64,8 +78,8 @@ export default function Login() {
   // A signed-in visitor has no business here — except during the hand-off right
   // after verifying, when the explicit redirect below already knows where to go.
   useEffect(() => {
-    if (user && !signedIn) nav("/dashboard", { replace: true });
-  }, [user, signedIn, nav]);
+    if (user && !signedIn) nav(next || "/dashboard", { replace: true });
+  }, [user, signedIn, nav, next]);
 
   /** Resend cooldown, ticked down once a second. */
   useEffect(() => {
@@ -135,7 +149,7 @@ export default function Login() {
     try {
       const { isNewUser } = await verifyOtp(phone, code);
       setSignedIn(true);
-      nav(isNewUser ? "/dashboard?welcome=1" : "/dashboard", { replace: true });
+      nav(next || (isNewUser ? "/dashboard?welcome=1" : "/dashboard"), { replace: true });
     } catch (err) {
       setError(errorKey(err));
       // A code that expired or was burned cannot be retried: let the user ask
@@ -167,6 +181,11 @@ export default function Login() {
             ? t("auth.phoneBody")
             : t("auth.codeSentTo", { phone: shownPhone })}
         </p>
+        {next && (
+          <p className="mt-3 rounded-xl bg-brand-soft px-3 py-2 text-xs leading-6 text-brand">
+            {t("auth.returnTo")}
+          </p>
+        )}
 
         {step === "phone" ? (
           <>

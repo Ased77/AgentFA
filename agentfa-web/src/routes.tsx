@@ -81,7 +81,7 @@ function LanguageSwitcher() {
 function Shell() {
   const { pathname, hash } = useLocation()
   const { t } = useI18n()
-  const { user, logout } = useSession()
+  const { user, logout, apiDown, refresh } = useSession()
   const [menu, setMenu] = useState(false)
   // A menu left open across a navigation is a bug, so follow the route.
   useEffect(() => setMenu(false), [pathname])
@@ -294,6 +294,16 @@ function Shell() {
           </nav>
         )}
       </header>
+      {apiDown && (
+        <div role="status" className="border-b border-amber-400/30 bg-amber-400/10 text-amber-100">
+          <div className="mx-auto flex max-w-7xl flex-wrap items-center justify-between gap-3 px-4 py-2 text-xs sm:px-5">
+            <span>{t("common.apiDown")}</span>
+            <button type="button" className="underline" onClick={() => void refresh()}>
+              {t("common.retry")}
+            </button>
+          </div>
+        </div>
+      )}
       <Outlet />
       <footer className="border-t border-line bg-surface-2/60">
         <div className="mx-auto max-w-7xl px-4 py-10 sm:px-5">
@@ -803,7 +813,7 @@ function Detail() {
   const nav = useNavigate()
   const [notice, setNotice] = useState("")
   const [buying, setBuying] = useState(false)
-  const { t, n, toman, agentDivision, agentName, agentLongDescription, agentFeatures, agentPrompts } =
+  const { t, n, n1, toman, agentDivision, agentName, agentLongDescription, agentFeatures, agentPrompts } =
     useI18n()
   const { user } = useSession()
   const { owns, refresh } = useEntitlements()
@@ -819,6 +829,7 @@ function Detail() {
   const a = catalog.agents.find((x) => x.slug === slug)
   if (!a) return <NotFound />
   const agentId = a.id
+  const agentSlug = a.slug
   const own = owns(agentId)
   // Related by the only real link the data has: the division. Self excluded,
   // capped at four — no invented "similar score" behind it.
@@ -834,7 +845,8 @@ function Detail() {
   }
 
   async function purchase() {
-    if (!user) return nav("/login")
+    // A detour, not a dead end: sign in and come straight back to this agent.
+    if (!user) return nav(loginPath(`/agent/${agentSlug}`))
     setBuying(true)
     setNotice("")
     setError("")
@@ -886,7 +898,7 @@ function Detail() {
               <p className="eyebrow">{agentDivision(a)}</p>
               <h1 className="mt-2 text-3xl font-bold sm:text-4xl">{agentName(a)}</h1>
               <p className="mt-2 text-sm text-ink-muted">
-                <span className="text-accent">★ {n(a.rating)}</span>
+                <span className="text-accent">★ {n1(a.rating)}</span>
                 <span className="ms-2">
                   ({n(a.sales)} {t("common.sales")})
                 </span>
@@ -1142,15 +1154,42 @@ function PageLoading() {
 }
 
 /**
+ * `/login` plus the page the guard turned the visitor away from, so signing in
+ * resumes what they were doing instead of dropping them on the dashboard.
+ */
+function loginPath(next: string) {
+  return !next || next === "/" ? "/login" : `/login?next=${encodeURIComponent(next)}`
+}
+
+/** Signed in, but not an admin: say so instead of bouncing home without a word. */
+function AccessDenied() {
+  const { t } = useI18n()
+  return (
+    <main className="section grid min-h-[50vh] place-items-center text-center">
+      <div className="max-w-lg rounded-3xl border border-line bg-surface p-8">
+        <h1 className="text-2xl font-black">{t("admin.forbiddenTitle")}</h1>
+        <p className="mt-4 leading-8 text-ink-muted">{t("admin.forbiddenBody")}</p>
+        <Link className="btn mt-7" to="/dashboard">
+          {t("admin.forbiddenCta")}
+        </Link>
+      </div>
+    </main>
+  )
+}
+
+/**
  * Guards a lazily-loaded page and shows a fallback while its chunk loads.
  * `loading` is the session check, so an authenticated page never flashes its
  * logged-out state.
  */
 function LazyPage({ children, guard }: { children: ReactNode; guard?: "user" | "admin" }) {
   const { user, loading } = useSession()
+  const location = useLocation()
   if (loading) return <PageLoading />
-  if (guard === "user" && !user) return <Navigate to="/login" replace />
-  if (guard === "admin" && user?.role !== "admin") return <Navigate to="/dashboard" replace />
+  const next = `${location.pathname}${location.search}`
+  if (guard === "user" && !user) return <Navigate to={loginPath(next)} replace />
+  if (guard === "admin" && !user) return <Navigate to={loginPath(next)} replace />
+  if (guard === "admin" && user?.role !== "admin") return <AccessDenied />
   return <Suspense fallback={<PageLoading />}>{children}</Suspense>
 }
 
